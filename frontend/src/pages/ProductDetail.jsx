@@ -9,12 +9,40 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export default function ProductDetail() {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [open, setOpen] = useState({ ingredients: true, pairings: false, serving: false });
   const [showInquiry, setShowInquiry] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API}/products/${slug}`).then((r) => setProduct(r.data)).catch(() => {});
+    setNotFound(false);
+    setProduct(null);
+    axios
+      .get(`${API}/products/${slug}`)
+      .then((r) => setProduct(r.data))
+      .catch((err) => {
+        if (err?.response?.status === 404) setNotFound(true);
+      });
   }, [slug]);
+
+  if (notFound) {
+    return (
+      <div
+        className="pt-[180px] max-w-[1400px] mx-auto px-6 md:px-10 pb-32"
+        data-testid="product-not-found"
+      >
+        <p className="overline text-[#C05A3A]">Not on the shelf</p>
+        <h1 className="font-serif text-5xl md:text-6xl leading-[1.05] mt-5 text-[#2A1F1D]">
+          We couldn't find that one.
+        </h1>
+        <p className="mt-6 text-[#5C4E4A] max-w-md leading-relaxed">
+          It may have sold through, or the link may be slightly off. Wander back to the collection.
+        </p>
+        <Link to="/collection" className="btn-primary mt-8 inline-flex" data-testid="product-notfound-back">
+          Back to the collection
+        </Link>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
