@@ -63,6 +63,9 @@ export const PRESS = [
   "Small batch · Hand rolled · San Francisco",
 ];
 
+export const LOGO_URL =
+  "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/p5bi7qmt_EMPORIO-ZEVA-logo.png";
+
 export const SF_MADE_BADGE =
   "https://emporiozeva.com/wp-content/uploads/2025/02/SFMADE.png";
 

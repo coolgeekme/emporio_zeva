@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { LOGO_URL } from "../content";
 
 const links = [
   { to: "/", label: "Home" },
@@ -27,14 +28,14 @@ export default function Nav() {
         <Link
           to="/"
           data-testid="nav-logo"
-          className="flex items-baseline gap-2"
+          className="flex items-center"
         >
-          <span className="font-serif italic text-2xl tracking-tight text-[#2A1F1D]">
-            Emporio
-          </span>
-          <span className="font-serif text-2xl tracking-tight text-[#C05A3A]">
-            Zeva
-          </span>
+          <img
+            src={LOGO_URL}
+            alt="Emporio Zeva"
+            className="h-12 md:h-14 w-auto select-none"
+            draggable="false"
+          />
         </Link>
 
         <nav className="hidden md:flex items-center gap-9">

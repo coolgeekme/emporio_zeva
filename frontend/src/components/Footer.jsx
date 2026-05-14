@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Mail } from "lucide-react";
-import { SF_MADE_BADGE } from "../content";
+import { SF_MADE_BADGE, LOGO_URL } from "../content";
 import NewsletterForm from "./NewsletterForm";
 
 export default function Footer() {
@@ -30,9 +30,14 @@ export default function Footer() {
         {/* Middle: links */}
         <div className="grid md:grid-cols-12 gap-12 py-16">
           <div className="md:col-span-5">
-            <Link to="/" data-testid="footer-logo" className="flex items-baseline gap-2">
-              <span className="font-serif italic text-3xl">Emporio</span>
-              <span className="font-serif text-3xl text-[#C05A3A]">Zeva</span>
+            <Link to="/" data-testid="footer-logo" className="inline-flex">
+              <img
+                src={LOGO_URL}
+                alt="Emporio Zeva"
+                className="h-28 w-auto select-none"
+                draggable="false"
+                style={{ filter: "invert(1) brightness(1.04)" }}
+              />
             </Link>
             <p className="mt-6 text-[#DFD7CA] max-w-sm leading-relaxed">
               A Sicilian cocoa confection, handcrafted in San Francisco from
