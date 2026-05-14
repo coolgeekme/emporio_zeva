@@ -1,0 +1,95 @@
+import { Link } from "react-router-dom";
+import { Instagram, Mail } from "lucide-react";
+import { SF_MADE_BADGE } from "../content";
+import NewsletterForm from "./NewsletterForm";
+
+export default function Footer() {
+  return (
+    <footer
+      className="bg-[#2A1F1D] text-[#F9F6F0] mt-32 relative grain"
+      data-testid="site-footer"
+    >
+      <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20">
+        {/* Top: Newsletter */}
+        <div className="grid md:grid-cols-12 gap-12 pb-16 border-b border-[#5C4E4A]">
+          <div className="md:col-span-6">
+            <p className="overline text-[#B9935A]">The Journal</p>
+            <h3 className="font-serif text-4xl md:text-5xl leading-[1.05] mt-4 max-w-md">
+              Get <span className="italic text-[#C05A3A]">10% off</span> your first Not-A-Salami.
+            </h3>
+            <p className="mt-5 text-[#DFD7CA] max-w-md leading-relaxed">
+              Slow notes from Eva's kitchen. New flavor drops, dinner pairings,
+              and a quiet head-start on holiday gift boxes.
+            </p>
+          </div>
+          <div className="md:col-span-6 flex md:items-end">
+            <NewsletterForm />
+          </div>
+        </div>
+
+        {/* Middle: links */}
+        <div className="grid md:grid-cols-12 gap-12 py-16">
+          <div className="md:col-span-5">
+            <Link to="/" data-testid="footer-logo" className="flex items-baseline gap-2">
+              <span className="font-serif italic text-3xl">Emporio</span>
+              <span className="font-serif text-3xl text-[#C05A3A]">Zeva</span>
+            </Link>
+            <p className="mt-6 text-[#DFD7CA] max-w-sm leading-relaxed">
+              A Sicilian cocoa confection, handcrafted in San Francisco from
+              Grandma Margherita's recipe. Slice thin. Serve slow. Share generously.
+            </p>
+            <img
+              src={SF_MADE_BADGE}
+              alt="SF Made — Here and Now 2024"
+              className="mt-8 h-16 w-auto opacity-90"
+              data-testid="footer-sfmade-badge"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <p className="overline text-[#B9935A]">Shop</p>
+            <ul className="mt-5 space-y-3">
+              <li><Link to="/collection" data-testid="footer-link-collection" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Collection</Link></li>
+              <li><Link to="/products/not-a-salami-classic" data-testid="footer-link-classic" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">The Classic</Link></li>
+              <li><Link to="/products/not-a-salami-gift-board" data-testid="footer-link-gift" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Gift Board</Link></li>
+            </ul>
+          </div>
+
+          <div className="md:col-span-2">
+            <p className="overline text-[#B9935A]">House</p>
+            <ul className="mt-5 space-y-3">
+              <li><Link to="/our-story" data-testid="footer-link-story" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Our Story</Link></li>
+              <li><Link to="/journal" data-testid="footer-link-journal" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Journal</Link></li>
+              <li><Link to="/contact" data-testid="footer-link-contact" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Contact</Link></li>
+            </ul>
+          </div>
+
+          <div className="md:col-span-3">
+            <p className="overline text-[#B9935A]">Reach out</p>
+            <ul className="mt-5 space-y-3 text-sm text-[#DFD7CA]">
+              <li>San Francisco, California</li>
+              <li className="flex items-center gap-2">
+                <Mail size={14} className="text-[#C05A3A]" />
+                <a href="mailto:hello@emporiozeva.com" data-testid="footer-email" className="hover:text-[#C05A3A] transition-colors">hello@emporiozeva.com</a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Instagram size={14} className="text-[#C05A3A]" />
+                <a href="#" data-testid="footer-instagram" className="hover:text-[#C05A3A] transition-colors">@emporiozeva</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom */}
+        <div className="pt-8 border-t border-[#5C4E4A] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <p className="text-xs text-[#5C4E4A] tracking-wide">
+            © {new Date().getFullYear()} Emporio Zeva. Handcrafted with reverence in San Francisco.
+          </p>
+          <p className="text-[10px] tracking-[0.22em] uppercase text-[#5C4E4A]">
+            From Sicily, with seriousness · No salami was harmed
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}

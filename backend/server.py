@@ -1,12 +1,12 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from pydantic import BaseModel, Field, EmailStr
+from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 
@@ -14,59 +14,218 @@ from datetime import datetime, timezone
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
-
-# Create a router with the /api prefix
+app = FastAPI(title="Emporio Zeva API")
 api_router = APIRouter(prefix="/api")
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
+# ---------- Models ----------
+class Product(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    slug: str
+    name: str
+    tagline: str
+    price: str  # display only; showcase site
+    weight: str
+    description: str
+    long_description: str
+    ingredients: List[str]
+    pairings: List[str]
+    serving: List[str]
+    images: List[str]
+    badge: Optional[str] = None
+    available: bool = True
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
+class InquiryCreate(BaseModel):
+    name: str
+    email: EmailStr
+    phone: Optional[str] = ""
+    subject: Optional[str] = "General Inquiry"
+    message: str
+    product_slug: Optional[str] = None
+
+
+class Inquiry(InquiryCreate):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class NewsletterCreate(BaseModel):
+    email: EmailStr
+
+
+class NewsletterEntry(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: EmailStr
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+# ---------- Seed data ----------
+SEED_PRODUCTS = [
+    {
+        "slug": "not-a-salami-classic",
+        "name": "Not-A-Salami — Classic Cocoa",
+        "tagline": "The original Sicilian cocoa confection. Looks like salami. All chocolate.",
+        "price": "$32",
+        "weight": "300g · serves 8–10",
+        "description": "Rich cocoa and crisp cookie pieces, hand-shaped and wrapped in butcher paper. Slice thin. Pair with espresso.",
+        "long_description": "Our flagship Salame al Cioccolato is built from Grandma Margherita's recipe — premium cocoa folded with crisp Italian cookie shards, hand-rolled and rested to develop its signature firm-yet-tender bite. Wrapped in butcher's twine and parchment so it arrives looking impossibly like cured meat. Cut it open at the table and watch the room turn.",
+        "ingredients": [
+            "Premium dark cocoa",
+            "Italian biscotti / butter cookie crumbs",
+            "Unsalted butter",
+            "Cane sugar",
+            "Free-range eggs",
+            "Sicilian sea salt",
+            "A whisper of espresso"
+        ],
+        "pairings": [
+            "Espresso doppio",
+            "Cappuccino, mid-morning",
+            "Vin Santo or a rounded Nero d'Avola",
+            "Aged pecorino, surprisingly"
+        ],
+        "serving": [
+            "Unwrap. Place the whole log on a wooden board with the twine still on.",
+            "Slice rounds 4–6mm thick with a sharp, warmed knife.",
+            "Arrange in an overlapping fan. Serve at room temperature.",
+            "Best within 14 days. Refrigerate after opening."
+        ],
+        "images": [
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/split-img1.jpg",
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg",
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg"
+        ],
+        "badge": "Soft launch",
+        "available": True,
+    },
+    {
+        "slug": "not-a-salami-gift-board",
+        "name": "The Tavola Gift Board",
+        "tagline": "One Not-A-Salami, a hand-finished olive-wood board, linen napkin, and twine.",
+        "price": "$78",
+        "weight": "Boxed · serves 8–10",
+        "description": "A complete table ritual. Our cocoa salami nestled with a small olive-wood board, a hemmed linen napkin, and our serving card.",
+        "long_description": "Designed as a host gift or a quiet indulgence. Each board is sourced from a small workshop in San Francisco and finished by hand. Pair it with our classic Not-A-Salami and a printed serving card pulled from Eva's notebook.",
+        "ingredients": [
+            "Includes: 1× Not-A-Salami Classic",
+            "1× Olive-wood serving board, ~10in",
+            "1× Italian linen napkin",
+            "1× Letterpress serving card",
+            "Wrapped in natural kraft, sealed with wax"
+        ],
+        "pairings": [
+            "Espresso, naturally",
+            "A late afternoon with friends",
+            "Anyone hosting their first dinner of the season"
+        ],
+        "serving": [
+            "Present the board unwrapped at the table.",
+            "Slice generously, share generously.",
+            "Keep the board — it gets better with use."
+        ],
+        "images": [
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg",
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg"
+        ],
+        "badge": "Gift",
+        "available": True,
+    },
+    {
+        "slug": "not-a-salami-pistachio",
+        "name": "Not-A-Salami — Pistachio di Bronte",
+        "tagline": "Coming soon. Sicilian pistachio folded through dark cocoa.",
+        "price": "$36",
+        "weight": "300g · serves 8–10",
+        "description": "A future flavor in development — pistachio di Bronte from Mount Etna's slopes, paired with our signature cocoa base.",
+        "long_description": "Still in Eva's kitchen. We're testing batches of pistachio from Bronte, on the volcanic slopes of Etna — the same nuts our family used for celebrations. Join the list to be first when it launches.",
+        "ingredients": [
+            "Premium dark cocoa",
+            "Pistachio di Bronte D.O.P.",
+            "Italian cookie crumbs",
+            "Unsalted butter, cane sugar"
+        ],
+        "pairings": [
+            "Marsala secco",
+            "Affogato",
+            "A long Sunday"
+        ],
+        "serving": [
+            "Slice thin to reveal the pistachio mosaic.",
+            "Serve with a chilled dessert wine."
+        ],
+        "images": [
+            "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1286886227-scaled.jpg",
+            "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1170670861-scaled.jpg"
+        ],
+        "badge": "In development",
+        "available": False,
+    },
+]
+
+
+async def seed_products():
+    existing = await db.products.count_documents({})
+    if existing == 0:
+        for p in SEED_PRODUCTS:
+            doc = Product(**p).model_dump()
+            await db.products.insert_one(doc)
+        logging.getLogger(__name__).info("Seeded %d products", len(SEED_PRODUCTS))
+
+
+# ---------- Routes ----------
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Emporio Zeva — Sicilian Cocoa Confection."}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+@api_router.get("/products", response_model=List[Product])
+async def list_products():
+    docs = await db.products.find({}, {"_id": 0}).to_list(100)
+    return docs
 
-# Include the router in the main app
+
+@api_router.get("/products/{slug}", response_model=Product)
+async def get_product(slug: str):
+    doc = await db.products.find_one({"slug": slug}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return doc
+
+
+@api_router.post("/inquiries", response_model=Inquiry)
+async def create_inquiry(payload: InquiryCreate):
+    obj = Inquiry(**payload.model_dump())
+    await db.inquiries.insert_one(obj.model_dump())
+    return obj
+
+
+@api_router.get("/inquiries", response_model=List[Inquiry])
+async def list_inquiries():
+    docs = await db.inquiries.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return docs
+
+
+@api_router.post("/newsletter", response_model=NewsletterEntry)
+async def subscribe(payload: NewsletterCreate):
+    existing = await db.newsletter.find_one({"email": payload.email}, {"_id": 0})
+    if existing:
+        return existing
+    entry = NewsletterEntry(email=payload.email)
+    await db.newsletter.insert_one(entry.model_dump())
+    return entry
+
+
+@api_router.get("/newsletter", response_model=List[NewsletterEntry])
+async def list_newsletter():
+    docs = await db.newsletter.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return docs
+
+
 app.include_router(api_router)
 
 app.add_middleware(
@@ -77,12 +236,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+@app.on_event("startup")
+async def on_startup():
+    await seed_products()
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
