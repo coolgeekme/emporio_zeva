@@ -9,6 +9,7 @@ import ProductDetail from "./pages/ProductDetail";
 import OurStory from "./pages/OurStory";
 import Journal from "./pages/Journal";
 import Contact from "./pages/Contact";
+import BlackRock from "./pages/BlackRock";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -32,6 +33,7 @@ function App() {
             <Route path="/our-story" element={<OurStory />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/blackrock" element={<BlackRock />} />
           </Routes>
         </main>
         <Footer />

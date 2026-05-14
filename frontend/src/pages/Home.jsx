@@ -28,12 +28,21 @@ export default function Home() {
             <p className="overline text-[#C05A3A]" data-testid="hero-overline">
               Sicilian Cocoa Confection · Est. SF
             </p>
-            <h1 className="font-serif text-[44px] leading-[1.02] sm:text-6xl md:text-7xl lg:text-[88px] tracking-tight mt-6 text-[#2A1F1D]">
-              Born in <span className="italic text-[#C05A3A]">Sicily</span>.
-              <br />
-              Served in slices.
+            <h1
+              className="font-serif text-[56px] leading-[0.95] sm:text-7xl md:text-8xl lg:text-[112px] tracking-tight mt-6 text-[#2A1F1D]"
+              data-testid="hero-product-name"
+            >
+              Not-A-<span className="italic text-[#C05A3A]">Salami</span>.
             </h1>
-            <p className="mt-8 text-lg md:text-xl text-[#5C4E4A] max-w-md leading-relaxed">
+            <p
+              className="font-serif text-3xl sm:text-4xl md:text-5xl leading-[1.05] tracking-tight mt-5 text-[#2A1F1D]"
+              data-testid="hero-tagline"
+            >
+              Born in Sicily.
+              <br />
+              <span className="italic text-[#5C4E4A]">Served in slices.</span>
+            </p>
+            <p className="mt-8 text-lg text-[#5C4E4A] max-w-md leading-relaxed">
               A sliceable cocoa confection that looks like cured salumi and
               tastes like Grandma Margherita's kitchen. Hand-rolled in San Francisco,
               no meat involved — only cocoa, cookie, and ritual.
