@@ -1,0 +1,114 @@
+{
+  "theme": "light",
+  "archetype": "Organic & Earthy (Luxury Editorial Translation)",
+  "brand_identity": {
+    "name": "Emporio Zeva",
+    "vibe": "Warm, tactile, heritage, artisanal, surprising, editorial luxury food",
+    "core_concept": "Not-A-Salami (Salame al Cioccolato). A visual surprise: looks like cured meat, tastes like rich cocoa.",
+    "taglines": [
+      "Born in Sicily. Served in slices.",
+      "Slice thin. Serve slow. Share generously.",
+      "One slice. One cup. One pause.",
+      "Sliceable. Unexpected. Meant to be shared."
+    ]
+  },
+  "colors": {
+    "background": {
+      "primary": "#F9F6F0",
+      "secondary": "#EAE4D9",
+      "tertiary": "#DFD7CA"
+    },
+    "text": {
+      "primary": "#2A1F1D",
+      "muted": "#5C4E4A"
+    },
+    "accent": {
+      "primary": "#C05A3A",
+      "secondary": "#B9935A"
+    },
+    "border": {
+      "default": "#DFD7CA",
+      "hover": "#2A1F1D"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "headings": "Bodoni Moda",
+      "body": "Manrope",
+      "accent": "Manrope"
+    },
+    "scales": {
+      "h1": "text-5xl sm:text-6xl lg:text-7xl tracking-tighter leading-none",
+      "h2": "text-4xl sm:text-5xl tracking-tight leading-tight",
+      "h3": "text-2xl sm:text-3xl leading-snug",
+      "body_lg": "text-lg leading-relaxed",
+      "body": "text-base leading-relaxed",
+      "overline": "text-xs tracking-[0.2em] uppercase font-bold"
+    },
+    "rules": [
+      "Headings (Bodoni Moda) must never be bold; use font-light or font-normal for extreme editorial elegance.",
+      "Never center-align large blocks of text. Favor left alignment for readability and asymmetric tension.",
+      "Use wide tracking on uppercase overlines for a luxurious, architectural feel."
+    ]
+  },
+  "layout_and_spacing": {
+    "grid_strategy": "The Bento/Editorial Hybrid (Mode A: Tetris) - Asymmetry, visual tension, breathing room.",
+    "spacing_scale": "Use generous padding: py-24 or py-32 for sections, gap-12 or gap-16 between structural grid elements.",
+    "borders": "Exposed grid lines or delicate 1px borders (border-[#DFD7CA]) to section off content, giving an editorial/magazine layout feel."
+  },
+  "components_strategy": {
+    "buttons": "Sharp corners or very subtle rounding (rounded-sm). Dark cocoa background with parchment text, or outline button with 1px cocoa border. MUST have data-testid.",
+    "cards": "Cardless design preferred. Use pure HTML/Tailwind to create overlapping image-text compositions. No generic drop shadows. If shadows are needed, use very diffuse, ambient shading.",
+    "forms": "Use Shadcn Input/Form elements but strip away the 'SaaS' look. Replace rounded borders with sharp bottom-borders only (border-b) for an editorial 'fill-in-the-blank' feel, or very subtle 1px complete borders.",
+    "navigation": "Glassmorphism header (backdrop-blur-xl bg-[#F9F6F0]/80). Delicate bottom border. Links must be text-sm uppercase with wide tracking.",
+    "motion": "Use Lenis for momentum scrolling. Use Framer Motion for scroll-triggered fade-ups and slow image scaling on hover. Images should have a subtle parallax effect."
+  },
+  "pages": {
+    "Home": {
+      "sections": [
+        "Hero: Asymmetric layout. 'Born in Sicily. Served in slices.' oversized Bodoni Moda text. Image: split-img1.jpg. Parallax background or slow pan.",
+        "The Illusion (Explainer): Side-by-side text and product_board.jpg. Explaining it's 100% chocolate, no meat. Playful but elegant.",
+        "Collection/Products Teaser: 2-3 items in a loose grid. 'Inquire to Order' CTAs.",
+        "Serving Ritual: 3-column masonry or staggered layout. Espresso pairing, slicing instructions.",
+        "Accolades/Press: Marquee or elegant list featuring SF Made badge and quotes.",
+        "Newsletter: Editorial block with terracotta/ember background accent."
+      ]
+    },
+    "Collection": {
+      "layout": "Editorial gallery. Not a standard e-commerce grid. Alternate image sizes (col-span-1 vs col-span-2). Generous negative space."
+    },
+    "Product_Detail": {
+      "layout": "Two-column sticky layout. Left side: Scrollable large macro images. Right side: Sticky product info, ingredients, 'Inquire' button, accordion for serving/slicing notes."
+    },
+    "Our_Story": {
+      "layout": "Magazine feature style. Large typography quotes. Interlocking images (founder_eva, sicily_landscape, italian_moment). Focus on Grandma Margherita and the SF transition."
+    },
+    "Journal": {
+      "layout": "Staggered list of articles with prominent dates and overlines. Images: journal_1, nostalgia, split_blog."
+    },
+    "Contact": {
+      "layout": "Minimalist, high-end inquiry form. Left: Contact details & wholesale info. Right: Clean, border-bottom only form fields."
+    }
+  },
+  "image_urls": {
+    "hero_sliced": "https://www.emporiozeva.com/wp-content/uploads/2024/06/split-img1.jpg",
+    "product_board": "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg",
+    "founder_eva": "https://www.emporiozeva.com/wp-content/uploads/2025/03/IMG_5209-scaled.jpg",
+    "sicily_landscape": "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1170670861-scaled.jpg",
+    "italian_moment": "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1286886227-scaled.jpg",
+    "journal_1": "https://www.emporiozeva.com/wp-content/uploads/2024/06/image015.jpg",
+    "gift_presentation": "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg",
+    "nostalgia": "https://www.emporiozeva.com/wp-content/uploads/2024/06/image019.jpg",
+    "split_blog": "https://www.emporiozeva.com/wp-content/themes/evasiciliandelights/images/split-blog2.jpg",
+    "sf_made_badge": "https://emporiozeva.com/wp-content/uploads/2025/02/SFMADE.png"
+  },
+  "instructions_to_main_agent": [
+    "This is an ARTISAN ITALIAN FOOD brand, not fashion. The vibe is Aesop or Tartine Bakery. Emphasize tactile warmth.",
+    "CRITICAL: Do not use generic SaaS layouts. Build custom HTML/Tailwind sections using the tetris/bento grid philosophy. Use asymmetry.",
+    "CRITICAL: Use ONLY the provided image_urls. Do not use placeholders. If you need an image for a section, pull from the list provided.",
+    "Typography: Use Bodoni Moda for headings and Manrope for body text. Ensure Bodoni Moda is imported via Google Fonts in the CSS/HTML.",
+    "Colors: Strictly adhere to the Parchment/Cocoa palette. NO purples, teals, or generic gradients.",
+    "Functionality: Showcase only. Replace 'Add to Cart' with 'Inquire to Order' or 'Contact Us'.",
+    "Testing: ALL interactive elements (buttons, links, form fields) MUST have a data-testid attribute (e.g., data-testid='hero-inquire-button')."
+  ]
+}
