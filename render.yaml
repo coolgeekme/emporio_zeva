@@ -1,0 +1,49 @@
+# Render Blueprint for Emporio Zeva
+# Deploys: 1) FastAPI backend (web service)  2) React frontend (static site)
+# MongoDB is NOT defined here — use a free MongoDB Atlas M0 cluster and paste its
+# connection string into the MONGO_URL env var in the Render dashboard.
+
+services:
+  # ---------- FastAPI backend ----------
+  - type: web
+    name: emporio-zeva-api
+    runtime: python
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MONGO_URL
+        sync: false   # paste your MongoDB Atlas connection string in Render dashboard
+      - key: DB_NAME
+        value: emporio_zeva
+      - key: CORS_ORIGINS
+        sync: false   # set to your frontend URL after first deploy, e.g. https://emporio-zeva-site.onrender.com
+
+  # ---------- React frontend (static) ----------
+  - type: web
+    name: emporio-zeva-site
+    runtime: static
+    rootDir: frontend
+    buildCommand: yarn install --frozen-lockfile && yarn build
+    staticPublishPath: ./build
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: REACT_APP_BACKEND_URL
+        sync: false   # set to your backend URL after first deploy, e.g. https://emporio-zeva-api.onrender.com
+    routes:
+      # SPA fallback so React Router routes (/collection, /products/:slug, etc.) work on refresh
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /static/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
