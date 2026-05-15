@@ -466,7 +466,7 @@ export default function BlackRock() {
                   {pkg.badge && (
                     <p className="overline text-[#C05A3A] mb-3 text-[10px]">{pkg.badge}</p>
                   )}
-                  <p className={`overline text-[10px] ${i === 1 ? "text-[#B9935A]" : "text-[#5C4E4A]"}`}>
+                  <p className={`overline text-[10px] ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
                     {pkg.name.toUpperCase()}
                   </p>
                   <h3
@@ -478,22 +478,22 @@ export default function BlackRock() {
                   </h3>
                   <p className="mt-4 font-serif text-5xl text-[#C05A3A]">
                     {pkg.price}
-                    <span className={`text-base font-sans tracking-wide ml-2 ${i === 1 ? "text-[#B9935A]" : "text-[#5C4E4A]"}`}>
+                    <span className={`text-base font-sans tracking-wide ml-2 ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
                       {pkg.unit}
                     </span>
                   </p>
-                  <p className={`mt-4 text-sm md:text-base leading-relaxed ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
+                  <p className={`mt-4 text-sm md:text-base leading-relaxed ${i === 1 ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}`}>
                     {pkg.blurb}
                   </p>
                   <ul className="mt-5 space-y-2 text-sm">
                     {pkg.includes.map((inc) => (
                       <li key={inc} className="flex gap-2 items-start">
                         <span className="text-[#C05A3A]">·</span>
-                        <span className={i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}>{inc}</span>
+                        <span className={i === 1 ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}>{inc}</span>
                       </li>
                     ))}
                   </ul>
-                  <p className={`overline text-[10px] mt-6 pt-4 border-t ${i === 1 ? "border-[#5C4E4A] text-[#B9935A]" : "border-[#DFD7CA] text-[#5C4E4A]"}`}>
+                  <p className={`overline text-[10px] mt-6 pt-4 border-t ${i === 1 ? "border-[#5C4E4A] text-[#DFD7CA]" : "border-[#DFD7CA] text-[#5C4E4A]"}`}>
                     {pkg.min}
                   </p>
                 </article>
