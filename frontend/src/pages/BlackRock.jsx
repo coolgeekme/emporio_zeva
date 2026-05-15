@@ -60,7 +60,15 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
 // Deck
 // ============================================================================
 
-export default function BlackRock() {
+export default function BlackRock({ deck = null }) {
+  // Personalization overrides — fall back to BlackRock defaults when not provided.
+  const clientName = deck?.client_name || "BlackRock";
+  const clientFull = deck ? deck.client_name : "BlackRock, Inc.";
+  const introText = deck?.intro_text || "A Curated Italian Gifting Experience.";
+  const clientLogo = deck?.logo_url || null;
+  const clientDomain = (deck?.domain || "blackrock").replace(/^www\./, "").split(".")[0];
+  const emailPlaceholder = `you@${(deck?.domain) || "blackrock.com"}`;
+
   const trackRef = useRef(null);
   const rafRef = useRef(0);
   const [active, setActive] = useState(0);
@@ -151,8 +159,8 @@ export default function BlackRock() {
   }, []);
 
   useEffect(() => {
-    document.title = "A Corporate Gifting Presentation for BlackRock · Not A Salami";
-  }, []);
+    document.title = `A Corporate Gifting Presentation for ${clientName} · Not A Salami`;
+  }, [clientName]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -160,8 +168,8 @@ export default function BlackRock() {
     try {
       await axios.post(`${API}/inquiries`, {
         ...form,
-        subject: "BlackRock — Corporate Gifting Presentation",
-        product_slug: "blackrock-proposal",
+        subject: `${clientName} — Corporate Gifting Presentation`,
+        product_slug: `deck-${clientDomain}`,
       });
       setSubmitted(true);
       setForm({ name: "", email: "", phone: "", message: "" });
@@ -214,7 +222,7 @@ export default function BlackRock() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-14 items-center">
             <div className="md:col-span-7">
               <p className="overline text-[#5C4E4A] mb-5 fx fx-down fx-d1">
-                Confidential · Prepared for BlackRock, Inc.
+                Confidential · Prepared for {clientFull}
               </p>
               <h1
                 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[88px] leading-[0.95] tracking-tight text-[#2A1F1D] fx fx-left fx-d2"
@@ -222,10 +230,10 @@ export default function BlackRock() {
               >
                 A Corporate Gifting Presentation
                 <br />
-                for <span className="italic text-[#C05A3A]">BlackRock</span>.
+                for <span className="italic text-[#C05A3A]">{clientName}</span>.
               </h1>
               <p className="mt-7 text-xl md:text-2xl font-serif text-[#5C4E4A] max-w-2xl leading-snug italic fx fx-up fx-d3">
-                A Curated Italian Gifting Experience.
+                {introText}
               </p>
               <div className="mt-10 flex flex-wrap gap-x-10 gap-y-4 text-sm text-[#5C4E4A] fx fx-up fx-d4">
                 <div>
@@ -248,6 +256,26 @@ export default function BlackRock() {
               <div className="img-wash aspect-[4/5] max-h-[60vh] fx fx-right fx-d2">
                 <img src={IMAGES.product} alt="Not A Salami presentation" />
               </div>
+              {clientLogo && (
+                <div
+                  className="mt-6 inline-flex items-center gap-3 bg-[#F5EFE2] border border-[#DFD7CA] px-4 py-3 fx fx-up fx-d4"
+                  data-testid="pitch-client-logo-tile"
+                >
+                  <img
+                    src={clientLogo}
+                    alt={`${clientName} logo`}
+                    className="h-8 w-8 object-contain"
+                    draggable="false"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                  <div>
+                    <p className="overline text-[#5C4E4A] !text-[9px]">Presented to</p>
+                    <p className="text-sm text-[#2A1F1D] mt-0.5">{clientName}</p>
+                  </div>
+                </div>
+              )}
               <img
                 src={LOGO_URL}
                 alt="Emporio Zeva"
@@ -639,7 +667,7 @@ export default function BlackRock() {
                           required
                           value={form.email}
                           onChange={(e) => setForm({ ...form, email: e.target.value })}
-                          placeholder="you@blackrock.com"
+                          placeholder={emailPlaceholder}
                           data-testid="pitch-form-email"
                         />
                       </div>

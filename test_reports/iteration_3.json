@@ -1,0 +1,42 @@
+{
+  "summary": "Tested the new corporate Deck builder end-to-end. All 21 backend pytest cases pass (auth guards, preview, regenerate-intro, create with slug format <slug>-<6hex>, list sorted desc, patch, delete, public GET increments view_count, 404s). Full frontend flow verified: admin login -> Decks tab -> NewDeckDialog (client name 'TEST Patagonia') -> live LLM preview rendered (Claude Sonnet 4.5 intro, ~150 chars) -> regenerate produced a different intro -> save persists -> deck card appears in grid with copy/open/delete -> public /deck/<slug> renders BlackRock deck with personalized slide 1 (overline 'CONFIDENTIAL - PREPARED FOR TEST PATAGONIA', headline 'A Corporate Gifting Presentation for TEST Patagonia.', AI intro paragraph, no client logo tile because DuckDuckGo had no Patagonia icon — graceful degradation working). Unknown slug shows 'This presentation isn't available' empty state. /blackrock regression: still renders default 'BlackRock' client with no client logo tile. CSV export correctly hidden on Decks tab, visible on Waitlist/Inquiries/Newsletter. Homepage regression OK. Cleanup: deleted my TEST Patagonia deck; pre-existing Microsoft + Acme Coffee decks left intact.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "NewDeckDialog preview (when domain lookup fails)", "issues": ["Shows a square 'no logo' placeholder tile in the preview when DuckDuckGo can't resolve an icon. The public deck page hides it entirely (correct), but the preview shows the placeholder. Cosmetic only — admin still sees what the public will see (no logo). Consider hiding the placeholder in the dialog too for consistency."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_decks_api.py",
+    "/app/test_reports/pytest/decks_results.xml"
+  ],
+  "action_items": [
+    "Optional polish only: hide the 'no logo' placeholder tile in NewDeckDialog preview when logo_url is null (to match the public deck behavior which already hides it).",
+    "Optional UX: the public deck URL /deck/<slug> is shareable but doesn't expose a 'Visit Not A Salami' empty-state for invalid slugs has correct CTA already."
+  ],
+  "critical_code_review_comments": [
+    "decks.py: lookup_domain prefers exact case-insensitive name match — good. But for 'TEST Patagonia' or any test name there is no Clearbit match so domain ends up None and logo_url is None. That's the expected best-effort behavior already documented.",
+    "server.py admin_create_deck: makes two LLM-adjacent network calls (Clearbit lookup_domain + Claude generate_intro) sequentially inside the POST. With typical Claude latency that's a 4-15s request. Acceptable for an admin-only endpoint but worth noting — frontend already shows a loading state.",
+    "server.py PATCH /admin/decks/{id}: uses Pydantic DeckUpdate with Optional fields. Note that explicitly setting a field to null in the JSON body will be filtered out by `v is not None` — so admins cannot clear logo_url/intro_text via PATCH, only overwrite. Probably intentional, but worth flagging.",
+    "Deck.created_at is stored as an ISO string (not a real datetime). Sort by 'created_at' descending works because ISO 8601 strings are lexically sortable. Same approach used for other entities in the codebase — consistent.",
+    "frontend Admin.jsx (~720 lines including NewDeckDialog + DecksPanel) is now at the 700-line threshold. Consider extracting NewDeckDialog and DecksPanel into their own files in /app/frontend/src/components/admin/ for maintainability."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_decks_api.py (new — 21 pytest cases covering all deck endpoints)"
+  ],
+  "success_rate": {
+    "backend": "100% (21/21)",
+    "frontend": "100% (all primary flows + regressions)"
+  },
+  "test_credentials": "Admin password: zeva-admin-2026 (from /app/memory/test_credentials.md). No new credentials introduced.",
+  "seed_data_creation": "Created one TEST Patagonia deck during UI testing (slug test-patagonia-9f4810) — deleted at end of run. Pytest also creates and deletes its own TEST_* decks in fixtures (no leakage). Pre-existing demo decks 'Microsoft' and 'Acme Coffee' were left untouched.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend deck suite at /app/backend/tests/test_decks_api.py (21 cases) is the regression set for deck endpoints. The existing /app/backend/tests/test_admin_api.py (18 cases, auth + waitlist + products) still passes — both can be run together with `pytest backend/tests/`. LLM calls take 5-15s — give the regenerate-intro test enough wait. Public endpoint /api/decks/{slug} increments view_count atomically via find_one_and_update with $inc — fine. There is NO pre-seeded slug 'zeva-refresh'; the review request mentioned that as an example only. Demo decks 'microsoft-<hex>' and 'acme-coffee-<hex>' exist in the DB from prior admin testing — safe to leave.",
+  "rca of the issue": "No bugs found in this iteration. All features in the review request work as specified. Logo-fetch failures (DuckDuckGo returning 404 for niche/test domains) are handled gracefully on the public page (logo tile hidden via clientLogo conditional) and the admin still sees a 'no logo' placeholder in the dialog preview — a minor cosmetic inconsistency, not a bug."
+}

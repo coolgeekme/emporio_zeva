@@ -87,6 +87,29 @@ class AdminToken(BaseModel):
     expires_at: str
 
 
+class DeckCreate(BaseModel):
+    client_name: str
+
+
+class DeckUpdate(BaseModel):
+    client_name: Optional[str] = None
+    logo_url: Optional[str] = None
+    intro_text: Optional[str] = None
+    domain: Optional[str] = None
+
+
+class Deck(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    slug: str
+    client_name: str
+    domain: Optional[str] = None
+    logo_url: Optional[str] = None
+    intro_text: str
+    view_count: int = 0
+    last_viewed_at: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
 # ---------- Admin auth ----------
 JWT_ALGORITHM = "HS256"
 ADMIN_TOKEN_TTL_HOURS = 8
@@ -352,6 +375,96 @@ async def admin_list_newsletter(_: dict = Depends(require_admin)):
 async def admin_list_waitlist(_: dict = Depends(require_admin)):
     docs = await db.waitlist.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
     return docs
+
+
+# ---------- Deck routes ----------
+from decks import personalize, make_slug, generate_intro  # noqa: E402
+
+
+@api_router.post("/admin/decks/preview")
+async def admin_preview_deck(payload: DeckCreate, _: dict = Depends(require_admin)):
+    """Generate logo + intro for a client name without saving."""
+    if not payload.client_name.strip():
+        raise HTTPException(status_code=422, detail="client_name is required")
+    data = await personalize(payload.client_name.strip())
+    return {"client_name": payload.client_name.strip(), **data}
+
+
+@api_router.post("/admin/decks/regenerate-intro")
+async def admin_regenerate_intro(payload: DeckCreate, _: dict = Depends(require_admin)):
+    """Re-roll the intro text for a given client name."""
+    if not payload.client_name.strip():
+        raise HTTPException(status_code=422, detail="client_name is required")
+    text = await generate_intro(payload.client_name.strip())
+    return {"intro_text": text}
+
+
+@api_router.post("/admin/decks", response_model=Deck)
+async def admin_create_deck(payload: DeckCreate, _: dict = Depends(require_admin)):
+    name = payload.client_name.strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="client_name is required")
+    data = await personalize(name)
+    deck = Deck(
+        slug=make_slug(name),
+        client_name=name,
+        domain=data["domain"],
+        logo_url=data["logo_url"],
+        intro_text=data["intro_text"],
+    )
+    await db.decks.insert_one(deck.model_dump())
+    return deck
+
+
+@api_router.get("/admin/decks", response_model=List[Deck])
+async def admin_list_decks(_: dict = Depends(require_admin)):
+    docs = await db.decks.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return docs
+
+
+@api_router.patch("/admin/decks/{deck_id}", response_model=Deck)
+async def admin_update_deck(
+    deck_id: str,
+    payload: DeckUpdate,
+    _: dict = Depends(require_admin),
+):
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not update:
+        raise HTTPException(status_code=422, detail="No fields to update")
+    result = await db.decks.find_one_and_update(
+        {"id": deck_id},
+        {"$set": update},
+        return_document=True,
+        projection={"_id": 0},
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Deck not found")
+    return result
+
+
+@api_router.delete("/admin/decks/{deck_id}")
+async def admin_delete_deck(deck_id: str, _: dict = Depends(require_admin)):
+    result = await db.decks.delete_one({"id": deck_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Deck not found")
+    return {"deleted": True}
+
+
+@api_router.get("/decks/{slug}", response_model=Deck)
+async def get_deck(slug: str):
+    """Public — fetch a deck by slug and increment view count."""
+    deck = await db.decks.find_one_and_update(
+        {"slug": slug},
+        {
+            "$inc": {"view_count": 1},
+            "$set": {"last_viewed_at": datetime.now(timezone.utc).isoformat()},
+        },
+        return_document=True,
+        projection={"_id": 0},
+    )
+    if not deck:
+        raise HTTPException(status_code=404, detail="Deck not found")
+    return deck
 
 
 app.include_router(api_router)

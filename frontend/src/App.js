@@ -13,6 +13,7 @@ import BlackRock from "./pages/BlackRock";
 import Ritual from "./pages/Ritual";
 import OneSheet from "./pages/OneSheet";
 import Admin from "./pages/Admin";
+import DeckView from "./pages/DeckView";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -24,7 +25,7 @@ function ScrollToTop() {
 
 function Shell() {
   const { pathname } = useLocation();
-  const isDeck = pathname === "/blackrock";
+  const isDeck = pathname === "/blackrock" || pathname.startsWith("/deck/");
   const isAdmin = pathname.startsWith("/admin");
   const isChrome = !isDeck && !isAdmin;
   return (
@@ -40,6 +41,7 @@ function Shell() {
           <Route path="/journal" element={<Journal />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/blackrock" element={<BlackRock />} />
+          <Route path="/deck/:slug" element={<DeckView />} />
           <Route path="/ritual" element={<Ritual />} />
           <Route path="/one-sheet" element={<OneSheet />} />
           <Route path="/admin" element={<Admin />} />
