@@ -64,6 +64,18 @@ class NewsletterEntry(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
+class WaitlistCreate(BaseModel):
+    name: str
+    email: EmailStr
+    product_slug: str
+    note: Optional[str] = ""
+
+
+class WaitlistEntry(WaitlistCreate):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
 # ---------- Seed data ----------
 SEED_PRODUCTS = [
     {
@@ -227,6 +239,26 @@ async def subscribe(payload: NewsletterCreate):
 @api_router.get("/newsletter", response_model=List[NewsletterEntry])
 async def list_newsletter():
     docs = await db.newsletter.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return docs
+
+
+@api_router.post("/waitlist", response_model=WaitlistEntry)
+async def join_waitlist(payload: WaitlistCreate):
+    # Idempotent per (email, product_slug)
+    existing = await db.waitlist.find_one(
+        {"email": payload.email, "product_slug": payload.product_slug},
+        {"_id": 0},
+    )
+    if existing:
+        return existing
+    entry = WaitlistEntry(**payload.model_dump())
+    await db.waitlist.insert_one(entry.model_dump())
+    return entry
+
+
+@api_router.get("/waitlist", response_model=List[WaitlistEntry])
+async def list_waitlist():
+    docs = await db.waitlist.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return docs
 
 

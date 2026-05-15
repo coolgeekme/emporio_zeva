@@ -22,7 +22,7 @@
 ## Architecture
 - **Frontend:** React 19 + React Router 7 + Tailwind 3 (custom parchment/cocoa/ember palette). Bodoni Moda (headings) + Manrope (body) via Google Fonts.
 - **Backend:** FastAPI + Motor (async MongoDB). Pydantic v2 models. EmailStr validation.
-- **DB:** MongoDB collections — `products`, `inquiries`, `newsletter`.
+- **DB:** MongoDB collections — `products`, `inquiries`, `newsletter`, `waitlist`.
 - **Seeding:** 3 products seeded on FastAPI startup if `products` collection is empty.
 
 ## API Surface (all `/api/*`)
@@ -35,6 +35,8 @@
 | GET | /api/inquiries | list inquiries (admin) |
 | POST | /api/newsletter | subscribe (idempotent on email) |
 | GET | /api/newsletter | list subscribers (admin) |
+| POST | /api/waitlist | join waitlist for a product (name, email, product_slug, note?). Idempotent on (email, product_slug). |
+| GET | /api/waitlist | list waitlist entries (admin) |
 
 ## Pages Built
 1. **Home** — editorial asymmetric hero, press marquee, "It looks like salami / it is entirely chocolate" illusion section, collection teaser (live from API), serving ritual (slice / pair / share), dark testimonials block, journal teaser.
@@ -57,16 +59,18 @@
 - ✅ Scroll-reveal animations, image zoom on hover, marquee press strip
 - ✅ Tested: 14/14 backend tests green; all critical frontend flows verified by testing agent
 - ✅ ProductDetail 404 not-found state
+- ✅ **Waitlist** — per-product "Join the Waitlist" CTAs on Collection cards; price/weight removed from cards; modal dialog captures name, email, optional note; persists to `waitlist` collection (idempotent on email+slug). Added 2026-02.
 
 ## Backlog (P1 / P2 — future iterations)
 - **P1 — ParcelPath / shipping integration** (user expressed interest)
 - **P1 — Stripe Checkout** (test mode) when client is ready to sell
-- **P1 — Admin dashboard** to view/manage inquiries & newsletter subscribers
-- **P1 — Send transactional email** for inquiries + newsletter welcome (Resend/SendGrid)
+- **P1 — Admin dashboard** to view/manage inquiries, newsletter, and waitlist
+- **P1 — Send transactional email** for inquiries + waitlist confirmation (Resend/SendGrid)
 - **P2 — Full journal CMS** (currently 3 static teaser cards)
 - **P2 — Wholesale portal** with tiered pricing
 - **P2 — Gift card flow**
 - **P2 — Recipe / serving-card download PDFs**
+- **P2 — Auto-play / demo mode for `/blackrock` pitch deck** (trade-show display)
 - **P2 — Migrate `@app.on_event` → `lifespan` handler** (FastAPI deprecation)
 
 ## Test Credentials

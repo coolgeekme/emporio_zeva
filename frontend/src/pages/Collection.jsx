@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { ArrowRight } from "lucide-react";
+import WaitlistDialog from "../components/WaitlistDialog";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Collection() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [waitlistProduct, setWaitlistProduct] = useState(null);
 
   useEffect(() => {
     axios
@@ -32,7 +34,7 @@ export default function Collection() {
           </h1>
           <p className="md:col-span-4 text-[#5C4E4A] leading-relaxed max-w-md">
             We make one thing for now — and we make it slowly. New flavors arrive
-            only when Eva is happy. Inquire to order; we ship in small batches.
+            only when Eva is happy. Reserve your place; we ship in small batches.
           </p>
         </div>
       </section>
@@ -51,17 +53,20 @@ export default function Collection() {
                   ? "md:col-span-5 md:translate-y-16"
                   : "md:col-span-6 md:col-start-4";
               return (
-                <Link
+                <article
                   key={p.id}
-                  to={`/products/${p.slug}`}
                   data-testid={`collection-card-${p.slug}`}
                   className={`group block ${layout}`}
                 >
-                  <div className="img-wash aspect-[4/5]">
-                    <img src={p.images[0]} alt={p.name} />
-                  </div>
-                  <div className="mt-6 flex items-start justify-between gap-6">
-                    <div>
+                  <Link
+                    to={`/products/${p.slug}`}
+                    data-testid={`collection-card-link-${p.slug}`}
+                    className="block"
+                  >
+                    <div className="img-wash aspect-[4/5]">
+                      <img src={p.images[0]} alt={p.name} />
+                    </div>
+                    <div className="mt-6">
                       <div className="flex items-center gap-3">
                         <p className="overline text-[#5C4E4A]">No 0{i + 1}</p>
                         {p.badge && (
@@ -73,24 +78,41 @@ export default function Collection() {
                       <h2 className="font-serif text-3xl md:text-4xl mt-3 leading-tight text-[#2A1F1D] group-hover:text-[#C05A3A] transition-colors">
                         {p.name}
                       </h2>
-                      <p className="text-sm text-[#5C4E4A] mt-3 max-w-sm leading-relaxed">
+                      <p className="text-sm text-[#5C4E4A] mt-3 max-w-md leading-relaxed">
                         {p.tagline}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-serif text-2xl text-[#2A1F1D]">{p.price}</p>
-                      <p className="overline text-[#5C4E4A] mt-2">{p.weight}</p>
-                    </div>
+                  </Link>
+
+                  <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4">
+                    <button
+                      type="button"
+                      onClick={() => setWaitlistProduct(p)}
+                      className="btn-primary"
+                      data-testid={`waitlist-button-${p.slug}`}
+                    >
+                      Join the Waitlist
+                    </button>
+                    <Link
+                      to={`/products/${p.slug}`}
+                      className="link-underline inline-flex items-center gap-2"
+                      data-testid={`view-product-${p.slug}`}
+                    >
+                      View piece <ArrowRight size={14} />
+                    </Link>
                   </div>
-                  <div className="mt-6 link-underline inline-flex">
-                    {p.available ? "Inquire to order" : "Join the list"} <ArrowRight size={14} />
-                  </div>
-                </Link>
+                </article>
               );
             })}
           </div>
         )}
       </section>
+
+      <WaitlistDialog
+        open={!!waitlistProduct}
+        product={waitlistProduct}
+        onClose={() => setWaitlistProduct(null)}
+      />
     </div>
   );
 }
