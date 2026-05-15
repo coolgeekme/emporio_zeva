@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <div data-testid="home-page">
       {/* ============== HERO ============== */}
-      <section className="pt-[72px] relative" data-testid="hero-section">
+      <section className="pt-[90px] relative" data-testid="hero-section">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-20 grid md:grid-cols-12 gap-10 md:gap-12 items-end">
           <div className="md:col-span-6 md:pr-8">
             <p className="overline text-[#C05A3A]" data-testid="hero-overline">

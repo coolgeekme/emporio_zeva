@@ -18,7 +18,7 @@ export default function Collection() {
   }, []);
 
   return (
-    <div data-testid="collection-page" className="pt-[72px]">
+    <div data-testid="collection-page" className="pt-[90px]">
       {/* Header */}
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-12 border-b border-[#DFD7CA]">
         <p className="overline text-[#C05A3A]" data-testid="collection-overline">

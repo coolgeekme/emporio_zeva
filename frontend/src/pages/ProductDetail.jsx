@@ -76,7 +76,7 @@ export default function ProductDetail() {
   );
 
   return (
-    <div className="pt-[72px]" data-testid="product-detail-page">
+    <div className="pt-[90px]" data-testid="product-detail-page">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-10">
         <Link to="/collection" className="link-underline !text-[10px]" data-testid="product-back-link">
           <ArrowLeft size={14} /> Back to collection

@@ -24,7 +24,7 @@ export default function Nav() {
       className="glass-nav fixed top-0 left-0 right-0 z-50"
       data-testid="site-nav"
     >
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10 flex items-center justify-between h-[72px]">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-10 flex items-center justify-between h-[90px]">
         <Link
           to="/"
           data-testid="nav-logo"
@@ -33,7 +33,7 @@ export default function Nav() {
           <img
             src={LOGO_URL}
             alt="Emporio Zeva"
-            className="h-12 md:h-14 w-auto select-none"
+            className="h-[60px] md:h-[72px] w-auto select-none"
             draggable="false"
           />
         </Link>

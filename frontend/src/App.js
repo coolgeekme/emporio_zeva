@@ -19,24 +19,34 @@ function ScrollToTop() {
   return null;
 }
 
+function Shell() {
+  const { pathname } = useLocation();
+  const isDeck = pathname === "/blackrock";
+  return (
+    <>
+      <ScrollToTop />
+      <Nav />
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/collection" element={<Collection />} />
+          <Route path="/products/:slug" element={<ProductDetail />} />
+          <Route path="/our-story" element={<OurStory />} />
+          <Route path="/journal" element={<Journal />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/blackrock" element={<BlackRock />} />
+        </Routes>
+      </main>
+      {!isDeck && <Footer />}
+    </>
+  );
+}
+
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <ScrollToTop />
-        <Nav />
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/collection" element={<Collection />} />
-            <Route path="/products/:slug" element={<ProductDetail />} />
-            <Route path="/our-story" element={<OurStory />} />
-            <Route path="/journal" element={<Journal />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/blackrock" element={<BlackRock />} />
-          </Routes>
-        </main>
-        <Footer />
+        <Shell />
       </BrowserRouter>
     </div>
   );

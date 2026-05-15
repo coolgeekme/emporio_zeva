@@ -8,7 +8,7 @@ export default function OurStory() {
   const r3 = useReveal();
 
   return (
-    <div className="pt-[72px]" data-testid="our-story-page">
+    <div className="pt-[90px]" data-testid="our-story-page">
       {/* Hero */}
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-20 md:pb-28 grid md:grid-cols-12 gap-10 items-end">
         <div className="md:col-span-7">

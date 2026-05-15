@@ -3,7 +3,7 @@ import InquiryForm from "../components/InquiryForm";
 
 export default function Contact() {
   return (
-    <div className="pt-[72px]" data-testid="contact-page">
+    <div className="pt-[90px]" data-testid="contact-page">
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-12 border-b border-[#DFD7CA]">
         <p className="overline text-[#C05A3A]">Inquire · Wholesale · Press</p>
         <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl leading-[1.02] tracking-tight mt-5 max-w-4xl text-[#2A1F1D]">
