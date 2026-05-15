@@ -282,7 +282,7 @@ export default function BlackRock() {
               </p>
             </div>
             <div className="md:col-span-6 img-wash aspect-[4/5] max-h-[65vh] fx fx-right fx-d2">
-              <img src={IMAGES.sicily} alt="Modica, Sicily" />
+              <img src={IMAGES.founder} alt="View of Modica, Sicily from a rooftop terrace" />
             </div>
           </div>
         </Slide>
