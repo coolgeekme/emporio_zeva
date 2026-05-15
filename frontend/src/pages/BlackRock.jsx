@@ -86,7 +86,7 @@ const nextSteps = [
 // Slide chrome
 // =========================================================================
 
-const Slide = ({ id, n, total, dark = false, children, testid }) => (
+const Slide = ({ id, n, total, dark = false, children, testid, isActive = false }) => (
   <section
     id={id}
     data-testid={testid}
@@ -107,7 +107,9 @@ const Slide = ({ id, n, total, dark = false, children, testid }) => (
       </p>
     </div>
     <div className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16 w-full h-full flex items-center">
-      <div className="w-full py-20 md:py-24">{children}</div>
+      <div className={`w-full py-20 md:py-24 slide-fx ${isActive ? "in" : ""}`}>
+        {children}
+      </div>
     </div>
   </section>
 );
@@ -125,12 +127,49 @@ export default function BlackRock() {
 
   const TOTAL = 9;
 
-  const scrollToSlide = useCallback((idx) => {
+  // Track which slides have been revealed at least once — so going back doesn't
+  // re-trigger the entrance animation, and the leaving slide keeps its content
+  // visible during scroll (no flicker).
+  const [visited, setVisited] = useState(() => new Set());
+  useEffect(() => {
+    // initial reveal of cover on mount (next paint)
+    const id = requestAnimationFrame(() => setVisited((prev) => new Set([...prev, 0])));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  useEffect(() => {
+    setVisited((prev) => (prev.has(active) ? prev : new Set([...prev, active])));
+  }, [active]);
+
+  // Custom smooth scroll with easeInOutQuart — feels presentation-grade rather
+  // than the browser's default smooth which is short and uniform.
+  const rafRef = useRef(0);
+  const animateScrollTo = useCallback((targetLeft, duration = 850) => {
     const el = trackRef.current;
     if (!el) return;
-    const target = Math.max(0, Math.min(idx, TOTAL - 1));
-    el.scrollTo({ left: el.clientWidth * target, behavior: "smooth" });
+    cancelAnimationFrame(rafRef.current);
+    const startLeft = el.scrollLeft;
+    const distance = targetLeft - startLeft;
+    if (Math.abs(distance) < 1) return;
+    const startTime = performance.now();
+    const ease = (t) =>
+      t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+    const tick = (now) => {
+      const t = Math.min((now - startTime) / duration, 1);
+      el.scrollLeft = startLeft + distance * ease(t);
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
   }, []);
+
+  const scrollToSlide = useCallback(
+    (idx) => {
+      const el = trackRef.current;
+      if (!el) return;
+      const target = Math.max(0, Math.min(idx, TOTAL - 1));
+      animateScrollTo(el.clientWidth * target);
+    },
+    [animateScrollTo]
+  );
 
   const next = useCallback(() => scrollToSlide(active + 1), [active, scrollToSlide]);
   const prev = useCallback(() => scrollToSlide(active - 1), [active, scrollToSlide]);
@@ -234,7 +273,7 @@ export default function BlackRock() {
         data-testid="deck-track"
       >
         {/* -------- 01 COVER -------- */}
-        <Slide id="cover" n={1} total={TOTAL} testid="deck-slide-cover">
+        <Slide id="cover" n={1} total={TOTAL} testid="deck-slide-cover" isActive={visited.has(0)}>
           <div className="grid md:grid-cols-12 gap-8 md:gap-14 items-center">
             <div className="md:col-span-7">
               <p className="overline text-[#5C4E4A] mb-5">
@@ -284,7 +323,7 @@ export default function BlackRock() {
         </Slide>
 
         {/* -------- 02 LETTER -------- */}
-        <Slide id="brief" n={2} total={TOTAL} testid="deck-slide-brief">
+        <Slide id="brief" n={2} total={TOTAL} testid="deck-slide-brief" isActive={visited.has(1)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-16">
             <div className="md:col-span-4">
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-[#2A1F1D]">
@@ -321,7 +360,7 @@ export default function BlackRock() {
         </Slide>
 
         {/* -------- 03 PRODUCT -------- */}
-        <Slide id="product" n={3} total={TOTAL} dark testid="deck-slide-product">
+        <Slide id="product" n={3} total={TOTAL} dark testid="deck-slide-product" isActive={visited.has(2)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[65vh]">
               <img src={IMAGES.hero} alt="Sliced Not-A-Salami" />
@@ -356,7 +395,7 @@ export default function BlackRock() {
         </Slide>
 
         {/* -------- 04 USE CASES -------- */}
-        <Slide id="fit" n={4} total={TOTAL} testid="deck-slide-fit">
+        <Slide id="fit" n={4} total={TOTAL} testid="deck-slide-fit" isActive={visited.has(3)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-12">
             <div className="md:col-span-4">
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-[#2A1F1D]">
@@ -385,7 +424,7 @@ export default function BlackRock() {
         </Slide>
 
         {/* -------- 05 CO-BRANDING -------- */}
-        <Slide id="cobrand" n={5} total={TOTAL} testid="deck-slide-cobrand">
+        <Slide id="cobrand" n={5} total={TOTAL} testid="deck-slide-cobrand" isActive={visited.has(4)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-14 items-center">
             <div className="md:col-span-6">
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-[#2A1F1D]">
@@ -429,7 +468,7 @@ export default function BlackRock() {
         </Slide>
 
         {/* -------- 06 PACKAGES -------- */}
-        <Slide id="packages" n={6} total={TOTAL} testid="deck-slide-packages">
+        <Slide id="packages" n={6} total={TOTAL} testid="deck-slide-packages" isActive={visited.has(5)}>
           <div>
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
               <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] max-w-3xl">
@@ -497,7 +536,7 @@ export default function BlackRock() {
         </Slide>
 
         {/* -------- 07 LOGISTICS -------- */}
-        <Slide id="logistics" n={7} total={TOTAL} testid="deck-slide-logistics">
+        <Slide id="logistics" n={7} total={TOTAL} testid="deck-slide-logistics" isActive={visited.has(6)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-14">
             <div className="md:col-span-5">
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-[#2A1F1D]">
@@ -527,7 +566,7 @@ export default function BlackRock() {
         </Slide>
 
         {/* -------- 08 WHY US -------- */}
-        <Slide id="why-us" n={8} total={TOTAL} dark testid="deck-slide-why-us">
+        <Slide id="why-us" n={8} total={TOTAL} dark testid="deck-slide-why-us" isActive={visited.has(7)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-14 items-center">
             <div className="md:col-span-7">
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05]">
@@ -560,7 +599,7 @@ export default function BlackRock() {
         </Slide>
 
         {/* -------- 09 NEXT STEPS + FORM -------- */}
-        <Slide id="next" n={9} total={TOTAL} testid="deck-slide-next">
+        <Slide id="next" n={9} total={TOTAL} testid="deck-slide-next" isActive={visited.has(8)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-12">
             <div className="md:col-span-5">
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-[#2A1F1D]">
