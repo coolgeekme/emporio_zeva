@@ -281,13 +281,8 @@ export default function BlackRock() {
                 — {BRAND.founder}, Founder
               </p>
             </div>
-            <div className="md:col-span-6 grid grid-cols-2 gap-4 max-h-[60vh]">
-              <div className="img-wash aspect-[4/5] fx fx-right fx-d2">
-                <img src={IMAGES.sicily} alt="Modica, Sicily" />
-              </div>
-              <div className="img-wash aspect-[4/5] translate-y-10 fx fx-right fx-d4">
-                <img src={IMAGES.founder} alt="Eva, founder" />
-              </div>
+            <div className="md:col-span-6 img-wash aspect-[4/5] max-h-[65vh] fx fx-right fx-d2">
+              <img src={IMAGES.sicily} alt="Modica, Sicily" />
             </div>
           </div>
         </Slide>
