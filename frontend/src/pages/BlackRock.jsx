@@ -80,7 +80,7 @@ export default function BlackRock() {
   }, [active]);
 
   // Custom smooth scroll — longer, more cinematic curve
-  const animateScrollTo = useCallback((targetLeft, duration = 1100) => {
+  const animateScrollTo = useCallback((targetLeft, duration = 1400) => {
     const el = trackRef.current;
     if (!el) return;
     cancelAnimationFrame(rafRef.current);
@@ -213,21 +213,21 @@ export default function BlackRock() {
         <Slide id="cover" n={1} total={TOTAL} testid="deck-slide-cover" isActive={visited.has(0)}>
           <div className="grid md:grid-cols-12 gap-8 md:gap-14 items-center">
             <div className="md:col-span-7">
-              <p className="overline text-[#5C4E4A] mb-5">
+              <p className="overline text-[#5C4E4A] mb-5 fx fx-down fx-d1">
                 Confidential · Prepared for BlackRock, Inc.
               </p>
               <h1
-                className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[104px] leading-[0.95] tracking-tight text-[#2A1F1D]"
+                className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[104px] leading-[0.95] tracking-tight text-[#2A1F1D] fx fx-left fx-d2"
                 data-testid="pitch-cover-title"
               >
                 A proposal for
                 <br />
                 <span className="italic text-[#C05A3A]">BlackRock</span>.
               </h1>
-              <p className="mt-7 text-xl md:text-2xl font-serif text-[#5C4E4A] max-w-2xl leading-snug italic">
+              <p className="mt-7 text-xl md:text-2xl font-serif text-[#5C4E4A] max-w-2xl leading-snug italic fx fx-up fx-d3">
                 A Curated Italian Gifting Experience.
               </p>
-              <div className="mt-10 flex flex-wrap gap-x-10 gap-y-4 text-sm text-[#5C4E4A]">
+              <div className="mt-10 flex flex-wrap gap-x-10 gap-y-4 text-sm text-[#5C4E4A] fx fx-up fx-d4">
                 <div>
                   <p className="overline">Prepared by</p>
                   <p className="mt-1 text-[#2A1F1D]">{BRAND.founder} · Founder</p>
@@ -245,13 +245,13 @@ export default function BlackRock() {
               </div>
             </div>
             <div className="md:col-span-5 hidden md:block">
-              <div className="img-wash aspect-[4/5] max-h-[60vh]">
+              <div className="img-wash aspect-[4/5] max-h-[60vh] fx fx-right fx-d2">
                 <img src={IMAGES.product} alt="Not A Salami presentation" />
               </div>
               <img
                 src={LOGO_URL}
                 alt="Emporio Zeva"
-                className="h-16 w-auto mt-6 select-none"
+                className="h-16 w-auto mt-6 select-none fx fx-up fx-d5"
                 draggable="false"
               />
             </div>
@@ -262,30 +262,30 @@ export default function BlackRock() {
         <Slide id="tradition" n={2} total={TOTAL} testid="deck-slide-tradition" isActive={visited.has(1)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-6">
-              <p className="overline text-[#C05A3A]">{TAGLINES.italian_tradition}</p>
-              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4 text-[#2A1F1D]">
+              <p className="overline text-[#C05A3A] fx fx-down fx-d1">{TAGLINES.italian_tradition}</p>
+              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4 text-[#2A1F1D] fx fx-left fx-d2">
                 Returning to my roots,
                 <br />
                 <span className="italic text-[#C05A3A]">a Sicilian story.</span>
               </h2>
-              <p className="mt-6 text-base md:text-lg text-[#2A1F1D] leading-relaxed max-w-xl">
+              <p className="mt-6 text-base md:text-lg text-[#2A1F1D] leading-relaxed max-w-xl fx fx-up fx-d3">
                 Returning to my roots, I reconnected with my grandmother's
                 recipe and the chocolate tradition of <strong>Modica, Sicily</strong> —
                 brought together in a confection designed to surprise, and to be
                 sliced and shared.
               </p>
-              <p className="mt-4 text-sm text-[#5C4E4A] leading-relaxed max-w-xl italic">
+              <p className="mt-4 text-sm text-[#5C4E4A] leading-relaxed max-w-xl italic fx fx-up fx-d4">
                 {FOUNDER_LETTER[1]}
               </p>
-              <p className="font-serif text-2xl italic text-[#C05A3A] mt-6">
+              <p className="font-serif text-2xl italic text-[#C05A3A] mt-6 fx fx-up fx-d5">
                 — {BRAND.founder}, Founder
               </p>
             </div>
             <div className="md:col-span-6 grid grid-cols-2 gap-4 max-h-[60vh]">
-              <div className="img-wash aspect-[4/5]">
+              <div className="img-wash aspect-[4/5] fx fx-right fx-d2">
                 <img src={IMAGES.sicily} alt="Modica, Sicily" />
               </div>
-              <div className="img-wash aspect-[4/5] translate-y-10">
+              <div className="img-wash aspect-[4/5] translate-y-10 fx fx-right fx-d4">
                 <img src={IMAGES.founder} alt="Eva, founder" />
               </div>
             </div>
@@ -457,7 +457,7 @@ export default function BlackRock() {
                 <article
                   key={pkg.name}
                   data-testid={`pitch-package-${i}`}
-                  className={`border p-7 md:p-9 flex flex-col ${
+                  className={`fx ${i === 0 ? "fx-left" : "fx-right"} ${i === 0 ? "fx-d2" : "fx-d4"} border p-7 md:p-9 flex flex-col ${
                     i === 1
                       ? "bg-[#2A1F1D] text-[#F9F6F0] border-[#2A1F1D]"
                       : "border-[#DFD7CA] bg-[#F9F6F0]"
@@ -565,17 +565,17 @@ export default function BlackRock() {
         <Slide id="contact" n={11} total={TOTAL} testid="deck-slide-contact" isActive={visited.has(10)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-12">
             <div className="md:col-span-5">
-              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D]">
+              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] fx fx-left fx-d2">
                 Let's create a memorable
                 <br />
                 <span className="italic text-[#C05A3A]">gifting experience together.</span>
               </h2>
-              <p className="mt-6 text-[#5C4E4A] leading-relaxed max-w-md">
+              <p className="mt-6 text-[#5C4E4A] leading-relaxed max-w-md fx fx-up fx-d3">
                 Ready to chat. Together we will design a gifting experience
                 tailored to your team and clients.
               </p>
 
-              <ul className="mt-10 space-y-4 max-w-md">
+              <ul className="mt-10 space-y-4 max-w-md fx fx-up fx-d4">
                 <li className="flex gap-3 items-center" data-testid="pitch-contact-email">
                   <Mail size={16} className="text-[#C05A3A]" />
                   <a href={`mailto:${CONTACT.email_primary}`} className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors">
@@ -604,7 +604,7 @@ export default function BlackRock() {
             </div>
 
             <div className="md:col-span-6 md:col-start-7">
-              <div className="border border-[#DFD7CA] bg-[#F9F6F0] p-6 md:p-8">
+              <div className="border border-[#DFD7CA] bg-[#F9F6F0] p-6 md:p-8 fx fx-right fx-d3">
                 <p className="overline text-[#C05A3A]">Request a tasting</p>
                 <h3 className="font-serif text-2xl md:text-3xl mt-2 text-[#2A1F1D] leading-tight">
                   One reply gets it started.
