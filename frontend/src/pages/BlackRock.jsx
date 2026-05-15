@@ -151,7 +151,7 @@ export default function BlackRock() {
   }, []);
 
   useEffect(() => {
-    document.title = "A proposal for BlackRock · Not A Salami";
+    document.title = "A Corporate Gifting Presentation for BlackRock · Not A Salami";
   }, []);
 
   const submit = async (e) => {
@@ -160,7 +160,7 @@ export default function BlackRock() {
     try {
       await axios.post(`${API}/inquiries`, {
         ...form,
-        subject: "BlackRock — Corporate Gifting Proposal",
+        subject: "BlackRock — Corporate Gifting Presentation",
         product_slug: "blackrock-proposal",
       });
       setSubmitted(true);
@@ -217,12 +217,12 @@ export default function BlackRock() {
                 Confidential · Prepared for BlackRock, Inc.
               </p>
               <h1
-                className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[104px] leading-[0.95] tracking-tight text-[#2A1F1D] fx fx-left fx-d2"
+                className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[88px] leading-[0.95] tracking-tight text-[#2A1F1D] fx fx-left fx-d2"
                 data-testid="pitch-cover-title"
               >
-                A proposal for
+                A Corporate Gifting Presentation
                 <br />
-                <span className="italic text-[#C05A3A]">BlackRock</span>.
+                for <span className="italic text-[#C05A3A]">BlackRock</span>.
               </h1>
               <p className="mt-7 text-xl md:text-2xl font-serif text-[#5C4E4A] max-w-2xl leading-snug italic fx fx-up fx-d3">
                 A Curated Italian Gifting Experience.
