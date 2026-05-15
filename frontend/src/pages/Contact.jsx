@@ -14,7 +14,7 @@ export default function Contact() {
         </h1>
         <p className="mt-7 text-[#5C4E4A] leading-relaxed max-w-xl">
           Whether it's a dinner party, a corporate program, a wedding favor run,
-          or a shop that wants to stock the classic — leave us a note. Eva Flair
+          or a shop that wants to stock the classic — leave us a note. Eva
           reads every one.
         </p>
       </section>

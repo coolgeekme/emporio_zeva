@@ -286,7 +286,7 @@ export default function BlackRock() {
                 <img src={IMAGES.sicily} alt="Modica, Sicily" />
               </div>
               <div className="img-wash aspect-[4/5] translate-y-10">
-                <img src={IMAGES.founder} alt="Eva Flair, founder" />
+                <img src={IMAGES.founder} alt="Eva, founder" />
               </div>
             </div>
           </div>
@@ -618,7 +618,7 @@ export default function BlackRock() {
                     <p className="overline text-[#C05A3A]">Received</p>
                     <p className="font-serif text-xl mt-1 text-[#2A1F1D]">Grazie.</p>
                     <p className="mt-2 text-xs md:text-sm text-[#5C4E4A]">
-                      Eva Flair will respond within one business day.
+                      Eva will respond within one business day.
                     </p>
                   </div>
                 ) : (

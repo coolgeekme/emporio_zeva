@@ -33,7 +33,7 @@ export default function OurStory() {
       <section className="reveal" ref={r1}>
         <div className="max-w-[1400px] mx-auto px-6 md:px-10">
           <div className="img-wash aspect-[16/9] md:aspect-[21/9]">
-            <img src={IMAGES.founder} alt="Eva Flair, founder of Emporio Zeva" data-testid="story-founder-image" />
+            <img src={IMAGES.founder} alt="Eva, founder of Emporio Zeva" data-testid="story-founder-image" />
           </div>
           <p className="overline text-[#5C4E4A] mt-4">
             {BRAND.founder} · Founder · From Sicily, with seriousness
@@ -41,7 +41,7 @@ export default function OurStory() {
         </div>
       </section>
 
-      {/* Long-form letter from Eva Flair */}
+      {/* Long-form letter from Eva */}
       <section
         className="max-w-[1400px] mx-auto px-6 md:px-10 py-24 md:py-32 grid md:grid-cols-12 gap-10 md:gap-16 reveal"
         ref={r2}
@@ -50,7 +50,7 @@ export default function OurStory() {
         <aside className="md:col-span-3">
           <p className="overline text-[#C05A3A]">A letter from</p>
           <h2 className="font-serif text-3xl md:text-4xl leading-tight mt-3 text-[#2A1F1D]">
-            Eva Flair,
+            Eva,
             <br />
             <span className="italic text-[#C05A3A]">founder.</span>
           </h2>

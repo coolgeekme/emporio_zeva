@@ -7,7 +7,7 @@
 export const BRAND = {
   name: "Not A Salami",
   parent: "Emporio Zeva",
-  founder: "Eva Flair",
+  founder: "Eva",
   origin: "Modica, Sicily",
   made_in: "San Francisco, California",
   domain: "notasalami.com",
@@ -66,7 +66,7 @@ export const RITUAL = [
   },
 ];
 
-// Eva Flair's real letter from the Ritual Postcard (slightly broken for layout)
+// Eva's real letter from the Ritual Postcard (slightly broken for layout)
 export const FOUNDER_LETTER = [
   "Inspired by a childhood memory of a sweet Sicilian confection shaped like a salame, Not A Salami was recreated years later in California as a way to bring back a feeling of warmth, home, and togetherness around the table.",
   "What began as a personal family tradition evolved into a handcrafted cocoa confection rooted in Sicilian heritage and thoughtfully reinterpreted in California.",
