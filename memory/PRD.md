@@ -26,17 +26,19 @@
 - **Seeding:** 3 products seeded on FastAPI startup if `products` collection is empty.
 
 ## API Surface (all `/api/*`)
-| Method | Path | Purpose |
-|---|---|---|
-| GET | /api/ | health |
-| GET | /api/products | list products |
-| GET | /api/products/{slug} | product detail (404 if missing) |
-| POST | /api/inquiries | create inquiry (name, email, phone, subject, message, product_slug?) |
-| GET | /api/inquiries | list inquiries (admin) |
-| POST | /api/newsletter | subscribe (idempotent on email) |
-| GET | /api/newsletter | list subscribers (admin) |
-| POST | /api/waitlist | join waitlist for a product (name, email, product_slug, note?). Idempotent on (email, product_slug). |
-| GET | /api/waitlist | list waitlist entries (admin) |
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | /api/ | — | health |
+| GET | /api/products | — | list products |
+| GET | /api/products/{slug} | — | product detail (404 if missing) |
+| POST | /api/inquiries | — | create inquiry |
+| POST | /api/newsletter | — | subscribe (idempotent on email) |
+| POST | /api/waitlist | — | join waitlist (idempotent on email+slug) |
+| POST | /api/admin/login | — | exchange `ADMIN_PASSWORD` for an 8h JWT |
+| GET | /api/admin/me | Bearer | verify admin token |
+| GET | /api/admin/inquiries | Bearer | list inquiries (admin) |
+| GET | /api/admin/newsletter | Bearer | list subscribers (admin) |
+| GET | /api/admin/waitlist | Bearer | list waitlist entries (admin) |
 
 ## Pages Built
 1. **Home** — editorial asymmetric hero, press marquee, "It looks like salami / it is entirely chocolate" illusion section, collection teaser (live from API), serving ritual (slice / pair / share), dark testimonials block, journal teaser.
@@ -60,6 +62,13 @@
 - ✅ Tested: 14/14 backend tests green; all critical frontend flows verified by testing agent
 - ✅ ProductDetail 404 not-found state
 - ✅ **Waitlist** — per-product "Join the Waitlist" CTAs on Collection cards; price/weight removed from cards; modal dialog captures name, email, optional note; persists to `waitlist` collection (idempotent on email+slug). Added 2026-02.
+- ✅ **ProductDetail refresh** (2026-02) — price/weight block removed; "Inquire to order" CTA replaced with "Join the Waitlist" that opens the same shared WaitlistDialog.
+- ✅ **Admin dashboard** at `/admin` (2026-02) — single shared-password login (`ADMIN_PASSWORD` env), JWT bearer in sessionStorage (8h TTL), brute-force lockout (5 attempts / 15 min per IP), tabbed dashboard for Waitlist + Inquiries + Newsletter, per-tab CSV export, refresh, sign out. No Nav/Footer chrome on the admin shell.
+
+## Admin Auth (new)
+- `ADMIN_PASSWORD` and `JWT_SECRET` live in `/app/backend/.env`
+- Endpoints: `POST /api/admin/login`, `GET /api/admin/me`, `GET /api/admin/{waitlist|inquiries|newsletter}` (Bearer required)
+- Credentials documented in `/app/memory/test_credentials.md`
 
 ## Backlog (P1 / P2 — future iterations)
 - **P1 — ParcelPath / shipping integration** (user expressed interest)
