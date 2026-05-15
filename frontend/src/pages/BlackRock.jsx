@@ -200,8 +200,33 @@ export default function BlackRock() {
   return (
     <div
       data-testid="blackrock-pitch-page"
-      className="fixed inset-0 top-[90px] flex flex-col bg-[#F9F6F0]"
+      className="fixed inset-0 flex flex-col bg-[#F9F6F0]"
     >
+      {/* minimal floating exit link (replaces the hidden global nav) */}
+      <Link
+        to="/"
+        data-testid="deck-exit"
+        className="fixed top-6 right-6 md:top-8 md:right-10 z-30 overline text-[#5C4E4A] hover:text-[#C05A3A] transition-colors flex items-center gap-1 bg-[#F9F6F0]/70 backdrop-blur-md px-3 py-2 border border-[#DFD7CA]"
+      >
+        Exit deck <span aria-hidden>✕</span>
+      </Link>
+
+      {/* "Press → to begin" hint — visible only on the cover slide */}
+      <div
+        data-testid="deck-begin-hint"
+        className={`fixed bottom-24 md:bottom-28 left-1/2 -translate-x-1/2 z-30 pointer-events-none transition-all duration-700 ${
+          active === 0 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+        }`}
+      >
+        <div className="flex items-center gap-3 bg-[#2A1F1D] text-[#F9F6F0] px-5 py-3 shadow-lg">
+          <span className="overline !text-[10px] text-[#B9935A]">Begin</span>
+          <span className="text-xs tracking-wide">Press</span>
+          <kbd className="font-serif text-base bg-[#F9F6F0] text-[#2A1F1D] px-2 py-[1px] leading-none deck-key-pulse">
+            →
+          </kbd>
+          <span className="text-xs tracking-wide">or swipe</span>
+        </div>
+      </div>
       {/* slide track */}
       <div
         ref={trackRef}

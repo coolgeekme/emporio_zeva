@@ -25,7 +25,7 @@ function Shell() {
   return (
     <>
       <ScrollToTop />
-      <Nav />
+      {!isDeck && <Nav />}
       <main>
         <Routes>
           <Route path="/" element={<Home />} />

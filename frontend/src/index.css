@@ -221,6 +221,15 @@ html, body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
 
+/* Deck "press →" hint pulse */
+@keyframes deck-key-pulse {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
+}
+.deck-key-pulse {
+  animation: deck-key-pulse 1.4s ease-in-out infinite;
+}
+
 @layer base {
   [data-debug-wrapper="true"] {
     display: contents !important;
