@@ -139,7 +139,7 @@ SEED_PRODUCTS = [
         "name": "Not A Salami — Classic Cocoa",
         "tagline": "A truly Sicilian treat. For the unexpected.",
         "price": "$32",
-        "weight": "300g · serves 8–10",
+        "weight": "300g · 16–17 slices",
         "description": "Rich cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-shaped, wrapped, and tied. Slice at the table.",
         "long_description": "Inspired by Eva's grandmother's recipe from Modica, Sicily — premium cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-rolled and rested to develop its signature firm-yet-tender bite. Wrapped in butcher's twine and parchment so it arrives looking impossibly like cured meat. Cut it open at the table and watch the room turn.",
         "ingredients": [
@@ -177,7 +177,7 @@ SEED_PRODUCTS = [
         "name": "The Tavola Gift Board",
         "tagline": "One Not A Salami, a hand-finished olive-wood board, linen napkin, and twine.",
         "price": "$78",
-        "weight": "Boxed · serves 8–10",
+        "weight": "Boxed · 16–17 slices",
         "description": "A complete table ritual. Our cocoa salami nestled with a small olive-wood board, a hemmed linen napkin, and our serving card.",
         "long_description": "Designed as a host gift or a quiet indulgence. Each board is sourced from a small workshop in San Francisco and finished by hand. Pair it with our classic Not A Salami and a printed serving card pulled from Eva's notebook.",
         "ingredients": [
@@ -209,7 +209,7 @@ SEED_PRODUCTS = [
         "name": "Not A Salami — Pistachio di Bronte",
         "tagline": "Coming soon. Sicilian pistachio folded through dark cocoa.",
         "price": "$36",
-        "weight": "300g · serves 8–10",
+        "weight": "300g · 16–17 slices",
         "description": "A future flavor in development — pistachio di Bronte from Mount Etna's slopes, paired with our signature cocoa base.",
         "long_description": "Still in Eva's kitchen. We're testing batches of pistachio from Bronte, on the volcanic slopes of Etna — the same nuts our family used for celebrations. Join the list to be first when it launches.",
         "ingredients": [

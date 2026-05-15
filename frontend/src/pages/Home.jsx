@@ -169,8 +169,8 @@ export default function Home() {
               <dd className="font-serif text-2xl mt-2 text-[#2A1F1D]">Coffee. Wine.</dd>
             </div>
             <div>
-              <dt className="overline">Serves</dt>
-              <dd className="font-serif text-2xl mt-2 text-[#2A1F1D]">8–10.</dd>
+              <dt className="overline">Slices</dt>
+              <dd className="font-serif text-2xl mt-2 text-[#2A1F1D]">16–17.</dd>
             </div>
           </dl>
         </div>
