@@ -1,14 +1,16 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import secrets
+import jwt
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 
 ROOT_DIR = Path(__file__).parent
@@ -74,6 +76,60 @@ class WaitlistCreate(BaseModel):
 class WaitlistEntry(WaitlistCreate):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class AdminLogin(BaseModel):
+    password: str
+
+
+class AdminToken(BaseModel):
+    token: str
+    expires_at: str
+
+
+# ---------- Admin auth ----------
+JWT_ALGORITHM = "HS256"
+ADMIN_TOKEN_TTL_HOURS = 8
+MAX_FAILED_ATTEMPTS = 5
+LOCKOUT_MINUTES = 15
+
+
+def _jwt_secret() -> str:
+    return os.environ["JWT_SECRET"]
+
+
+def _admin_password() -> str:
+    return os.environ["ADMIN_PASSWORD"]
+
+
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for", "")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _create_admin_token() -> AdminToken:
+    exp = datetime.now(timezone.utc) + timedelta(hours=ADMIN_TOKEN_TTL_HOURS)
+    payload = {"role": "admin", "exp": exp, "iat": datetime.now(timezone.utc)}
+    token = jwt.encode(payload, _jwt_secret(), algorithm=JWT_ALGORITHM)
+    return AdminToken(token=token, expires_at=exp.isoformat())
+
+
+async def require_admin(request: Request) -> dict:
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    token = auth[7:]
+    try:
+        payload = jwt.decode(token, _jwt_secret(), algorithms=[JWT_ALGORITHM])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return payload
 
 
 # ---------- Seed data ----------
@@ -220,12 +276,6 @@ async def create_inquiry(payload: InquiryCreate):
     return obj
 
 
-@api_router.get("/inquiries", response_model=List[Inquiry])
-async def list_inquiries():
-    docs = await db.inquiries.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
-    return docs
-
-
 @api_router.post("/newsletter", response_model=NewsletterEntry)
 async def subscribe(payload: NewsletterCreate):
     existing = await db.newsletter.find_one({"email": payload.email}, {"_id": 0})
@@ -234,12 +284,6 @@ async def subscribe(payload: NewsletterCreate):
     entry = NewsletterEntry(email=payload.email)
     await db.newsletter.insert_one(entry.model_dump())
     return entry
-
-
-@api_router.get("/newsletter", response_model=List[NewsletterEntry])
-async def list_newsletter():
-    docs = await db.newsletter.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
-    return docs
 
 
 @api_router.post("/waitlist", response_model=WaitlistEntry)
@@ -256,9 +300,57 @@ async def join_waitlist(payload: WaitlistCreate):
     return entry
 
 
-@api_router.get("/waitlist", response_model=List[WaitlistEntry])
-async def list_waitlist():
-    docs = await db.waitlist.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+# ---------- Admin routes ----------
+@api_router.post("/admin/login", response_model=AdminToken)
+async def admin_login(payload: AdminLogin, request: Request):
+    ip = _client_ip(request)
+    now = datetime.now(timezone.utc)
+    rec = await db.admin_login_attempts.find_one({"_id": ip})
+    locked_until = rec.get("locked_until") if rec else None
+    if locked_until and locked_until.tzinfo is None:
+        # Mongo stores datetimes as naive UTC; restore tzinfo before comparing.
+        locked_until = locked_until.replace(tzinfo=timezone.utc)
+    if locked_until and locked_until > now:
+        remaining = int((locked_until - now).total_seconds() // 60) + 1
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many attempts. Try again in {remaining} minute(s).",
+        )
+    if not secrets.compare_digest(payload.password or "", _admin_password()):
+        attempts = (rec.get("attempts", 0) if rec else 0) + 1
+        update = {"attempts": attempts, "last_attempt": now}
+        if attempts >= MAX_FAILED_ATTEMPTS:
+            update["locked_until"] = now + timedelta(minutes=LOCKOUT_MINUTES)
+            update["attempts"] = 0
+        await db.admin_login_attempts.update_one(
+            {"_id": ip}, {"$set": update}, upsert=True
+        )
+        raise HTTPException(status_code=401, detail="Invalid password")
+    # success — clear attempts
+    await db.admin_login_attempts.delete_one({"_id": ip})
+    return _create_admin_token()
+
+
+@api_router.get("/admin/me")
+async def admin_me(payload: dict = Depends(require_admin)):
+    return {"role": payload.get("role"), "exp": payload.get("exp")}
+
+
+@api_router.get("/admin/inquiries", response_model=List[Inquiry])
+async def admin_list_inquiries(_: dict = Depends(require_admin)):
+    docs = await db.inquiries.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
+    return docs
+
+
+@api_router.get("/admin/newsletter", response_model=List[NewsletterEntry])
+async def admin_list_newsletter(_: dict = Depends(require_admin)):
+    docs = await db.newsletter.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
+    return docs
+
+
+@api_router.get("/admin/waitlist", response_model=List[WaitlistEntry])
+async def admin_list_waitlist(_: dict = Depends(require_admin)):
+    docs = await db.waitlist.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
     return docs
 
 

@@ -1,0 +1,40 @@
+{
+  "summary": "Tested admin auth + dashboard, public waitlist, removed-price product pages. 18/18 pytest cases passed, full frontend flow (login, wrong password, dashboard tabs, refresh, CSV export, sign out, waitlist on /collection and /products/:slug, regression on 8 routes) all passed. Found and fixed one critical backend bug in brute-force lockout (naive vs aware datetime crash returning 500 instead of 429).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_admin_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "None blocking. Optional hardening: configure AsyncIOMotorClient with tz_aware=True so all datetimes read from Mongo are timezone-aware (defense in depth beyond the explicit fix applied)."
+  ],
+  "critical_code_review_comments": [
+    "server.py: Mongo client is created without tz_aware=True, so all datetime fields stored (created_at strings are fine since they're ISO strings, but locked_until is a real datetime) come back naive. Fixed locally for locked_until comparison; consider applying tz_aware=True at the client for future-proofing.",
+    "admin_login_attempts uses client IP as document _id, but _client_ip trusts the first value of X-Forwarded-For unconditionally — an attacker can spoof XFF to bypass per-IP lockout. Acceptable for showcase site but worth a comment.",
+    "ADMIN_PASSWORD is checked via secrets.compare_digest against the raw env value (no hashing). Fine for a single shared showcase password, but worth noting that the password is stored in plaintext in /app/backend/.env.",
+    "Admin.jsx (~352 lines) and server.py (~380 lines) are both still well under the 700-line threshold — no split required.",
+    "All interactive elements have data-testid attributes; CSV download produces correctly-named file with the proper columns."
+  ],
+  "updated_files": [
+    "/app/backend/server.py (fixed naive-vs-aware datetime in admin_login lockout check)",
+    "/app/backend/tests/test_admin_api.py (new pytest suite, 18 tests)"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": "Admin password: zeva-admin-2026 (from /app/memory/test_credentials.md). Used invented IP 198.51.100.42 via X-Forwarded-For for lockout reproduction so the real-client lockout state stayed clean.",
+  "seed_data_creation": "Created 2 waitlist entries via the WaitlistDialog flow (TEST_collection@example.com, TEST_pd@example.com against not-a-salami-classic) and a handful of TEST_*@example.com entries via pytest; all safely prefixed with TEST_.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend: 18-case pytest at /app/backend/tests/test_admin_api.py covers /api/products, /api/waitlist (idempotency + validation), /api/admin/login (success/401/lockout-safe), and /api/admin/{me,waitlist,inquiries,newsletter} (401 without token, 200 with token). Brute-force test in pytest deliberately stops at 3 wrong attempts to keep the real password usable; the 5-attempt lockout-then-429 flow was verified manually using X-Forwarded-For=198.51.100.42 (fresh IP). The real admin IP's admin_login_attempts record was cleared at the start of this session — if running this suite again immediately, no manual cleanup needed.",
+  "rca of the issue": "Bug: In server.py admin_login, the lockout-check did `rec['locked_until'] > now` where `now = datetime.now(timezone.utc)` (tz-aware) and `rec['locked_until']` was read back from Mongo as a naive datetime (motor's default tz_aware=False). After the 5th failed attempt set locked_until, the 6th attempt crashed with `TypeError: can't compare offset-naive and offset-aware datetimes` returning HTTP 500 instead of the intended 429 lockout response. Reproduction: POST /api/admin/login 5 times with wrong password from a fresh IP, observe 5th attempt locks out, 6th attempt → 500. Fix applied (server.py lines ~308-314): on read, if locked_until.tzinfo is None, attach timezone.utc before comparison. Verified: subsequent attempts now return 429 with the proper 'Too many attempts. Try again in N minute(s).' detail."
+}

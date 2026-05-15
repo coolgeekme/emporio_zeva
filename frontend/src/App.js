@@ -12,6 +12,7 @@ import Contact from "./pages/Contact";
 import BlackRock from "./pages/BlackRock";
 import Ritual from "./pages/Ritual";
 import OneSheet from "./pages/OneSheet";
+import Admin from "./pages/Admin";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -24,10 +25,12 @@ function ScrollToTop() {
 function Shell() {
   const { pathname } = useLocation();
   const isDeck = pathname === "/blackrock";
+  const isAdmin = pathname.startsWith("/admin");
+  const isChrome = !isDeck && !isAdmin;
   return (
     <>
       <ScrollToTop />
-      {!isDeck && <Nav />}
+      {isChrome && <Nav />}
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -39,9 +42,10 @@ function Shell() {
           <Route path="/blackrock" element={<BlackRock />} />
           <Route path="/ritual" element={<Ritual />} />
           <Route path="/one-sheet" element={<OneSheet />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </main>
-      {!isDeck && <Footer />}
+      {isChrome && <Footer />}
     </>
   );
 }

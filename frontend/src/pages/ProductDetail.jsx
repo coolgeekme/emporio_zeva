@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { ArrowLeft, Minus, Plus } from "lucide-react";
-import InquiryForm from "../components/InquiryForm";
+import WaitlistDialog from "../components/WaitlistDialog";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -11,7 +11,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [open, setOpen] = useState({ ingredients: true, pairings: false, serving: false });
-  const [showInquiry, setShowInquiry] = useState(false);
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
 
   useEffect(() => {
     setNotFound(false);
@@ -112,40 +112,25 @@ export default function ProductDetail() {
             </h1>
             <p className="mt-5 text-lg text-[#5C4E4A] leading-relaxed">{product.tagline}</p>
 
-            <div className="mt-8 flex items-baseline gap-5 border-y border-[#DFD7CA] py-5">
-              <p className="font-serif text-3xl text-[#2A1F1D]" data-testid="product-price">{product.price}</p>
-              <p className="overline text-[#5C4E4A]" data-testid="product-weight">{product.weight}</p>
-            </div>
-
-            <p className="mt-7 text-[#5C4E4A] leading-relaxed" data-testid="product-long-description">
+            <p
+              className="mt-8 text-[#5C4E4A] leading-relaxed border-t border-[#DFD7CA] pt-7"
+              data-testid="product-long-description"
+            >
               {product.long_description}
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3" data-testid="product-ctas">
               <button
-                onClick={() => setShowInquiry((v) => !v)}
+                onClick={() => setWaitlistOpen(true)}
                 className="btn-primary"
-                data-testid="product-inquire-button"
+                data-testid="product-waitlist-button"
               >
-                {product.available ? "Inquire to order" : "Join the waitlist"}
+                Join the Waitlist
               </button>
               <Link to="/contact" className="btn-outline" data-testid="product-contact-link">
                 Wholesale & press
               </Link>
             </div>
-
-            {showInquiry && (
-              <div className="mt-10 p-7 border border-[#DFD7CA] bg-[#F9F6F0]" data-testid="product-inquiry-panel">
-                <p className="overline text-[#C05A3A]">Send a note</p>
-                <h3 className="font-serif text-2xl mt-2 text-[#2A1F1D]">Tell us about your table.</h3>
-                <p className="text-sm text-[#5C4E4A] mt-3">
-                  Order quantities, gift logistics, ship-by dates — we read everything. Eva replies personally.
-                </p>
-                <div className="mt-6">
-                  <InquiryForm productSlug={product.slug} compact />
-                </div>
-              </div>
-            )}
 
             <div className="mt-12 space-y-1">
               <Section id="ingredients" title="Ingredients" items={product.ingredients} />
@@ -155,6 +140,12 @@ export default function ProductDetail() {
           </div>
         </div>
       </section>
+
+      <WaitlistDialog
+        open={waitlistOpen}
+        product={product}
+        onClose={() => setWaitlistOpen(false)}
+      />
     </div>
   );
 }
