@@ -14,11 +14,13 @@ import {
 } from "../content";
 import { useReveal } from "../hooks/useReveal";
 import MonogramDivider from "../components/MonogramDivider";
+import WaitlistDialog from "../components/WaitlistDialog";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Home() {
   const [products, setProducts] = useState([]);
+  const [waitlistProduct, setWaitlistProduct] = useState(null);
   const r1 = useReveal();
   const r2 = useReveal();
   const r3 = useReveal();
@@ -200,32 +202,60 @@ export default function Home() {
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
             {products.slice(0, 3).map((p, i) => (
-              <Link
+              <article
                 key={p.id}
-                to={`/products/${p.slug}`}
                 data-testid={`collection-teaser-card-${p.slug}`}
                 className={`group block ${
                   i === 0 ? "md:col-span-6 md:row-span-2" : "md:col-span-6"
                 }`}
               >
-                <div className={`img-wash ${i === 0 ? "aspect-[4/5]" : "aspect-[4/3]"}`}>
-                  <img src={p.images[0]} alt={p.name} />
-                </div>
-                <div className="mt-5 flex items-start justify-between gap-6">
-                  <div>
+                <Link
+                  to={`/products/${p.slug}`}
+                  data-testid={`collection-teaser-link-${p.slug}`}
+                  className="block"
+                >
+                  <div className={`img-wash ${i === 0 ? "aspect-[4/5]" : "aspect-[4/3]"}`}>
+                    <img src={p.images[0]} alt={p.name} />
+                  </div>
+                  <div className="mt-5">
                     {p.badge && <p className="overline text-[#C05A3A]">{p.badge}</p>}
                     <h3 className="font-serif text-2xl md:text-3xl mt-2 text-[#2A1F1D] group-hover:text-[#C05A3A] transition-colors">
                       {p.name}
                     </h3>
-                    <p className="text-sm text-[#5C4E4A] mt-2 max-w-md">{p.tagline}</p>
+                    <p className="text-sm text-[#5C4E4A] mt-2 max-w-md leading-relaxed">
+                      {p.tagline}
+                    </p>
                   </div>
-                  <p className="font-serif text-xl text-[#2A1F1D] whitespace-nowrap pt-2">{p.price}</p>
+                </Link>
+
+                <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                  <button
+                    type="button"
+                    onClick={() => setWaitlistProduct(p)}
+                    className="btn-primary"
+                    data-testid={`home-waitlist-button-${p.slug}`}
+                  >
+                    Join the Waitlist
+                  </button>
+                  <Link
+                    to={`/products/${p.slug}`}
+                    className="link-underline inline-flex items-center gap-2"
+                    data-testid={`home-view-product-${p.slug}`}
+                  >
+                    View piece <ArrowRight size={14} />
+                  </Link>
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         </div>
       </section>
+
+      <WaitlistDialog
+        open={!!waitlistProduct}
+        product={waitlistProduct}
+        onClose={() => setWaitlistProduct(null)}
+      />
 
       {/* ============== THE RITUAL — SLICE / SERVE / SAVOR / SHARE ============== */}
       <section

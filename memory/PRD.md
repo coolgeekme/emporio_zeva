@@ -63,6 +63,7 @@
 - ✅ ProductDetail 404 not-found state
 - ✅ **Waitlist** — per-product "Join the Waitlist" CTAs on Collection cards; price/weight removed from cards; modal dialog captures name, email, optional note; persists to `waitlist` collection (idempotent on email+slug). Added 2026-02.
 - ✅ **ProductDetail refresh** (2026-02) — price/weight block removed; "Inquire to order" CTA replaced with "Join the Waitlist" that opens the same shared WaitlistDialog.
+- ✅ **Home collection teaser** (2026-02) — price removed; each of the 3 featured products has its own "Join the Waitlist" button + "View piece" link, opening the shared WaitlistDialog without leaving the home page.
 - ✅ **Admin dashboard** at `/admin` (2026-02) — single shared-password login (`ADMIN_PASSWORD` env), JWT bearer in sessionStorage (8h TTL), brute-force lockout (5 attempts / 15 min per IP), tabbed dashboard for Waitlist + Inquiries + Newsletter, per-tab CSV export, refresh, sign out. No Nav/Footer chrome on the admin shell.
 
 ## Admin Auth (new)
