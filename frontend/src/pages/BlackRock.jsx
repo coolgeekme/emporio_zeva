@@ -310,11 +310,11 @@ export default function BlackRock() {
                 Unexpected at first — designed to surprise, then to be shared.
               </p>
               <p className="overline text-[#B9935A] mt-8">Why it works</p>
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-5">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-5 gap-y-6">
                 {PILLARS.map((p, i) => (
-                  <div key={p} data-testid={`pitch-pillar-${i}`}>
+                  <div key={p} data-testid={`pitch-pillar-${i}`} className="min-w-0">
                     <p className="overline text-[#5C4E4A]">No 0{i + 1}</p>
-                    <p className="font-serif text-2xl md:text-3xl text-[#F9F6F0] mt-2">{p}.</p>
+                    <p className="font-serif text-xl md:text-2xl text-[#F9F6F0] mt-2 whitespace-nowrap">{p}.</p>
                   </div>
                 ))}
               </div>
