@@ -17,7 +17,7 @@ export default function Journal() {
           <article
             key={j.slug}
             data-testid={`journal-article-${j.slug}`}
-            className={`grid md:grid-cols-12 gap-10 items-center ${
+            className={`grid grid-cols-1 md:grid-cols-12 gap-10 items-center ${
               i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""
             }`}
           >

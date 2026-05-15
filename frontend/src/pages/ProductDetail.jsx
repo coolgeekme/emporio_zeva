@@ -83,7 +83,7 @@ export default function ProductDetail() {
         </Link>
       </div>
 
-      <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 grid md:grid-cols-12 gap-12 lg:gap-20">
+      <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-20">
         {/* Left: images */}
         <div className="md:col-span-7 space-y-6" data-testid="product-images">
           {product.images.map((src, i) => (

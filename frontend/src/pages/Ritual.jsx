@@ -59,7 +59,7 @@ export default function Ritual() {
 
       {/* PAIRINGS BLOCK */}
       <section className="bg-[#2A1F1D] text-[#F9F6F0] py-20 md:py-28 grain relative">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid md:grid-cols-12 gap-10 items-center">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
           <div className="md:col-span-7">
             <p className="overline text-[#B9935A]">Pair it with</p>
             <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5">
@@ -89,7 +89,7 @@ export default function Ritual() {
 
       {/* KEEP IT PERFECT */}
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28 reveal" ref={r2}>
-        <div className="grid md:grid-cols-12 gap-10 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
           <div className="md:col-span-5">
             <p className="overline text-[#C05A3A]">Keep it perfect</p>
             <h2 className="font-serif text-4xl md:text-5xl leading-[1.05] mt-5 text-[#2A1F1D]">

@@ -11,7 +11,7 @@ export default function OurStory() {
   return (
     <div className="pt-[90px]" data-testid="our-story-page">
       {/* Hero */}
-      <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-20 md:pb-28 grid md:grid-cols-12 gap-10 items-end">
+      <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-20 md:pb-28 grid grid-cols-1 md:grid-cols-12 gap-10 items-end">
         <div className="md:col-span-7">
           <p className="overline text-[#C05A3A]">{TAGLINES.italian_tradition}</p>
           <h1 className="font-serif text-5xl md:text-6xl lg:text-[88px] leading-[1.02] tracking-tight mt-6 text-[#2A1F1D]">
@@ -43,7 +43,7 @@ export default function OurStory() {
 
       {/* Long-form letter from Eva */}
       <section
-        className="max-w-[1400px] mx-auto px-6 md:px-10 py-24 md:py-32 grid md:grid-cols-12 gap-10 md:gap-16 reveal"
+        className="max-w-[1400px] mx-auto px-6 md:px-10 py-24 md:py-32 grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 reveal"
         ref={r2}
         data-testid="story-body"
       >
@@ -69,7 +69,7 @@ export default function OurStory() {
       </section>
 
       {/* Interlocking images */}
-      <section className="max-w-[1400px] mx-auto px-6 md:px-10 grid md:grid-cols-12 gap-8 reveal" ref={r3}>
+      <section className="max-w-[1400px] mx-auto px-6 md:px-10 grid grid-cols-1 md:grid-cols-12 gap-8 reveal" ref={r3}>
         <div className="md:col-span-7 img-wash aspect-[4/3]">
           <img src={IMAGES.sicily} alt="Modica, Sicily — view of the town" data-testid="story-sicily-image" />
         </div>
@@ -79,7 +79,7 @@ export default function OurStory() {
       </section>
 
       {/* Closing */}
-      <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-32 grid md:grid-cols-12 gap-12 items-center">
+      <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-32 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
         <div className="md:col-span-8 md:col-start-3 text-center">
           <p className="overline text-[#C05A3A]">A modern ritual</p>
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 text-[#2A1F1D]">

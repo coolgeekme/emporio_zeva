@@ -19,7 +19,7 @@ export default function Contact() {
         </p>
       </section>
 
-      <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28 grid md:grid-cols-12 gap-16">
+      <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28 grid grid-cols-1 md:grid-cols-12 gap-16">
         <aside className="md:col-span-4 space-y-10">
           <div>
             <p className="overline text-[#C05A3A]">Atelier</p>

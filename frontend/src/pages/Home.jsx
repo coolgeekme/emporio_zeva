@@ -34,7 +34,7 @@ export default function Home() {
     <div data-testid="home-page">
       {/* ============== HERO ============== */}
       <section className="pt-[90px] relative" data-testid="hero-section">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-20 grid md:grid-cols-12 gap-10 md:gap-12 items-end">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-20 grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 items-end">
           <div className="md:col-span-6 md:pr-8">
             <p className="overline text-[#C05A3A]" data-testid="hero-overline">
               Sicilian Cocoa Confection · Est. SF
@@ -140,7 +140,7 @@ export default function Home() {
 
       {/* ============== THE ILLUSION ============== */}
       <section
-        className="max-w-[1400px] mx-auto px-6 md:px-10 py-24 md:py-32 grid md:grid-cols-12 gap-12 items-center reveal"
+        className="max-w-[1400px] mx-auto px-6 md:px-10 py-24 md:py-32 grid grid-cols-1 md:grid-cols-12 gap-12 items-center reveal"
         ref={r1}
         data-testid="illusion-section"
       >
@@ -198,7 +198,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="mt-16 grid md:grid-cols-12 gap-8 md:gap-10">
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
             {products.slice(0, 3).map((p, i) => (
               <Link
                 key={p.id}
@@ -233,7 +233,7 @@ export default function Home() {
         ref={r3}
         data-testid="ritual-section"
       >
-        <div className="grid md:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
           <div className="md:col-span-5">
             <p className="overline text-[#C05A3A]">The serving ritual</p>
             <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 text-[#2A1F1D]">

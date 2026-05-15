@@ -13,7 +13,7 @@ export default function MonogramDivider({ variant = "dark", className = "", test
       aria-hidden="true"
       data-testid={testid}
     >
-      <svg viewBox="0 0 220 16" className="flex-1 max-w-[280px] h-3" preserveAspectRatio="none">
+      <svg viewBox="0 0 220 16" className="flex-1 min-w-0 max-w-[80px] sm:max-w-[200px] md:max-w-[280px] h-3" preserveAspectRatio="none">
         <line x1="0" y1="8" x2="220" y2="8" stroke={stroke} strokeWidth="0.5" />
         <circle cx="200" cy="8" r="2" fill={gold} />
         <circle cx="208" cy="8" r="1" fill={stroke} />
@@ -61,7 +61,7 @@ export default function MonogramDivider({ variant = "dark", className = "", test
         <path d="M 64 36 q -4 -3 -8 0 q 4 3 8 0" fill={gold} opacity="0.85" />
       </svg>
 
-      <svg viewBox="0 0 220 16" className="flex-1 max-w-[280px] h-3" preserveAspectRatio="none">
+      <svg viewBox="0 0 220 16" className="flex-1 min-w-0 max-w-[80px] sm:max-w-[200px] md:max-w-[280px] h-3" preserveAspectRatio="none">
         <line x1="0" y1="8" x2="220" y2="8" stroke={stroke} strokeWidth="0.5" />
         <circle cx="20" cy="8" r="2" fill={gold} />
         <circle cx="12" cy="8" r="1" fill={stroke} />

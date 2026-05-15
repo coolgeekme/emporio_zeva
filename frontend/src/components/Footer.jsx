@@ -11,7 +11,7 @@ export default function Footer() {
     >
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20">
         {/* Top: Newsletter */}
-        <div className="grid md:grid-cols-12 gap-12 pb-16 border-b border-[#5C4E4A]">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-[#5C4E4A]">
           <div className="md:col-span-6">
             <p className="overline text-[#B9935A]">The Journal</p>
             <h3 className="font-serif text-4xl md:text-5xl leading-[1.05] mt-4 max-w-md">
@@ -28,7 +28,7 @@ export default function Footer() {
         </div>
 
         {/* Middle: links */}
-        <div className="grid md:grid-cols-12 gap-12 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 py-16">
           <div className="md:col-span-5">
             <Link to="/" data-testid="footer-logo" className="inline-flex">
               <img

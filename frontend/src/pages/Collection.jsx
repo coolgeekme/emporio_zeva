@@ -24,7 +24,7 @@ export default function Collection() {
         <p className="overline text-[#C05A3A]" data-testid="collection-overline">
           The Collection · No 01 → No 03
         </p>
-        <div className="grid md:grid-cols-12 gap-10 mt-6 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 mt-6 items-end">
           <h1 className="md:col-span-8 font-serif text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[1.02] text-[#2A1F1D]">
             A small house.
             <br />
@@ -42,7 +42,7 @@ export default function Collection() {
         {loading ? (
           <p className="text-[#5C4E4A]" data-testid="collection-loading">Loading…</p>
         ) : (
-          <div className="grid md:grid-cols-12 gap-x-10 gap-y-20">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-x-10 gap-y-20">
             {products.map((p, i) => {
               const layout =
                 i % 3 === 0

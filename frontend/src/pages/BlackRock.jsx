@@ -29,7 +29,7 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
   <section
     id={id}
     data-testid={testid}
-    className={`snap-start shrink-0 w-screen h-full flex items-center relative ${
+    className={`snap-start shrink-0 w-screen h-full flex md:items-center overflow-y-auto md:overflow-y-hidden relative ${
       dark ? "bg-[#2A1F1D] text-[#F9F6F0] grain" : "bg-[#F9F6F0]"
     }`}
   >
@@ -48,8 +48,8 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
         Not A Salami · Corporate Gifting
       </span>
     </div>
-    <div className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16 w-full h-full flex items-center">
-      <div className={`w-full py-20 md:py-24 slide-fx ${isActive ? "in" : ""}`}>
+    <div className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16 w-full md:h-full flex md:items-center">
+      <div className={`w-full pt-24 pb-20 md:py-24 slide-fx ${isActive ? "in" : ""}`}>
         {children}
       </div>
     </div>
@@ -181,7 +181,7 @@ export default function BlackRock() {
       <Link
         to="/"
         data-testid="deck-exit"
-        className="fixed top-6 right-6 md:top-8 md:right-10 z-30 overline text-[#5C4E4A] hover:text-[#C05A3A] transition-colors flex items-center gap-1 bg-[#F9F6F0]/70 backdrop-blur-md px-3 py-2 border border-[#DFD7CA]"
+        className="fixed top-6 right-6 md:top-8 md:right-10 z-30 overline text-[#5C4E4A] hover:text-[#C05A3A] transition-colors flex items-center gap-1 bg-[#F9F6F0]/95 backdrop-blur-md px-3 py-2 border border-[#DFD7CA] shadow-sm"
       >
         Exit deck <span aria-hidden>✕</span>
       </Link>
@@ -211,7 +211,7 @@ export default function BlackRock() {
       >
         {/* -------- 01 COVER -------- */}
         <Slide id="cover" n={1} total={TOTAL} testid="deck-slide-cover" isActive={visited.has(0)}>
-          <div className="grid md:grid-cols-12 gap-8 md:gap-14 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-14 items-center">
             <div className="md:col-span-7">
               <p className="overline text-[#5C4E4A] mb-5 fx fx-down fx-d1">
                 Confidential · Prepared for BlackRock, Inc.
@@ -260,7 +260,7 @@ export default function BlackRock() {
 
         {/* -------- 02 ITALIAN TRADITION — letter -------- */}
         <Slide id="tradition" n={2} total={TOTAL} testid="deck-slide-tradition" isActive={visited.has(1)}>
-          <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-6">
               <p className="overline text-[#C05A3A] fx fx-down fx-d1">{TAGLINES.italian_tradition}</p>
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4 text-[#2A1F1D] fx fx-left fx-d2">
@@ -294,7 +294,7 @@ export default function BlackRock() {
 
         {/* -------- 03 A DIFFERENT KIND OF CHOCOLATE -------- */}
         <Slide id="why-it-works" n={3} total={TOTAL} dark testid="deck-slide-why-it-works" isActive={visited.has(2)}>
-          <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[60vh]">
               <img src={IMAGES.hero} alt="Sliced Not A Salami" />
             </div>
@@ -324,7 +324,7 @@ export default function BlackRock() {
 
         {/* -------- 04 ONE PRODUCT, CAREFULLY EXECUTED -------- */}
         <Slide id="product" n={4} total={TOTAL} testid="deck-slide-product" isActive={visited.has(3)}>
-          <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-7">
               <p className="overline text-[#C05A3A]">One product. Carefully executed.</p>
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4 text-[#2A1F1D]">
@@ -384,7 +384,7 @@ export default function BlackRock() {
 
         {/* -------- 06 ONE PRODUCT, PURE EXPRESSION -------- */}
         <Slide id="expression" n={6} total={TOTAL} dark testid="deck-slide-expression" isActive={visited.has(5)}>
-          <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-6">
               <p className="overline text-[#B9935A]">One product. Pure expression.</p>
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4">
@@ -563,7 +563,7 @@ export default function BlackRock() {
 
         {/* -------- 11 CLOSING + form -------- */}
         <Slide id="contact" n={11} total={TOTAL} testid="deck-slide-contact" isActive={visited.has(10)}>
-          <div className="grid md:grid-cols-12 gap-10 md:gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12">
             <div className="md:col-span-5">
               <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] fx fx-left fx-d2">
                 Let's create a memorable
