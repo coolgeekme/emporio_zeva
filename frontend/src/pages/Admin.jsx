@@ -333,7 +333,7 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
           {step === "preview" && preview && (
             <div className="mt-8 space-y-6" data-testid="new-deck-preview">
               <div className="flex items-start gap-4 bg-[#FBF7EE] border border-[#DFD7CA] p-5">
-                {preview.logo_url ? (
+                {preview.logo_url && (
                   <img
                     src={preview.logo_url}
                     alt={`${preview.client_name} logo`}
@@ -343,10 +343,6 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
                     }}
                     data-testid="new-deck-preview-logo"
                   />
-                ) : (
-                  <div className="h-14 w-14 bg-[#DFD7CA] flex items-center justify-center text-[#5C4E4A] text-xs">
-                    no logo
-                  </div>
                 )}
                 <div className="flex-1">
                   <p className="overline text-[#5C4E4A] !text-[9px]">For</p>
@@ -356,8 +352,12 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
                   >
                     {preview.client_name}
                   </p>
-                  {preview.domain && (
+                  {preview.domain ? (
                     <p className="text-xs text-[#5C4E4A] mt-1">{preview.domain}</p>
+                  ) : (
+                    <p className="text-xs text-[#5C4E4A] mt-1 italic">
+                      No logo found — cover slide will use the name in serif type.
+                    </p>
                   )}
                 </div>
               </div>

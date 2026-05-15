@@ -65,11 +65,18 @@
 - ✅ **ProductDetail refresh** (2026-02) — price/weight block removed; "Inquire to order" CTA replaced with "Join the Waitlist" that opens the same shared WaitlistDialog.
 - ✅ **Home collection teaser** (2026-02) — price removed; each of the 3 featured products has its own "Join the Waitlist" button + "View piece" link, opening the shared WaitlistDialog without leaving the home page.
 - ✅ **Admin dashboard** at `/admin` (2026-02) — single shared-password login (`ADMIN_PASSWORD` env), JWT bearer in sessionStorage (8h TTL), brute-force lockout (5 attempts / 15 min per IP), tabbed dashboard for Waitlist + Inquiries + Newsletter, per-tab CSV export, refresh, sign out. No Nav/Footer chrome on the admin shell.
+- ✅ **Custom corporate decks** (2026-02) — Admin enters a client name only; backend auto-fetches the domain (Clearbit autocomplete, exact-name match preferred), builds a logo URL (DuckDuckGo icons), and generates a warm intro sentence (Claude Sonnet 4.5 via Emergent LLM key) in the brand voice. Decks save with auto-slug `<name>-<6hex>` and are sharable at public route `/deck/:slug`. Public route increments `view_count` and `last_viewed_at` atomically. Admin can preview before saving, regenerate the intro, copy link, open, delete. The same BlackRock cinematic deck is reused — only the cover slide personalizes.
 
 ## Admin Auth (new)
 - `ADMIN_PASSWORD` and `JWT_SECRET` live in `/app/backend/.env`
 - Endpoints: `POST /api/admin/login`, `GET /api/admin/me`, `GET /api/admin/{waitlist|inquiries|newsletter}` (Bearer required)
+- Decks: `POST /api/admin/decks/{preview|regenerate-intro|}`, `GET/PATCH/DELETE /api/admin/decks[/{id}]`, public `GET /api/decks/{slug}`
 - Credentials documented in `/app/memory/test_credentials.md`
+
+## 3rd-Party Integrations
+- **Emergent LLM key** → Claude Sonnet 4.5 (`claude-sonnet-4-5-20250929`) via `emergentintegrations.llm.chat.LlmChat` — generates corporate deck intro lines.
+- **Clearbit autocomplete** (free, no auth) — company-name → domain lookup.
+- **DuckDuckGo icons** (`icons.duckduckgo.com/ip3/{domain}.ico`) — logo image URL.
 
 ## Backlog (P1 / P2 — future iterations)
 - **P1 — ParcelPath / shipping integration** (user expressed interest)
