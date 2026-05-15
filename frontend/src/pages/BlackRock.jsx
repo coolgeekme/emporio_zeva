@@ -351,7 +351,7 @@ export default function BlackRock() {
               </dl>
             </div>
             <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[60vh]">
-              <img src={IMAGES.product} alt="Not A Salami detail" />
+              <img src="https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG" alt="Not A Salami on a wooden board" />
             </div>
           </div>
         </Slide>
