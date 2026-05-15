@@ -68,32 +68,33 @@ class NewsletterEntry(BaseModel):
 SEED_PRODUCTS = [
     {
         "slug": "not-a-salami-classic",
-        "name": "Not-A-Salami — Classic Cocoa",
-        "tagline": "The original Sicilian cocoa confection. Looks like salami. All chocolate.",
+        "name": "Not A Salami — Classic Cocoa",
+        "tagline": "A truly Sicilian treat. For the unexpected.",
         "price": "$32",
         "weight": "300g · serves 8–10",
-        "description": "Rich cocoa and crisp cookie pieces, hand-shaped and wrapped in butcher paper. Slice thin. Pair with espresso.",
-        "long_description": "Our flagship Salame al Cioccolato is built from Grandma Margherita's recipe — premium cocoa folded with crisp Italian cookie shards, hand-rolled and rested to develop its signature firm-yet-tender bite. Wrapped in butcher's twine and parchment so it arrives looking impossibly like cured meat. Cut it open at the table and watch the room turn.",
+        "description": "Rich cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-shaped, wrapped, and tied. Slice at the table.",
+        "long_description": "Inspired by Eva Flair's grandmother's recipe from Modica, Sicily — premium cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-rolled and rested to develop its signature firm-yet-tender bite. Wrapped in butcher's twine and parchment so it arrives looking impossibly like cured meat. Cut it open at the table and watch the room turn.",
         "ingredients": [
-            "Premium dark cocoa",
-            "Italian biscotti / butter cookie crumbs",
+            "Rich cocoa",
+            "Crunchy biscotti",
+            "Chocolate chips",
+            "Delicate sugar crystals",
             "Unsalted butter",
             "Cane sugar",
             "Free-range eggs",
-            "Sicilian sea salt",
             "A whisper of espresso"
         ],
         "pairings": [
-            "Espresso doppio",
-            "Cappuccino, mid-morning",
-            "Vin Santo or a rounded Nero d'Avola",
-            "Aged pecorino, surprisingly"
+            "Coffee",
+            "Wine",
+            "Fresh fruit",
+            "Aged cheese"
         ],
         "serving": [
-            "Unwrap. Place the whole log on a wooden board with the twine still on.",
-            "Slice rounds 4–6mm thick with a sharp, warmed knife.",
-            "Arrange in an overlapping fan. Serve at room temperature.",
-            "Best within 14 days. Refrigerate after opening."
+            "Store refrigerated. Remove from the fridge 15–20 minutes before serving — best at room temperature.",
+            "Slice with a sharp knife, 1¼–1½ inches thick. Each slice reveals its own pattern.",
+            "Arrange in an overlapping fan. Serve slowly, around good conversation.",
+            "8-week shelf life unopened. Best enjoyed within 2 weeks of opening."
         ],
         "images": [
             "https://www.emporiozeva.com/wp-content/uploads/2024/06/split-img1.jpg",
@@ -106,13 +107,13 @@ SEED_PRODUCTS = [
     {
         "slug": "not-a-salami-gift-board",
         "name": "The Tavola Gift Board",
-        "tagline": "One Not-A-Salami, a hand-finished olive-wood board, linen napkin, and twine.",
+        "tagline": "One Not A Salami, a hand-finished olive-wood board, linen napkin, and twine.",
         "price": "$78",
         "weight": "Boxed · serves 8–10",
         "description": "A complete table ritual. Our cocoa salami nestled with a small olive-wood board, a hemmed linen napkin, and our serving card.",
-        "long_description": "Designed as a host gift or a quiet indulgence. Each board is sourced from a small workshop in San Francisco and finished by hand. Pair it with our classic Not-A-Salami and a printed serving card pulled from Eva's notebook.",
+        "long_description": "Designed as a host gift or a quiet indulgence. Each board is sourced from a small workshop in San Francisco and finished by hand. Pair it with our classic Not A Salami and a printed serving card pulled from Eva's notebook.",
         "ingredients": [
-            "Includes: 1× Not-A-Salami Classic",
+            "Includes: 1× Not A Salami Classic",
             "1× Olive-wood serving board, ~10in",
             "1× Italian linen napkin",
             "1× Letterpress serving card",
@@ -137,7 +138,7 @@ SEED_PRODUCTS = [
     },
     {
         "slug": "not-a-salami-pistachio",
-        "name": "Not-A-Salami — Pistachio di Bronte",
+        "name": "Not A Salami — Pistachio di Bronte",
         "tagline": "Coming soon. Sicilian pistachio folded through dark cocoa.",
         "price": "$36",
         "weight": "300g · serves 8–10",
@@ -156,7 +157,7 @@ SEED_PRODUCTS = [
         ],
         "serving": [
             "Slice thin to reveal the pistachio mosaic.",
-            "Serve with a chilled dessert wine."
+            "Serve at room temperature with a chilled dessert wine."
         ],
         "images": [
             "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1286886227-scaled.jpg",
@@ -169,12 +170,15 @@ SEED_PRODUCTS = [
 
 
 async def seed_products():
-    existing = await db.products.count_documents({})
-    if existing == 0:
-        for p in SEED_PRODUCTS:
-            doc = Product(**p).model_dump()
-            await db.products.insert_one(doc)
-        logging.getLogger(__name__).info("Seeded %d products", len(SEED_PRODUCTS))
+    # Idempotent upsert by slug — keeps the catalog in sync with code on every restart
+    for p in SEED_PRODUCTS:
+        doc = Product(**p).model_dump()
+        await db.products.update_one(
+            {"slug": p["slug"]},
+            {"$set": doc},
+            upsert=True,
+        )
+    logging.getLogger(__name__).info("Upserted %d products", len(SEED_PRODUCTS))
 
 
 # ---------- Routes ----------

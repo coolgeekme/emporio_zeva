@@ -1,90 +1,29 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { ChevronLeft, ChevronRight, ArrowRight, Check, Mail, Phone, Calendar } from "lucide-react";
-import { IMAGES, LOGO_URL, SF_MADE_BADGE } from "../content";
+import { ChevronLeft, ChevronRight, ArrowRight, Mail, Phone, Globe } from "lucide-react";
+import {
+  IMAGES,
+  LOGO_URL,
+  SF_MADE_BADGE,
+  BRAND,
+  CONTACT,
+  TAGLINES,
+  PILLARS,
+  CORPORATE_USE_CASES,
+  CUSTOMIZATION,
+  CORPORATE_PACKAGES,
+  FULFILLMENT,
+  PROCESS,
+  FOUNDER_LETTER,
+} from "../content";
+import MonogramDivider from "../components/MonogramDivider";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// =========================================================================
-// Slide content (data-driven so the deck stays declarative)
-// =========================================================================
-
-const packages = [
-  {
-    name: "The Curated",
-    price: "From $46/recipient",
-    blurb:
-      "Quiet appreciation. Slide a Not-A-Salami onto the desk of every PM, advisor, or relationship lead.",
-    tier: "Min. 25 units",
-    includes: [
-      "Not-A-Salami Classic, 300g",
-      "Linen-feel parchment wrap, BlackRock monogram seal",
-      "Letterpress serving card",
-      "Hand-tied butcher's twine",
-    ],
-    cta: "Outreach gifts · Q1 onboarding",
-  },
-  {
-    name: "The Signature",
-    price: "From $98/recipient",
-    blurb:
-      "Our flagship corporate hamper. Designed for senior clients, board members, and the conversation that lasts past dessert.",
-    tier: "Min. 50 units",
-    includes: [
-      "Not-A-Salami Classic, 300g",
-      "Hand-finished olive-wood serving board",
-      "Italian linen napkin, hemmed",
-      "Monogrammed wax-seal closure",
-      "Custom-printed dedication card",
-      "Kraft presentation box with twine",
-    ],
-    badge: "Most chosen for institutional gifting",
-    cta: "Holiday · Investor Day · Anniversary",
-  },
-  {
-    name: "The Bespoke",
-    price: "Quoted per program",
-    blurb:
-      "A program built around your moment. Custom flavor, custom packaging, custom story. We co-create with your brand team.",
-    tier: "Min. 250 units · 60-day lead",
-    includes: [
-      "Custom flavor profile (Bronte pistachio, hazelnut, citrus)",
-      "Co-branded butcher paper, printed in Italy",
-      "Engraved olive-wood board with BlackRock crest",
-      "Bespoke serving card co-written with your team",
-      "Choice of ParcelPath / FedEx Priority shipping",
-      "Dedicated production slot, Eva's personal sign-off",
-    ],
-    cta: "Investor Day · Aladdin Summit · Founder gifts",
-  },
-];
-
-const useCases = [
-  { title: "Client appreciation", body: "Q1 gestures to private wealth and institutional clients. Memorable, conversational." },
-  { title: "Board & executive gifting", body: "A considered alternative to the same wine and same chocolates. Your gift becomes the story." },
-  { title: "Investor Day takeaways", body: "Branded box at the seat or shipped post-event. 500+ units, 14-day lead." },
-  { title: "New-hire welcome", body: "A refined first-day welcome — for senior hires in NY, SF, or London." },
-];
-
-const logistics = [
-  ["Lead time", "14 days standard. 30–60 days for bespoke / large-volume programs."],
-  ["Capacity", "1,500 units / month in-house. Vetted commissary partner for higher volumes."],
-  ["Shipping", "FedEx Priority Overnight, climate-controlled below 75°F. ParcelPath for scale."],
-  ["Quality", "Hand-checked by Eva. SF Made certified. Selected for 'Here & Now' 2024."],
-  ["Allergens", "Cocoa, dairy, eggs, wheat. Gluten-free / dairy-free on bespoke programs."],
-];
-
-const nextSteps = [
-  ["Tasting", "We courier a sample box of three Not-A-Salami to your team — no obligation."],
-  ["Brief", "30-minute call with Eva to size the program: volumes, moments, dates."],
-  ["Quote", "Custom written proposal with co-branding mockups within 5 business days."],
-  ["Production", "PO signed, slot locked, batch produced and shipped on date."],
-];
-
-// =========================================================================
+// ============================================================================
 // Slide chrome
-// =========================================================================
+// ============================================================================
 
 const Slide = ({ id, n, total, dark = false, children, testid, isActive = false }) => (
   <section
@@ -94,7 +33,7 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
       dark ? "bg-[#2A1F1D] text-[#F9F6F0] grain" : "bg-[#F9F6F0]"
     }`}
   >
-    <div className="absolute top-8 md:top-10 left-6 md:left-10 z-10">
+    <div className="absolute top-8 md:top-10 left-6 md:left-10 z-10 flex items-center gap-4">
       <p
         className={`text-[11px] tracking-[0.22em] uppercase font-semibold ${
           dark ? "text-[#B9935A]" : "text-[#5C4E4A]"
@@ -105,6 +44,9 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
           / {String(total).padStart(2, "0")}
         </span>
       </p>
+      <span className={`overline ${dark ? "text-[#5C4E4A]" : "text-[#DFD7CA]"} hidden md:inline`}>
+        Not A Salami · Corporate Gifting
+      </span>
     </div>
     <div className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16 w-full h-full flex items-center">
       <div className={`w-full py-20 md:py-24 slide-fx ${isActive ? "in" : ""}`}>
@@ -114,25 +56,22 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
   </section>
 );
 
-// =========================================================================
+// ============================================================================
 // Deck
-// =========================================================================
+// ============================================================================
 
 export default function BlackRock() {
   const trackRef = useRef(null);
+  const rafRef = useRef(0);
   const [active, setActive] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
 
-  const TOTAL = 9;
+  const TOTAL = 11; // matches the real corporate deck
 
-  // Track which slides have been revealed at least once — so going back doesn't
-  // re-trigger the entrance animation, and the leaving slide keeps its content
-  // visible during scroll (no flicker).
   const [visited, setVisited] = useState(() => new Set());
   useEffect(() => {
-    // initial reveal of cover on mount (next paint)
     const id = requestAnimationFrame(() => setVisited((prev) => new Set([...prev, 0])));
     return () => cancelAnimationFrame(id);
   }, []);
@@ -140,10 +79,8 @@ export default function BlackRock() {
     setVisited((prev) => (prev.has(active) ? prev : new Set([...prev, active])));
   }, [active]);
 
-  // Custom smooth scroll with easeInOutQuart — feels presentation-grade rather
-  // than the browser's default smooth which is short and uniform.
-  const rafRef = useRef(0);
-  const animateScrollTo = useCallback((targetLeft, duration = 850) => {
+  // Custom smooth scroll — longer, more cinematic curve
+  const animateScrollTo = useCallback((targetLeft, duration = 1100) => {
     const el = trackRef.current;
     if (!el) return;
     cancelAnimationFrame(rafRef.current);
@@ -151,8 +88,9 @@ export default function BlackRock() {
     const distance = targetLeft - startLeft;
     if (Math.abs(distance) < 1) return;
     const startTime = performance.now();
+    // easeInOutQuint — gentler start and finish
     const ease = (t) =>
-      t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+      t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2;
     const tick = (now) => {
       const t = Math.min((now - startTime) / duration, 1);
       el.scrollLeft = startLeft + distance * ease(t);
@@ -174,7 +112,6 @@ export default function BlackRock() {
   const next = useCallback(() => scrollToSlide(active + 1), [active, scrollToSlide]);
   const prev = useCallback(() => scrollToSlide(active - 1), [active, scrollToSlide]);
 
-  // keyboard nav
   useEffect(() => {
     const onKey = (e) => {
       if (["ArrowRight", "PageDown", " "].includes(e.key)) {
@@ -195,7 +132,6 @@ export default function BlackRock() {
     return () => window.removeEventListener("keydown", onKey);
   }, [next, prev, scrollToSlide]);
 
-  // scroll → active index
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -215,7 +151,7 @@ export default function BlackRock() {
   }, []);
 
   useEffect(() => {
-    document.title = "A proposal for BlackRock · Emporio Zeva";
+    document.title = "A proposal for BlackRock · Not A Salami";
   }, []);
 
   const submit = async (e) => {
@@ -241,7 +177,7 @@ export default function BlackRock() {
       data-testid="blackrock-pitch-page"
       className="fixed inset-0 flex flex-col bg-[#F9F6F0]"
     >
-      {/* minimal floating exit link (replaces the hidden global nav) */}
+      {/* Floating exit */}
       <Link
         to="/"
         data-testid="deck-exit"
@@ -250,7 +186,7 @@ export default function BlackRock() {
         Exit deck <span aria-hidden>✕</span>
       </Link>
 
-      {/* "Press → to begin" hint — visible only on the cover slide */}
+      {/* Begin hint — slide 1 only */}
       <div
         data-testid="deck-begin-hint"
         className={`fixed bottom-24 md:bottom-28 left-1/2 -translate-x-1/2 z-30 pointer-events-none transition-all duration-700 ${
@@ -266,7 +202,8 @@ export default function BlackRock() {
           <span className="text-xs tracking-wide">or swipe</span>
         </div>
       </div>
-      {/* slide track */}
+
+      {/* Slide track */}
       <div
         ref={trackRef}
         className="flex-1 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory no-scrollbar"
@@ -287,14 +224,13 @@ export default function BlackRock() {
                 <br />
                 <span className="italic text-[#C05A3A]">BlackRock</span>.
               </h1>
-              <p className="mt-7 text-xl md:text-2xl font-serif text-[#5C4E4A] max-w-2xl leading-snug">
-                On bringing a small, considered piece of Sicily to the
-                relationships that matter most to your firm.
+              <p className="mt-7 text-xl md:text-2xl font-serif text-[#5C4E4A] max-w-2xl leading-snug italic">
+                A Curated Italian Gifting Experience.
               </p>
               <div className="mt-10 flex flex-wrap gap-x-10 gap-y-4 text-sm text-[#5C4E4A]">
                 <div>
                   <p className="overline">Prepared by</p>
-                  <p className="mt-1 text-[#2A1F1D]">Eva · Founder, Emporio Zeva</p>
+                  <p className="mt-1 text-[#2A1F1D]">{BRAND.founder} · Founder</p>
                 </div>
                 <div>
                   <p className="overline">Date</p>
@@ -310,7 +246,7 @@ export default function BlackRock() {
             </div>
             <div className="md:col-span-5 hidden md:block">
               <div className="img-wash aspect-[4/5] max-h-[60vh]">
-                <img src={IMAGES.product} alt="Not-A-Salami presentation" />
+                <img src={IMAGES.product} alt="Not A Salami presentation" />
               </div>
               <img
                 src={LOGO_URL}
@@ -322,99 +258,122 @@ export default function BlackRock() {
           </div>
         </Slide>
 
-        {/* -------- 02 LETTER -------- */}
-        <Slide id="brief" n={2} total={TOTAL} testid="deck-slide-brief" isActive={visited.has(1)}>
-          <div className="grid md:grid-cols-12 gap-10 md:gap-16">
-            <div className="md:col-span-4">
-              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-[#2A1F1D]">
-                A short letter,
+        {/* -------- 02 ITALIAN TRADITION — letter -------- */}
+        <Slide id="tradition" n={2} total={TOTAL} testid="deck-slide-tradition" isActive={visited.has(1)}>
+          <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
+            <div className="md:col-span-6">
+              <p className="overline text-[#C05A3A]">{TAGLINES.italian_tradition}</p>
+              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4 text-[#2A1F1D]">
+                Returning to my roots,
                 <br />
-                <span className="italic text-[#C05A3A]">before the pitch.</span>
+                <span className="italic text-[#C05A3A]">a Sicilian story.</span>
               </h2>
+              <p className="mt-6 text-base md:text-lg text-[#2A1F1D] leading-relaxed max-w-xl">
+                Returning to my roots, I reconnected with my grandmother's
+                recipe and the chocolate tradition of <strong>Modica, Sicily</strong> —
+                brought together in a confection designed to surprise, and to be
+                sliced and shared.
+              </p>
+              <p className="mt-4 text-sm text-[#5C4E4A] leading-relaxed max-w-xl italic">
+                {FOUNDER_LETTER[1]}
+              </p>
+              <p className="font-serif text-2xl italic text-[#C05A3A] mt-6">
+                — {BRAND.founder}, Founder
+              </p>
             </div>
-            <div className="md:col-span-7 md:col-start-6 space-y-4 text-base md:text-lg text-[#2A1F1D] leading-relaxed">
-              <p>Dear BlackRock,</p>
-              <p>
-                BlackRock has spent four decades convincing the world that quiet
-                stewardship outperforms noise. The same is true of a good gift.
-              </p>
-              <p>
-                I'm Eva. I came to San Francisco from Sicily with my children, a
-                suitcase, and my grandmother Margherita's recipe for cocoa
-                salami — a sliceable confection that looks like cured meat and
-                is entirely chocolate. We sell it under the name{" "}
-                <em>Not-A-Salami</em>.
-              </p>
-              <p>
-                The firms that gift well are gifting differently now: less
-                branded swag, more craft, more story. Not-A-Salami is a moment
-                your clients won't forget — and one no one else is sending.
-              </p>
-              <p>
-                This is a short, honest proposal for how Emporio Zeva can
-                quietly become BlackRock's corporate-gifting partner.
-              </p>
-              <p className="font-serif text-2xl italic text-[#C05A3A] pt-2">— Eva</p>
+            <div className="md:col-span-6 grid grid-cols-2 gap-4 max-h-[60vh]">
+              <div className="img-wash aspect-[4/5]">
+                <img src={IMAGES.sicily} alt="Modica, Sicily" />
+              </div>
+              <div className="img-wash aspect-[4/5] translate-y-10">
+                <img src={IMAGES.founder} alt="Eva Flair, founder" />
+              </div>
             </div>
           </div>
         </Slide>
 
-        {/* -------- 03 PRODUCT -------- */}
-        <Slide id="product" n={3} total={TOTAL} dark testid="deck-slide-product" isActive={visited.has(2)}>
+        {/* -------- 03 A DIFFERENT KIND OF CHOCOLATE -------- */}
+        <Slide id="why-it-works" n={3} total={TOTAL} dark testid="deck-slide-why-it-works" isActive={visited.has(2)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
-            <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[65vh]">
-              <img src={IMAGES.hero} alt="Sliced Not-A-Salami" />
+            <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[60vh]">
+              <img src={IMAGES.hero} alt="Sliced Not A Salami" />
             </div>
             <div className="md:col-span-7">
-              <p className="overline text-[#B9935A]">The product, in one paragraph</p>
+              <p className="overline text-[#B9935A]">A different kind of chocolate</p>
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4">
-                It looks like salami.
+                Unexpected at first.
                 <br />
-                <span className="italic text-[#C05A3A]">It's entirely chocolate.</span>
+                <span className="italic text-[#C05A3A]">Designed to surprise.</span>
               </h2>
               <p className="mt-6 text-base md:text-lg text-[#DFD7CA] leading-relaxed max-w-xl">
-                A Sicilian Salame al Cioccolato — premium cocoa folded with
-                crisp Italian cookie pieces, hand-rolled, wrapped in butcher's
-                paper, tied with twine. Sliced at the table. The reveal is the gift.
+                A traditional Sicilian chocolate confection, shaped like a salami.
+                Unexpected at first — designed to surprise, then to be shared.
               </p>
-              <dl className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-5">
+              <p className="overline text-[#B9935A] mt-8">Why it works</p>
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-5">
+                {PILLARS.map((p, i) => (
+                  <div key={p} data-testid={`pitch-pillar-${i}`}>
+                    <p className="overline text-[#5C4E4A]">No 0{i + 1}</p>
+                    <p className="font-serif text-2xl md:text-3xl text-[#F9F6F0] mt-2">{p}.</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Slide>
+
+        {/* -------- 04 ONE PRODUCT, CAREFULLY EXECUTED -------- */}
+        <Slide id="product" n={4} total={TOTAL} testid="deck-slide-product" isActive={visited.has(3)}>
+          <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
+            <div className="md:col-span-7">
+              <p className="overline text-[#C05A3A]">One product. Carefully executed.</p>
+              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4 text-[#2A1F1D]">
+                From production
+                <br />
+                to <span className="italic text-[#C05A3A]">your recipient's door.</span>
+              </h2>
+              <p className="mt-6 text-base md:text-lg text-[#5C4E4A] leading-relaxed max-w-xl">
+                Every order is personally overseen with attention and care — from
+                ingredient to packaging to delivery.
+              </p>
+              <dl className="mt-8 grid grid-cols-2 sm:grid-cols-2 gap-5 max-w-xl">
                 {[
-                  ["Weight", "300g"],
-                  ["Serves", "8–10"],
-                  ["Shelf life", "14 days"],
-                  ["Made in", "San Francisco"],
+                  ["Storage", "Refrigerated"],
+                  ["Shelf life", "8 weeks unopened · 2 weeks opened"],
+                  ["Made in", "San Francisco, California"],
+                  ["Enjoy with", "Coffee, wine, fruit, or cheese"],
                 ].map(([k, v]) => (
                   <div key={k}>
-                    <dt className="overline text-[#B9935A]">{k}</dt>
-                    <dd className="font-serif text-2xl text-[#F9F6F0] mt-1">{v}</dd>
+                    <dt className="overline text-[#C05A3A]">{k}</dt>
+                    <dd className="font-serif text-xl text-[#2A1F1D] mt-2">{v}</dd>
                   </div>
                 ))}
               </dl>
             </div>
+            <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[60vh]">
+              <img src={IMAGES.product} alt="Not A Salami detail" />
+            </div>
           </div>
         </Slide>
 
-        {/* -------- 04 USE CASES -------- */}
-        <Slide id="fit" n={4} total={TOTAL} testid="deck-slide-fit" isActive={visited.has(3)}>
-          <div className="grid md:grid-cols-12 gap-10 md:gap-12">
-            <div className="md:col-span-4">
-              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-[#2A1F1D]">
-                Why it
+        {/* -------- 05 USE CASES — 6 real -------- */}
+        <Slide id="use-cases" n={5} total={TOTAL} testid="deck-slide-use-cases" isActive={visited.has(4)}>
+          <div>
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] max-w-2xl">
+                Corporate gifting,
                 <br />
-                <span className="italic text-[#C05A3A]">fits BlackRock.</span>
+                <span className="italic text-[#C05A3A]">six considered moments.</span>
               </h2>
-              <p className="mt-5 text-[#5C4E4A] leading-relaxed">
-                Four moments where Not-A-Salami earns its place on a BlackRock table.
-              </p>
             </div>
-            <div className="md:col-span-8 grid sm:grid-cols-2 gap-5">
-              {useCases.map((u, i) => (
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
+              {CORPORATE_USE_CASES.map((u, i) => (
                 <div
                   key={u.title}
                   data-testid={`pitch-usecase-${i}`}
                   className="border border-[#DFD7CA] bg-[#F9F6F0] p-6"
                 >
-                  <p className="overline text-[#5C4E4A]">Use case · 0{i + 1}</p>
+                  <p className="overline text-[#5C4E4A]">No 0{i + 1}</p>
                   <h3 className="font-serif text-2xl mt-2 text-[#2A1F1D]">{u.title}</h3>
                   <p className="text-sm text-[#5C4E4A] mt-3 leading-relaxed">{u.body}</p>
                 </div>
@@ -423,73 +382,84 @@ export default function BlackRock() {
           </div>
         </Slide>
 
-        {/* -------- 05 CO-BRANDING -------- */}
-        <Slide id="cobrand" n={5} total={TOTAL} testid="deck-slide-cobrand" isActive={visited.has(4)}>
-          <div className="grid md:grid-cols-12 gap-10 md:gap-14 items-center">
+        {/* -------- 06 ONE PRODUCT, PURE EXPRESSION -------- */}
+        <Slide id="expression" n={6} total={TOTAL} dark testid="deck-slide-expression" isActive={visited.has(5)}>
+          <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-6">
-              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-[#2A1F1D]">
-                Co-branded,
+              <p className="overline text-[#B9935A]">One product. Pure expression.</p>
+              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4">
+                A truly Sicilian treat.
                 <br />
-                <span className="italic text-[#C05A3A]">without screaming.</span>
+                <span className="italic text-[#C05A3A]">For the unexpected.</span>
               </h2>
-              <p className="mt-5 text-[#5C4E4A] leading-relaxed max-w-xl">
-                We don't print logos on food. We add your monogram where it
-                belongs — wax seal, the inside of the wrap, the serving card —
-                so the gift still feels like a gift, not branded merch.
+              <p className="mt-7 text-base md:text-lg text-[#DFD7CA] leading-relaxed max-w-xl">
+                Every detail, from ingredient to packaging, is intentional. This
+                is an elevated gift with history, a story the recipient can
+                taste, and a sweet moment worth sharing.
               </p>
-              <ul className="mt-7 space-y-3 max-w-md">
-                {[
-                  "Custom wax seal with BlackRock monogram",
-                  "Co-printed butcher paper, single-color heritage palette",
-                  "Engraved olive-wood board (board only; food untouched)",
-                  "Letterpress serving card with your dedication",
-                  "Inner band with chairman's note",
-                ].map((line, i) => (
-                  <li
-                    key={i}
-                    className="flex gap-3 items-start text-[#2A1F1D]"
-                    data-testid={`pitch-cobrand-item-${i}`}
-                  >
-                    <Check size={18} className="text-[#C05A3A] mt-1 flex-shrink-0" strokeWidth={1.5} />
-                    <span className="text-sm md:text-base">{line}</span>
-                  </li>
-                ))}
-              </ul>
+              <p className="overline text-[#B9935A] mt-8">notasalami.com</p>
             </div>
-            <div className="md:col-span-6 grid grid-cols-2 gap-4 max-h-[65vh]">
-              <div className="img-wash aspect-[4/5]">
-                <img src={IMAGES.gift} alt="Gift presentation" />
-              </div>
-              <div className="img-wash aspect-[4/5] translate-y-8">
-                <img src={IMAGES.product} alt="Product board" />
-              </div>
+            <div className="md:col-span-6 img-wash aspect-[4/5] max-h-[60vh]">
+              <img src={IMAGES.gift} alt="Not A Salami gift presentation" />
             </div>
           </div>
         </Slide>
 
-        {/* -------- 06 PACKAGES -------- */}
-        <Slide id="packages" n={6} total={TOTAL} testid="deck-slide-packages" isActive={visited.has(5)}>
+        {/* -------- 07 CUSTOMIZATION — 4 real -------- */}
+        <Slide id="customization" n={7} total={TOTAL} testid="deck-slide-customization" isActive={visited.has(6)}>
           <div>
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] max-w-3xl">
-                Three programs.
+            <div className="mb-8">
+              <p className="overline text-[#C05A3A]">Elevated experience</p>
+              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] mt-3 text-[#2A1F1D] max-w-3xl">
+                Tailored — without
                 <br />
-                <span className="italic text-[#C05A3A]">Pick the one that fits.</span>
+                <span className="italic text-[#C05A3A]">losing the gift.</span>
+              </h2>
+              <p className="text-sm text-[#5C4E4A] max-w-xl mt-3">
+                Selected elements of the gift can be tailored to reflect your
+                company. Additional branded details can be discussed as needed.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5">
+              {CUSTOMIZATION.map((c, i) => (
+                <div
+                  key={c.title}
+                  data-testid={`pitch-customization-${i}`}
+                  className="border border-[#DFD7CA] bg-[#F9F6F0] p-6 flex flex-col"
+                >
+                  <p className="overline text-[#5C4E4A]">No 0{i + 1}</p>
+                  <h3 className="font-serif text-xl mt-2 text-[#2A1F1D] leading-tight">{c.title}</h3>
+                  <p className="text-xs text-[#5C4E4A] mt-3 leading-relaxed">{c.body}</p>
+                </div>
+              ))}
+            </div>
+            <MonogramDivider className="mt-10" />
+          </div>
+        </Slide>
+
+        {/* -------- 08 PRICING — real Curated $58 / Executive $78 -------- */}
+        <Slide id="pricing" n={8} total={TOTAL} testid="deck-slide-pricing" isActive={visited.has(7)}>
+          <div>
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] max-w-3xl">
+                A curated, ready-to-ship
+                <br />
+                <span className="italic text-[#C05A3A]">corporate gift experience.</span>
               </h2>
               <p className="text-sm text-[#5C4E4A] max-w-md">
-                Indicative starting points — figures decrease meaningfully past
-                100 units. Final quote depends on customization & shipping.
+                All prices are per unit and include packaging, inserts, and
+                multi-recipient delivery. Shipping quoted separately.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-5 md:gap-6">
-              {packages.map((pkg, i) => (
+            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+              {CORPORATE_PACKAGES.map((pkg, i) => (
                 <article
                   key={pkg.name}
                   data-testid={`pitch-package-${i}`}
-                  className={`border p-6 flex flex-col ${
+                  className={`border p-7 md:p-9 flex flex-col ${
                     i === 1
-                      ? "bg-[#2A1F1D] text-[#F9F6F0] border-[#2A1F1D] md:-translate-y-4"
+                      ? "bg-[#2A1F1D] text-[#F9F6F0] border-[#2A1F1D]"
                       : "border-[#DFD7CA] bg-[#F9F6F0]"
                   }`}
                 >
@@ -497,23 +467,25 @@ export default function BlackRock() {
                     <p className="overline text-[#C05A3A] mb-3 text-[10px]">{pkg.badge}</p>
                   )}
                   <p className={`overline text-[10px] ${i === 1 ? "text-[#B9935A]" : "text-[#5C4E4A]"}`}>
-                    Program 0{i + 1}
+                    {pkg.name.toUpperCase()}
                   </p>
                   <h3
-                    className={`font-serif text-2xl md:text-3xl mt-2 leading-tight ${
+                    className={`font-serif text-3xl md:text-4xl mt-2 leading-tight ${
                       i === 1 ? "text-[#F9F6F0]" : "text-[#2A1F1D]"
                     }`}
                   >
-                    {pkg.name}
+                    1 salami · {pkg.box}
                   </h3>
-                  <p className="mt-3 font-serif text-lg text-[#C05A3A]">{pkg.price}</p>
-                  <p className={`overline text-[10px] mt-1 ${i === 1 ? "text-[#B9935A]" : "text-[#5C4E4A]"}`}>
-                    {pkg.tier}
+                  <p className="mt-4 font-serif text-5xl text-[#C05A3A]">
+                    {pkg.price}
+                    <span className={`text-base font-sans tracking-wide ml-2 ${i === 1 ? "text-[#B9935A]" : "text-[#5C4E4A]"}`}>
+                      {pkg.unit}
+                    </span>
                   </p>
-                  <p className={`mt-4 text-xs md:text-sm leading-relaxed ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
+                  <p className={`mt-4 text-sm md:text-base leading-relaxed ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
                     {pkg.blurb}
                   </p>
-                  <ul className="mt-4 space-y-2 text-xs md:text-sm">
+                  <ul className="mt-5 space-y-2 text-sm">
                     {pkg.includes.map((inc) => (
                       <li key={inc} className="flex gap-2 items-start">
                         <span className="text-[#C05A3A]">·</span>
@@ -521,121 +493,113 @@ export default function BlackRock() {
                       </li>
                     ))}
                   </ul>
-                  <div className={`mt-5 pt-4 border-t ${i === 1 ? "border-[#5C4E4A]" : "border-[#DFD7CA]"}`}>
-                    <p className={`overline text-[10px] ${i === 1 ? "text-[#B9935A]" : "text-[#5C4E4A]"}`}>
-                      Best for
-                    </p>
-                    <p className={`text-xs mt-1 ${i === 1 ? "text-[#F9F6F0]" : "text-[#2A1F1D]"}`}>
-                      {pkg.cta}
-                    </p>
-                  </div>
+                  <p className={`overline text-[10px] mt-6 pt-4 border-t ${i === 1 ? "border-[#5C4E4A] text-[#B9935A]" : "border-[#DFD7CA] text-[#5C4E4A]"}`}>
+                    {pkg.min}
+                  </p>
                 </article>
               ))}
             </div>
           </div>
         </Slide>
 
-        {/* -------- 07 LOGISTICS -------- */}
-        <Slide id="logistics" n={7} total={TOTAL} testid="deck-slide-logistics" isActive={visited.has(6)}>
-          <div className="grid md:grid-cols-12 gap-10 md:gap-14">
-            <div className="md:col-span-5">
-              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-[#2A1F1D]">
-                Production
-                <br />
-                <span className="italic text-[#C05A3A]">& logistics.</span>
-              </h2>
-              <p className="mt-6 text-[#5C4E4A] leading-relaxed max-w-md">
-                Small kitchen, serious cadence. For BlackRock we'd block a
-                dedicated production window.
-              </p>
-            </div>
+        {/* -------- 09 FULFILLMENT -------- */}
+        <Slide id="fulfillment" n={9} total={TOTAL} testid="deck-slide-fulfillment" isActive={visited.has(8)}>
+          <div>
+            <p className="overline text-[#C05A3A] mb-4">Fulfillment</p>
+            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] max-w-3xl">
+              {TAGLINES.logistics}
+            </h2>
+            <p className="text-sm text-[#5C4E4A] mt-4 max-w-2xl">
+              All orders ship on the same day — every recipient receives their
+              gift within the same delivery window regardless of address.
+            </p>
 
-            <div className="md:col-span-7 space-y-5">
-              {logistics.map(([k, v], i) => (
+            <div className="mt-10 grid sm:grid-cols-2 md:grid-cols-4 gap-5">
+              {FULFILLMENT.map((f, i) => (
                 <div
-                  key={k}
-                  className="grid grid-cols-12 gap-4 pb-4 border-b border-[#DFD7CA]"
-                  data-testid={`pitch-logistics-row-${i}`}
+                  key={f.title}
+                  data-testid={`pitch-fulfillment-${i}`}
+                  className="border border-[#DFD7CA] bg-[#F9F6F0] p-6 flex flex-col"
                 >
-                  <p className="overline text-[#C05A3A] col-span-12 sm:col-span-3 pt-1">{k}</p>
-                  <p className="col-span-12 sm:col-span-9 text-sm md:text-base text-[#2A1F1D] leading-relaxed">{v}</p>
+                  <p className="overline text-[#5C4E4A]">No 0{i + 1}</p>
+                  <h3 className="font-serif text-xl mt-2 text-[#2A1F1D] leading-tight">{f.title}</h3>
+                  <p className="text-xs text-[#5C4E4A] mt-3 leading-relaxed">{f.body}</p>
                 </div>
               ))}
             </div>
           </div>
         </Slide>
 
-        {/* -------- 08 WHY US -------- */}
-        <Slide id="why-us" n={8} total={TOTAL} dark testid="deck-slide-why-us" isActive={visited.has(7)}>
-          <div className="grid md:grid-cols-12 gap-10 md:gap-14 items-center">
-            <div className="md:col-span-7">
-              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05]">
-                You are not buying
-                <br />
-                <span className="italic text-[#C05A3A]">chocolate.</span>
-              </h2>
-              <p className="mt-6 text-base md:text-lg text-[#DFD7CA] leading-relaxed max-w-2xl">
-                You're buying the moment your senior client unwraps a parcel
-                that looks impossibly like cured salame, cuts into it with
-                curiosity, and discovers it's chocolate from a Sicilian recipe
-                a grandmother named Margherita wrote down by hand.
-              </p>
-              <p className="mt-4 text-base md:text-lg text-[#DFD7CA] leading-relaxed max-w-2xl">
-                That story sits on their counter for two weeks. It gets retold
-                at their next dinner. Your firm is in it.
-              </p>
-              <div className="mt-10 flex items-center gap-6 flex-wrap">
-                <img src={SF_MADE_BADGE} alt="SF Made" className="h-14 w-auto" />
-                <div className="text-sm text-[#DFD7CA] max-w-xs">
-                  <p className="overline text-[#B9935A]">Selected</p>
-                  <p className="mt-1">SF Made — Here & Now 2024</p>
+        {/* -------- 10 HOW IT WORKS — 4-step process -------- */}
+        <Slide id="process" n={10} total={TOTAL} dark testid="deck-slide-process" isActive={visited.has(9)}>
+          <div>
+            <p className="overline text-[#B9935A] mb-4">How it works</p>
+            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] max-w-3xl">
+              From first conversation to delivery —
+              <br />
+              <span className="italic text-[#C05A3A]">we make it easy.</span>
+            </h2>
+            <p className="text-sm text-[#DFD7CA] mt-4 max-w-2xl">
+              You send us your list, we take care of everything else.
+            </p>
+
+            <div className="mt-10 grid sm:grid-cols-2 md:grid-cols-4 gap-5">
+              {PROCESS.map((step, i) => (
+                <div
+                  key={step.n}
+                  data-testid={`pitch-process-${i}`}
+                  className="border border-[#5C4E4A] p-6 flex flex-col"
+                >
+                  <span className="font-serif text-5xl text-[#C05A3A] leading-none italic">
+                    {step.n}
+                  </span>
+                  <h3 className="font-serif text-xl mt-4 text-[#F9F6F0] leading-tight">{step.title}</h3>
+                  <p className="text-xs text-[#DFD7CA] mt-3 leading-relaxed">{step.body}</p>
                 </div>
-              </div>
-            </div>
-            <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[65vh]">
-              <img src={IMAGES.founder} alt="Eva, founder" />
+              ))}
             </div>
           </div>
         </Slide>
 
-        {/* -------- 09 NEXT STEPS + FORM -------- */}
-        <Slide id="next" n={9} total={TOTAL} testid="deck-slide-next" isActive={visited.has(8)}>
+        {/* -------- 11 CLOSING + form -------- */}
+        <Slide id="contact" n={11} total={TOTAL} testid="deck-slide-contact" isActive={visited.has(10)}>
           <div className="grid md:grid-cols-12 gap-10 md:gap-12">
             <div className="md:col-span-5">
-              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-[#2A1F1D]">
-                Next steps,
+              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D]">
+                Let's create a memorable
                 <br />
-                <span className="italic text-[#C05A3A]">should you wish.</span>
+                <span className="italic text-[#C05A3A]">gifting experience together.</span>
               </h2>
-              <ol className="mt-8 space-y-5 max-w-md">
-                {nextSteps.map(([title, body], i) => (
-                  <li key={title} className="flex gap-4" data-testid={`pitch-step-${i}`}>
-                    <span className="font-serif text-2xl text-[#C05A3A] leading-none w-8 flex-shrink-0">
-                      {i + 1}
-                    </span>
-                    <div>
-                      <p className="font-serif text-xl text-[#2A1F1D] leading-tight">{title}</p>
-                      <p className="text-xs md:text-sm text-[#5C4E4A] mt-1 leading-relaxed">{body}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              <div className="mt-8 pt-6 border-t border-[#DFD7CA] grid grid-cols-3 gap-3 text-xs">
-                <div>
-                  <Mail size={14} className="text-[#C05A3A] mb-1" />
-                  <p className="overline text-[10px]">Email</p>
-                  <p className="text-[#2A1F1D] mt-1">hello@emporiozeva.com</p>
-                </div>
-                <div>
-                  <Phone size={14} className="text-[#C05A3A] mb-1" />
-                  <p className="overline text-[10px]">By appointment</p>
-                  <p className="text-[#2A1F1D] mt-1">San Francisco</p>
-                </div>
-                <div>
-                  <Calendar size={14} className="text-[#C05A3A] mb-1" />
-                  <p className="overline text-[10px]">Lead time</p>
-                  <p className="text-[#2A1F1D] mt-1">14–60 days</p>
-                </div>
+              <p className="mt-6 text-[#5C4E4A] leading-relaxed max-w-md">
+                Ready to chat. Together we will design a gifting experience
+                tailored to your team and clients.
+              </p>
+
+              <ul className="mt-10 space-y-4 max-w-md">
+                <li className="flex gap-3 items-center" data-testid="pitch-contact-email">
+                  <Mail size={16} className="text-[#C05A3A]" />
+                  <a href={`mailto:${CONTACT.email_primary}`} className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors">
+                    {CONTACT.email_primary}
+                  </a>
+                </li>
+                <li className="flex gap-3 items-center" data-testid="pitch-contact-phone">
+                  <Phone size={16} className="text-[#C05A3A]" />
+                  <a href={`tel:${CONTACT.phone.replace(/\s|·/g, "")}`} className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors">
+                    {CONTACT.phone_display}
+                  </a>
+                </li>
+                <li className="flex gap-3 items-center" data-testid="pitch-contact-web">
+                  <Globe size={16} className="text-[#C05A3A]" />
+                  <a href="https://notasalami.com" target="_blank" rel="noopener noreferrer" className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors">
+                    notasalami.com
+                  </a>
+                </li>
+              </ul>
+              <div className="mt-10 flex items-center gap-5">
+                <img src={SF_MADE_BADGE} alt="SF Made" className="h-14 w-auto" />
+                <p className="text-xs text-[#5C4E4A] max-w-[200px] leading-relaxed">
+                  Selected by <span className="text-[#2A1F1D] font-semibold">SF Made</span> for Here & Now 2024.
+                </p>
               </div>
             </div>
 
@@ -654,7 +618,7 @@ export default function BlackRock() {
                     <p className="overline text-[#C05A3A]">Received</p>
                     <p className="font-serif text-xl mt-1 text-[#2A1F1D]">Grazie.</p>
                     <p className="mt-2 text-xs md:text-sm text-[#5C4E4A]">
-                      Eva will respond within one business day.
+                      Eva Flair will respond within one business day.
                     </p>
                   </div>
                 ) : (
@@ -724,14 +688,14 @@ export default function BlackRock() {
         </Slide>
       </div>
 
-      {/* deck controls */}
+      {/* Deck controls */}
       <div
         className="shrink-0 border-t border-[#DFD7CA] bg-[#F9F6F0]/95 backdrop-blur-md px-6 md:px-10 py-3 flex items-center justify-between gap-4"
         data-testid="deck-controls"
       >
         <div className="flex items-center gap-5">
           <p className="overline text-[#5C4E4A] hidden sm:block">
-            BlackRock Proposal · Prepared by Eva
+            {TAGLINES.logistics}
           </p>
           <Link
             to="/"
@@ -744,7 +708,6 @@ export default function BlackRock() {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* dots */}
           <div className="hidden md:flex items-center gap-2" data-testid="deck-dots">
             {Array.from({ length: TOTAL }).map((_, i) => (
               <button
@@ -759,16 +722,14 @@ export default function BlackRock() {
             ))}
           </div>
 
-          {/* counter */}
           <p
-            className="font-serif text-xl text-[#2A1F1D] tabular-nums min-w-[64px] text-center"
+            className="font-serif text-xl text-[#2A1F1D] tabular-nums min-w-[68px] text-center"
             data-testid="deck-counter"
           >
             {String(active + 1).padStart(2, "0")}{" "}
             <span className="text-[#DFD7CA]">/ {String(TOTAL).padStart(2, "0")}</span>
           </p>
 
-          {/* arrows */}
           <div className="flex items-center gap-1">
             <button
               onClick={prev}

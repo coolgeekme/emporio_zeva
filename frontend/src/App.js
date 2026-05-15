@@ -10,6 +10,8 @@ import OurStory from "./pages/OurStory";
 import Journal from "./pages/Journal";
 import Contact from "./pages/Contact";
 import BlackRock from "./pages/BlackRock";
+import Ritual from "./pages/Ritual";
+import OneSheet from "./pages/OneSheet";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -35,6 +37,8 @@ function Shell() {
           <Route path="/journal" element={<Journal />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/blackrock" element={<BlackRock />} />
+          <Route path="/ritual" element={<Ritual />} />
+          <Route path="/one-sheet" element={<OneSheet />} />
         </Routes>
       </main>
       {!isDeck && <Footer />}

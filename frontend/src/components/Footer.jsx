@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { Instagram, Mail } from "lucide-react";
-import { SF_MADE_BADGE, LOGO_URL } from "../content";
+import { Instagram, Mail, Phone } from "lucide-react";
+import { SF_MADE_BADGE, LOGO_URL, BRAND, CONTACT, TAGLINES } from "../content";
 import NewsletterForm from "./NewsletterForm";
 
 export default function Footer() {
@@ -15,7 +15,7 @@ export default function Footer() {
           <div className="md:col-span-6">
             <p className="overline text-[#B9935A]">The Journal</p>
             <h3 className="font-serif text-4xl md:text-5xl leading-[1.05] mt-4 max-w-md">
-              Get <span className="italic text-[#C05A3A]">10% off</span> your first Not-A-Salami.
+              Get <span className="italic text-[#C05A3A]">10% off</span> your first Not A Salami.
             </h3>
             <p className="mt-5 text-[#DFD7CA] max-w-md leading-relaxed">
               Slow notes from Eva's kitchen. New flavor drops, dinner pairings,
@@ -39,9 +39,11 @@ export default function Footer() {
                 style={{ filter: "invert(1) brightness(1.04)" }}
               />
             </Link>
-            <p className="mt-6 text-[#DFD7CA] max-w-sm leading-relaxed">
-              A Sicilian cocoa confection, handcrafted in San Francisco from
-              Grandma Margherita's recipe. Slice thin. Serve slow. Share generously.
+            <p className="mt-6 text-[#DFD7CA] max-w-sm leading-relaxed italic font-serif text-lg">
+              {TAGLINES.primary}
+            </p>
+            <p className="mt-3 text-[#DFD7CA] max-w-sm leading-relaxed text-sm">
+              {TAGLINES.italian_tradition} Handcrafted in small batches in San Francisco.
             </p>
             <img
               src={SF_MADE_BADGE}
@@ -64,6 +66,7 @@ export default function Footer() {
             <p className="overline text-[#B9935A]">House</p>
             <ul className="mt-5 space-y-3">
               <li><Link to="/our-story" data-testid="footer-link-story" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Our Story</Link></li>
+              <li><Link to="/ritual" data-testid="footer-link-ritual" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">The Ritual</Link></li>
               <li><Link to="/journal" data-testid="footer-link-journal" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Journal</Link></li>
               <li><Link to="/contact" data-testid="footer-link-contact" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Contact</Link></li>
             </ul>
@@ -72,14 +75,18 @@ export default function Footer() {
           <div className="md:col-span-3">
             <p className="overline text-[#B9935A]">Reach out</p>
             <ul className="mt-5 space-y-3 text-sm text-[#DFD7CA]">
-              <li>San Francisco, California</li>
+              <li>{CONTACT.city}</li>
+              <li className="flex items-center gap-2">
+                <Phone size={14} className="text-[#C05A3A]" />
+                <a href={`tel:${CONTACT.phone.replace(/\s|·/g, "")}`} data-testid="footer-phone" className="hover:text-[#C05A3A] transition-colors">{CONTACT.phone_display}</a>
+              </li>
               <li className="flex items-center gap-2">
                 <Mail size={14} className="text-[#C05A3A]" />
-                <a href="mailto:hello@emporiozeva.com" data-testid="footer-email" className="hover:text-[#C05A3A] transition-colors">hello@emporiozeva.com</a>
+                <a href={`mailto:${CONTACT.email_primary}`} data-testid="footer-email" className="hover:text-[#C05A3A] transition-colors">{CONTACT.email_primary}</a>
               </li>
               <li className="flex items-center gap-2">
                 <Instagram size={14} className="text-[#C05A3A]" />
-                <a href="#" data-testid="footer-instagram" className="hover:text-[#C05A3A] transition-colors">@emporiozeva</a>
+                <a href="#" data-testid="footer-instagram" className="hover:text-[#C05A3A] transition-colors">{CONTACT.instagram}</a>
               </li>
             </ul>
           </div>
@@ -88,10 +95,10 @@ export default function Footer() {
         {/* Bottom */}
         <div className="pt-8 border-t border-[#5C4E4A] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <p className="text-xs text-[#5C4E4A] tracking-wide">
-            © {new Date().getFullYear()} Emporio Zeva. Handcrafted with reverence in San Francisco.
+            © {new Date().getFullYear()} {BRAND.parent}. Handcrafted with reverence in San Francisco.
           </p>
           <p className="text-[10px] tracking-[0.22em] uppercase text-[#5C4E4A]">
-            From Sicily, with seriousness · No salami was harmed
+            notasalami.com · From Sicily, with seriousness
           </p>
         </div>
       </div>

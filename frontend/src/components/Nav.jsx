@@ -6,6 +6,7 @@ import { LOGO_URL } from "../content";
 const links = [
   { to: "/", label: "Home" },
   { to: "/collection", label: "Collection" },
+  { to: "/ritual", label: "Ritual" },
   { to: "/our-story", label: "Our Story" },
   { to: "/journal", label: "Journal" },
   { to: "/contact", label: "Contact" },
