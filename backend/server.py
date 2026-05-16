@@ -78,6 +78,10 @@ class WaitlistEntry(WaitlistCreate):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
+class BulkDelete(BaseModel):
+    ids: List[str]
+
+
 class AdminLogin(BaseModel):
     password: str
 
@@ -387,6 +391,22 @@ async def admin_list_newsletter(_: dict = Depends(require_admin)):
 async def admin_list_waitlist(_: dict = Depends(require_admin)):
     docs = await db.waitlist.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
     return docs
+
+
+@api_router.post("/admin/waitlist/delete")
+async def admin_delete_waitlist(payload: BulkDelete, _: dict = Depends(require_admin)):
+    if not payload.ids:
+        raise HTTPException(status_code=422, detail="No ids supplied")
+    result = await db.waitlist.delete_many({"id": {"$in": payload.ids}})
+    return {"deleted_count": result.deleted_count}
+
+
+@api_router.post("/admin/inquiries/delete")
+async def admin_delete_inquiries(payload: BulkDelete, _: dict = Depends(require_admin)):
+    if not payload.ids:
+        raise HTTPException(status_code=422, detail="No ids supplied")
+    result = await db.inquiries.delete_many({"id": {"$in": payload.ids}})
+    return {"deleted_count": result.deleted_count}
 
 
 # ---------- Deck routes ----------

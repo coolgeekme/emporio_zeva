@@ -121,7 +121,7 @@ function AdminLogin({ onLogin }) {
   );
 }
 
-function Table({ columns, rows, emptyLabel, testid }) {
+function Table({ columns, rows, emptyLabel, testid, selectable = false, selected, onToggle, onToggleAll }) {
   if (!rows.length) {
     return (
       <p className="text-[#5C4E4A] py-12 text-center" data-testid={`${testid}-empty`}>
@@ -129,11 +129,29 @@ function Table({ columns, rows, emptyLabel, testid }) {
       </p>
     );
   }
+  const allSelected = selectable && rows.length > 0 && rows.every((r) => selected?.has(r.id));
+  const someSelected =
+    selectable && !allSelected && rows.some((r) => selected?.has(r.id));
   return (
     <div className="overflow-x-auto border border-[#DFD7CA]" data-testid={`${testid}-table`}>
       <table className="w-full text-sm">
         <thead className="bg-[#F5EFE2]">
           <tr>
+            {selectable && (
+              <th className="text-left px-4 py-3 border-b border-[#DFD7CA] w-10">
+                <input
+                  type="checkbox"
+                  aria-label="Select all rows"
+                  checked={allSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = someSelected;
+                  }}
+                  onChange={() => onToggleAll?.(!allSelected)}
+                  data-testid={`${testid}-select-all`}
+                  className="accent-[#C05A3A] h-4 w-4"
+                />
+              </th>
+            )}
             {columns.map((c) => (
               <th
                 key={c.key}
@@ -145,21 +163,38 @@ function Table({ columns, rows, emptyLabel, testid }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r, i) => (
-            <tr
-              key={r.id || i}
-              className="odd:bg-[#FBF7EE] even:bg-white hover:bg-[#F5EFE2]/60 transition-colors"
-            >
-              {columns.map((c) => (
-                <td
-                  key={c.key}
-                  className="px-4 py-3 align-top text-[#2A1F1D] border-b border-[#DFD7CA] max-w-md"
-                >
-                  {c.render ? c.render(r) : r[c.key] ?? "—"}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {rows.map((r, i) => {
+            const isSelected = selectable && selected?.has(r.id);
+            return (
+              <tr
+                key={r.id || i}
+                className={`${
+                  isSelected ? "bg-[#F0E6CF]" : "odd:bg-[#FBF7EE] even:bg-white"
+                } hover:bg-[#F5EFE2]/60 transition-colors`}
+              >
+                {selectable && (
+                  <td className="px-4 py-3 align-top border-b border-[#DFD7CA]">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select row ${i + 1}`}
+                      checked={!!isSelected}
+                      onChange={() => onToggle?.(r.id)}
+                      data-testid={`${testid}-row-checkbox-${r.id}`}
+                      className="accent-[#C05A3A] h-4 w-4"
+                    />
+                  </td>
+                )}
+                {columns.map((c) => (
+                  <td
+                    key={c.key}
+                    className="px-4 py-3 align-top text-[#2A1F1D] border-b border-[#DFD7CA] max-w-md"
+                  >
+                    {c.render ? c.render(r) : r[c.key] ?? "—"}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -576,6 +611,9 @@ function AdminDashboard({ token, onLogout }) {
   const [data, setData] = useState({ decks: [], waitlist: [], inquiries: [], newsletter: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // selection state — keyed by tab so switching tabs doesn't lose checkmarks
+  const [selection, setSelection] = useState({ waitlist: new Set(), inquiries: new Set() });
+  const [deleting, setDeleting] = useState(false);
 
   const fetchTab = useCallback(
     async (key) => {
@@ -587,6 +625,10 @@ function AdminDashboard({ token, onLogout }) {
           headers: { Authorization: `Bearer ${token}` },
         });
         setData((d) => ({ ...d, [key]: rows }));
+        // clear selection on refresh
+        if (key === "waitlist" || key === "inquiries") {
+          setSelection((s) => ({ ...s, [key]: new Set() }));
+        }
       } catch (err) {
         if (err?.response?.status === 401) {
           sessionStorage.removeItem(TOKEN_KEY);
@@ -606,6 +648,50 @@ function AdminDashboard({ token, onLogout }) {
   }, [active, fetchTab]);
 
   const current = data[active] || [];
+  const selectableTab = active === "waitlist" || active === "inquiries";
+  const currentSelection = selectableTab ? selection[active] : null;
+  const selectedCount = currentSelection?.size ?? 0;
+
+  const toggleRow = (id) => {
+    setSelection((s) => {
+      const next = new Set(s[active]);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return { ...s, [active]: next };
+    });
+  };
+
+  const toggleAll = (select) => {
+    setSelection((s) => ({
+      ...s,
+      [active]: select ? new Set(current.map((r) => r.id)) : new Set(),
+    }));
+  };
+
+  const deleteSelected = async () => {
+    if (!selectedCount) return;
+    const label = active === "waitlist" ? "waitlist signup" : "inquiry";
+    if (
+      !window.confirm(
+        `Delete ${selectedCount} ${label}${selectedCount === 1 ? "" : "s"}? This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      await axios.post(
+        `${API}/admin/${active}/delete`,
+        { ids: Array.from(currentSelection) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await fetchTab(active);
+    } catch {
+      setError("Couldn't delete the selected rows. Try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const columns = {
     waitlist: [
@@ -692,9 +778,26 @@ function AdminDashboard({ token, onLogout }) {
       {/* Toolbar */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-6 flex items-center justify-between gap-4 flex-wrap">
         <p className="text-sm text-[#5C4E4A]" data-testid="admin-count">
-          {loading ? "Loading…" : `${current.length} ${active}`}
+          {loading
+            ? "Loading…"
+            : selectableTab && selectedCount > 0
+            ? `${selectedCount} of ${current.length} ${active} selected`
+            : `${current.length} ${active}`}
         </p>
         <div className="flex items-center gap-3">
+          {selectableTab && selectedCount > 0 && (
+            <button
+              onClick={deleteSelected}
+              disabled={deleting}
+              className="inline-flex items-center gap-2 text-sm text-[#C05A3A] hover:text-[#2A1F1D] disabled:opacity-50"
+              data-testid="admin-delete-selected-button"
+            >
+              <Trash2 size={14} />
+              {deleting
+                ? "Deleting…"
+                : `Delete ${selectedCount} ${selectedCount === 1 ? "row" : "rows"}`}
+            </button>
+          )}
           <button
             onClick={() => fetchTab(active)}
             className="btn-outline inline-flex items-center gap-2 text-sm"
@@ -735,6 +838,10 @@ function AdminDashboard({ token, onLogout }) {
             rows={current}
             emptyLabel={`No ${active} entries yet.`}
             testid={`admin-${active}`}
+            selectable={selectableTab}
+            selected={currentSelection}
+            onToggle={toggleRow}
+            onToggleAll={toggleAll}
           />
         )}
       </div>
