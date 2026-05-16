@@ -19,7 +19,6 @@ import logging
 from typing import Optional
 
 import httpx
-from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 log = logging.getLogger(__name__)
 
@@ -85,6 +84,11 @@ async def generate_intro(client_name: str) -> str:
         log.warning("EMERGENT_LLM_KEY not set; using default intro")
         return DEFAULT_INTRO
     try:
+        # Lazy import — if emergentintegrations isn't installed (e.g. wrong pip
+        # index on production), the rest of the API stays up and this endpoint
+        # falls back to the default intro instead of crashing the whole backend.
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+
         chat = LlmChat(
             api_key=api_key,
             session_id=f"deck-intro-{uuid.uuid4().hex[:8]}",

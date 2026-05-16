@@ -118,11 +118,23 @@ LOCKOUT_MINUTES = 15
 
 
 def _jwt_secret() -> str:
-    return os.environ["JWT_SECRET"]
+    secret = os.environ.get("JWT_SECRET")
+    if not secret:
+        raise HTTPException(
+            status_code=503,
+            detail="Admin auth is not configured on this environment.",
+        )
+    return secret
 
 
 def _admin_password() -> str:
-    return os.environ["ADMIN_PASSWORD"]
+    pw = os.environ.get("ADMIN_PASSWORD")
+    if not pw:
+        raise HTTPException(
+            status_code=503,
+            detail="Admin auth is not configured on this environment.",
+        )
+    return pw
 
 
 def _client_ip(request: Request) -> str:
