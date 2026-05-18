@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import {
   TESTIMONIALS,
@@ -21,6 +21,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [waitlistProduct, setWaitlistProduct] = useState(null);
+  const heroImgRef = useRef(null);
   const r1 = useReveal();
   const r2 = useReveal();
   const r3 = useReveal();
@@ -30,6 +31,35 @@ export default function Home() {
 
   useEffect(() => {
     axios.get(`${API}/products`).then((res) => setProducts(res.data)).catch(() => {});
+  }, []);
+
+  // Subtle parallax — image translates at ~22% of scroll speed within its frame.
+  // Respects prefers-reduced-motion. Capped so it never reveals empty space.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const el = heroImgRef.current;
+        if (!el) return;
+        const rect = el.parentElement.getBoundingClientRect();
+        // Only animate while the hero is reasonably in view
+        if (rect.bottom < -200 || rect.top > window.innerHeight + 200) return;
+        // 0 when hero is at top of viewport, grows as page scrolls down
+        const offset = Math.max(0, -rect.top);
+        const y = Math.min(offset * 0.22, 80); // cap at 80px
+        el.style.transform = `translate3d(0, ${y}px, 0) scale(1.12)`;
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (
@@ -83,9 +113,30 @@ export default function Home() {
           <div className="md:col-span-6 relative">
             <div className="img-wash aspect-[4/5] md:aspect-[5/6] relative overflow-hidden">
               <img
+                ref={heroImgRef}
                 src={IMAGES.hero}
                 alt="Hands slicing Not A Salami beside hand-wrapped gift boxes"
                 data-testid="hero-image"
+                className="will-change-transform"
+                style={{ transform: "scale(1.12)" }}
+              />
+              {/* Warm cocoa-ember tint — pulls image toward brand palette */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 mix-blend-multiply"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(192,90,58,0.18) 0%, rgba(192,90,58,0.06) 38%, rgba(42,31,29,0.20) 100%)",
+                }}
+              />
+              {/* Subtle vignette to lift the floating tile from the image */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(120% 90% at 75% 30%, transparent 55%, rgba(42,31,29,0.18) 100%)",
+                }}
               />
             </div>
             <div className="absolute -bottom-6 -left-6 md:-left-10 bg-[#F9F6F0] border border-[#DFD7CA] py-5 px-6 max-w-[220px]">
