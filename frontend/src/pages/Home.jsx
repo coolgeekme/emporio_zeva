@@ -84,7 +84,7 @@ export default function Home() {
             <div className="img-wash aspect-[4/5] md:aspect-[5/6] relative overflow-hidden">
               <img
                 src={IMAGES.hero}
-                alt="Sliced cocoa salami on a wooden board"
+                alt="Hands slicing Not A Salami beside hand-wrapped gift boxes"
                 data-testid="hero-image"
               />
             </div>

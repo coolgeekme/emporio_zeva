@@ -215,7 +215,7 @@ export const LOGO_URL =
   "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/p5bi7qmt_EMPORIO-ZEVA-logo.png";
 
 export const IMAGES = {
-  hero: "https://www.emporiozeva.com/wp-content/uploads/2024/06/split-img1.jpg",
+  hero: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
   product: "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg",
   founder: "https://www.emporiozeva.com/wp-content/uploads/2025/03/IMG_5209-scaled.jpg",
   sicily: "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1170670861-scaled.jpg",
