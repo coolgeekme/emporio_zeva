@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Mail, Phone } from "lucide-react";
-import { SF_MADE_BADGE, LOGO_URL, BRAND, CONTACT, TAGLINES } from "../content";
+import { SF_MADE_BADGE, NOT_A_SALAMI_SEAL, BRAND, CONTACT, TAGLINES } from "../content";
 import NewsletterForm from "./NewsletterForm";
 
 export default function Footer() {
@@ -32,11 +32,11 @@ export default function Footer() {
           <div className="md:col-span-5">
             <Link to="/" data-testid="footer-logo" className="inline-flex">
               <img
-                src={LOGO_URL}
-                alt="Emporio Zeva"
-                className="h-28 w-auto select-none"
+                src={NOT_A_SALAMI_SEAL}
+                alt="Not A Salami · Sicilian Cocoa Confection"
+                className="h-32 w-32 rounded-full select-none"
                 draggable="false"
-                style={{ filter: "invert(1) brightness(1.04)" }}
+                style={{ filter: "invert(1) brightness(1.02)", mixBlendMode: "screen" }}
               />
             </Link>
             <p className="mt-6 text-[#DFD7CA] max-w-sm leading-relaxed italic font-serif text-lg">

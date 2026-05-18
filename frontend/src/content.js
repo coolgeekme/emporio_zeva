@@ -214,6 +214,9 @@ export const SF_MADE_BADGE =
 export const LOGO_URL =
   "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/p5bi7qmt_EMPORIO-ZEVA-logo.png";
 
+export const NOT_A_SALAMI_SEAL =
+  "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/qk1gcxrs_image2.jpeg";
+
 export const IMAGES = {
   hero: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
   product: "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg",

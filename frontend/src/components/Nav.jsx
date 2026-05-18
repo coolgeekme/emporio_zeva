@@ -1,7 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { LOGO_URL } from "../content";
+import { NOT_A_SALAMI_SEAL } from "../content";
 
 const links = [
   { to: "/", label: "Home" },
@@ -32,9 +32,9 @@ export default function Nav() {
           className="flex items-center"
         >
           <img
-            src={LOGO_URL}
-            alt="Emporio Zeva"
-            className="h-[60px] md:h-[72px] w-auto select-none"
+            src={NOT_A_SALAMI_SEAL}
+            alt="Not A Salami · Sicilian Cocoa Confection"
+            className="h-[64px] w-[64px] md:h-[76px] md:w-[76px] rounded-full select-none mix-blend-multiply"
             draggable="false"
           />
         </Link>

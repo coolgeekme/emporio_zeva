@@ -11,6 +11,7 @@ import {
   PILLARS,
   RITUAL,
   TAGLINES,
+  NOT_A_SALAMI_SEAL,
 } from "../content";
 import { useReveal } from "../hooks/useReveal";
 import MonogramDivider from "../components/MonogramDivider";
@@ -354,10 +355,19 @@ export default function Home() {
 
       {/* ============== TESTIMONIALS ============== */}
       <section
-        className="bg-[#2A1F1D] text-[#F9F6F0] py-24 md:py-32 relative grain reveal"
+        className="bg-[#2A1F1D] text-[#F9F6F0] py-24 md:py-32 relative grain reveal overflow-hidden"
         ref={r4}
         data-testid="testimonials-section"
       >
+        {/* Brand seal watermark — large, low-opacity, inverted to cream on dark */}
+        <img
+          src={NOT_A_SALAMI_SEAL}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none select-none absolute -right-32 -bottom-40 w-[680px] h-[680px] hidden md:block"
+          style={{ filter: "invert(1)", mixBlendMode: "screen", opacity: 0.06 }}
+          data-testid="testimonials-watermark"
+        />
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 relative">
           <p className="overline text-[#B9935A]">What people say</p>
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 max-w-3xl">
