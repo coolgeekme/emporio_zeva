@@ -111,12 +111,6 @@ export default function OneSheet() {
             </div>
             <ul className="space-y-3 text-sm text-[#2A1F1D]" data-testid="one-sheet-contact">
               <li className="flex gap-3 items-center">
-                <Phone size={14} className="text-[#C05A3A]" />
-                <a href={`tel:${CONTACT.phone.replace(/\s|·/g, "")}`} className="hover:text-[#C05A3A] transition-colors">
-                  {CONTACT.phone_display}
-                </a>
-              </li>
-              <li className="flex gap-3 items-center">
                 <Globe size={14} className="text-[#C05A3A]" />
                 <a href="https://notasalami.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#C05A3A] transition-colors">
                   www.{BRAND.domain}

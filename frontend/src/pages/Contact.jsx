@@ -36,16 +36,6 @@ export default function Contact() {
             <p className="overline text-[#C05A3A]">Direct</p>
             <ul className="mt-4 space-y-4">
               <li className="flex gap-3 items-center">
-                <Phone size={18} className="text-[#C05A3A]" />
-                <a
-                  href={`tel:${CONTACT.phone.replace(/\s|·/g, "")}`}
-                  className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors"
-                  data-testid="contact-phone"
-                >
-                  {CONTACT.phone_display}
-                </a>
-              </li>
-              <li className="flex gap-3 items-center">
                 <Mail size={18} className="text-[#C05A3A]" />
                 <a
                   href={`mailto:${CONTACT.email_primary}`}

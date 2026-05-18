@@ -77,10 +77,6 @@ export default function Footer() {
             <ul className="mt-5 space-y-3 text-sm text-[#DFD7CA]">
               <li>{CONTACT.city}</li>
               <li className="flex items-center gap-2">
-                <Phone size={14} className="text-[#C05A3A]" />
-                <a href={`tel:${CONTACT.phone.replace(/\s|·/g, "")}`} data-testid="footer-phone" className="hover:text-[#C05A3A] transition-colors">{CONTACT.phone_display}</a>
-              </li>
-              <li className="flex items-center gap-2">
                 <Mail size={14} className="text-[#C05A3A]" />
                 <a href={`mailto:${CONTACT.email_primary}`} data-testid="footer-email" className="hover:text-[#C05A3A] transition-colors">{CONTACT.email_primary}</a>
               </li>
