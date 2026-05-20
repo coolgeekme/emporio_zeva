@@ -1,15 +1,10 @@
-// Decorative divider — a real Not A Salami seal flanked by hairline ornaments.
+// Decorative divider — central NS monogram seal between hairline ornaments.
 // `variant="dark"` for light/parchment backgrounds, `variant="light"` for dark.
-
-import { NOT_A_SALAMI_SEAL } from "../content";
 
 export default function MonogramDivider({ variant = "dark", className = "", testid = "monogram-divider" }) {
   const stroke = variant === "light" ? "#F9F6F0" : "#2A1F1D";
+  const accent = "#C05A3A";
   const gold = "#B9935A";
-  const sealStyle =
-    variant === "light"
-      ? { filter: "invert(1)", mixBlendMode: "screen" }
-      : { mixBlendMode: "multiply" };
 
   return (
     <div
@@ -24,13 +19,47 @@ export default function MonogramDivider({ variant = "dark", className = "", test
         <circle cx="214" cy="8" r="0.6" fill={stroke} />
       </svg>
 
-      <img
-        src={NOT_A_SALAMI_SEAL}
-        alt=""
-        className="h-14 w-14 md:h-16 md:w-16 rounded-full flex-shrink-0"
-        draggable="false"
-        style={sealStyle}
-      />
+      {/* Slightly smaller for better visual balance */}
+      <svg viewBox="0 0 72 72" className="h-9 md:h-11 w-auto flex-shrink-0">
+        {/* Outer ring */}
+        <circle cx="36" cy="36" r="34" fill="none" stroke={stroke} strokeWidth="0.7" />
+        <circle cx="36" cy="36" r="29" fill="none" stroke={stroke} strokeWidth="0.4" />
+
+        {/* Ornamental dots around the ring */}
+        {Array.from({ length: 16 }).map((_, i) => {
+          const angle = (i * Math.PI * 2) / 16;
+          const r = 31.5;
+          const x = 36 + Math.cos(angle) * r;
+          const y = 36 + Math.sin(angle) * r;
+          return <circle key={i} cx={x} cy={y} r="0.55" fill={i % 4 === 0 ? accent : gold} />;
+        })}
+
+        {/* Top flourish */}
+        <path d="M 28 18 Q 36 14 44 18" fill="none" stroke={stroke} strokeWidth="0.6" />
+        <circle cx="36" cy="15.5" r="0.9" fill={accent} />
+
+        {/* Bottom flourish */}
+        <path d="M 28 54 Q 36 58 44 54" fill="none" stroke={stroke} strokeWidth="0.6" />
+        <circle cx="36" cy="56.5" r="0.9" fill={accent} />
+
+        {/* Central monogram N S */}
+        <text
+          x="36"
+          y="42"
+          textAnchor="middle"
+          fontFamily="'Bodoni Moda', serif"
+          fontSize="18"
+          fontStyle="italic"
+          fill={stroke}
+          letterSpacing="0.5"
+        >
+          NS
+        </text>
+
+        {/* Side leaf marks */}
+        <path d="M 8 36 q 4 -3 8 0 q -4 3 -8 0" fill={gold} opacity="0.85" />
+        <path d="M 64 36 q -4 -3 -8 0 q 4 3 8 0" fill={gold} opacity="0.85" />
+      </svg>
 
       <svg viewBox="0 0 220 16" className="flex-1 min-w-0 max-w-[80px] sm:max-w-[200px] md:max-w-[280px] h-3" preserveAspectRatio="none">
         <line x1="0" y1="8" x2="220" y2="8" stroke={stroke} strokeWidth="0.5" />
@@ -41,4 +70,3 @@ export default function MonogramDivider({ variant = "dark", className = "", test
     </div>
   );
 }
-

@@ -40,6 +40,9 @@ class Product(BaseModel):
     images: List[str]
     badge: Optional[str] = None
     available: bool = True
+    # "active" = currently sold; "future" = experiment / coming soon (drives waitlist UI)
+    status: str = "active"
+    pronunciation: Optional[str] = None
 
 
 class InquiryCreate(BaseModel):
@@ -189,65 +192,35 @@ SEED_PRODUCTS = [
             "Unsalted butter",
             "Cane sugar",
             "Free-range eggs",
-            "A whisper of espresso"
+            "A whisper of espresso",
         ],
         "pairings": [
             "Coffee",
             "Wine",
             "Fresh fruit",
-            "Aged cheese"
+            "Aged cheese",
         ],
         "serving": [
             "Store refrigerated. Remove from the fridge 15–20 minutes before serving — best at room temperature.",
             "Slice with a sharp knife, 1¼–1½ inches thick. Each slice reveals its own pattern.",
             "Arrange in an overlapping fan. Serve slowly, around good conversation.",
-            "8-week shelf life unopened. Best enjoyed within 2 weeks of opening."
+            "8-week shelf life unopened. Best enjoyed within 2 weeks of opening.",
         ],
         "images": [
-            "https://www.emporiozeva.com/wp-content/uploads/2024/06/split-img1.jpg",
             "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg",
-            "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg"
-        ],
-        "badge": "Soft launch",
-        "available": True,
-    },
-    {
-        "slug": "not-a-salami-gift-board",
-        "name": "The Tavola Gift Board",
-        "tagline": "One Not A Salami, a hand-finished olive-wood board, linen napkin, and twine.",
-        "price": "$78",
-        "weight": "Boxed · 16–17 slices",
-        "description": "A complete table ritual. Our cocoa salami nestled with a small olive-wood board, a hemmed linen napkin, and our serving card.",
-        "long_description": "Designed as a host gift or a quiet indulgence. Each board is sourced from a small workshop in San Francisco and finished by hand. Pair it with our classic Not A Salami and a printed serving card pulled from Eva's notebook.",
-        "ingredients": [
-            "Includes: 1× Not A Salami Classic",
-            "1× Olive-wood serving board, ~10in",
-            "1× Italian linen napkin",
-            "1× Letterpress serving card",
-            "Wrapped in natural kraft, sealed with wax"
-        ],
-        "pairings": [
-            "Espresso, naturally",
-            "A late afternoon with friends",
-            "Anyone hosting their first dinner of the season"
-        ],
-        "serving": [
-            "Present the board unwrapped at the table.",
-            "Slice generously, share generously.",
-            "Keep the board — it gets better with use."
-        ],
-        "images": [
+            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
             "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg",
-            "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg"
         ],
-        "badge": "Gift",
+        "badge": "The signature",
         "available": True,
+        "status": "active",
     },
+    # ---------------------------------------------------------------- FUTURE
     {
         "slug": "not-a-salami-pistachio",
-        "name": "Not A Salami — Pistachio di Bronte",
-        "tagline": "Coming soon. Sicilian pistachio folded through dark cocoa.",
-        "price": "$36",
+        "name": "Pistacchio di Bronte",
+        "tagline": "Coming from Eva's kitchen. Sicilian pistachio folded through dark cocoa.",
+        "price": "TBD",
         "weight": "300g · 16–17 slices",
         "description": "A future flavor in development — pistachio di Bronte from Mount Etna's slopes, paired with our signature cocoa base.",
         "long_description": "Still in Eva's kitchen. We're testing batches of pistachio from Bronte, on the volcanic slopes of Etna — the same nuts our family used for celebrations. Join the list to be first when it launches.",
@@ -255,23 +228,123 @@ SEED_PRODUCTS = [
             "Premium dark cocoa",
             "Pistachio di Bronte D.O.P.",
             "Italian cookie crumbs",
-            "Unsalted butter, cane sugar"
+            "Unsalted butter, cane sugar",
         ],
         "pairings": [
             "Marsala secco",
             "Affogato",
-            "A long Sunday"
+            "A long Sunday",
         ],
         "serving": [
             "Slice thin to reveal the pistachio mosaic.",
-            "Serve at room temperature with a chilled dessert wine."
+            "Serve at room temperature with a chilled dessert wine.",
         ],
         "images": [
             "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1286886227-scaled.jpg",
-            "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1170670861-scaled.jpg"
+            "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1170670861-scaled.jpg",
         ],
-        "badge": "In development",
+        "badge": "Future flavor",
         "available": False,
+        "status": "future",
+        "pronunciation": "pee-STAHK-kee-oh dee BRON-teh",
+    },
+    {
+        "slug": "not-a-salami-mini",
+        "name": "Il Mini",
+        "tagline": "A pocket-sized Not A Salami. Perfect for one, two, or a quiet evening.",
+        "price": "TBD",
+        "weight": "120g · 6–7 slices",
+        "description": "The full Classic Cocoa recipe, scaled down for smaller tables — and smaller gifts.",
+        "long_description": "Eva keeps a few of these on her bench at all times. A scaled-down Not A Salami for the table of two, the office desk, or the corporate tasting flight. Same cocoa, same biscotti, same wrap-and-tie — half the size, twice the charm. We're finalizing batch sizes; reserve a spot to be first.",
+        "ingredients": [
+            "Rich cocoa",
+            "Crunchy biscotti",
+            "Chocolate chips",
+            "Delicate sugar crystals",
+            "Unsalted butter, cane sugar",
+        ],
+        "pairings": [
+            "An afternoon espresso",
+            "A glass of port",
+            "A small, considered gift",
+        ],
+        "serving": [
+            "Slice 1 inch thick — the whole piece serves two beautifully.",
+            "Ideal for tasting flights and curated corporate boxes.",
+        ],
+        "images": [
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg",
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg",
+        ],
+        "badge": "On the workbench",
+        "available": False,
+        "status": "future",
+        "pronunciation": "eel MEE-nee",
+    },
+    {
+        "slug": "not-a-salami-assaggio",
+        "name": "L'Assaggio · Tasting Slices",
+        "tagline": "Pre-sliced sample portions, individually wrapped. For tables, gifts, and tastings.",
+        "price": "TBD",
+        "weight": "Per-slice · sold in sets",
+        "description": "Single hand-cut slices, individually wrapped in waxed parchment. Designed for tasting events and corporate gifting drops.",
+        "long_description": "L'Assaggio is the answer to one of our most-asked questions: 'Can I share Not A Salami without slicing it?' Yes — and now we have a format for it. Hand-cut slices, individually wrapped in waxed parchment, sealed with a wax dot. Ideal for hotels, restaurants, in-store sampling, and corporate welcome boxes. We're piloting sets of 12, 24, and 50.",
+        "ingredients": [
+            "Sliced from our Classic Cocoa",
+            "Individually wrapped in food-safe waxed parchment",
+            "Sealed with a small wax stamp",
+        ],
+        "pairings": [
+            "Welcome amenities",
+            "Tasting flights",
+            "After-dinner mints — but better",
+        ],
+        "serving": [
+            "Shelf-stable in original wrap for up to 6 weeks.",
+            "Best enjoyed within 10 minutes of unwrapping.",
+        ],
+        "images": [
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/image015.jpg",
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/image019.jpg",
+        ],
+        "badge": "Coming soon",
+        "available": False,
+        "status": "future",
+        "pronunciation": "lah-SAH-jo",
+    },
+    # Retained for any old links — repositioned as a future bundle, not an active SKU
+    {
+        "slug": "not-a-salami-gift-board",
+        "name": "The Tavola Gift Board",
+        "tagline": "A future complete-table ritual. Cocoa salami, olive-wood board, linen napkin.",
+        "price": "TBD",
+        "weight": "Boxed · 16–17 slices",
+        "description": "An upcoming complete table ritual — our cocoa salami with a small olive-wood board, a hemmed linen napkin, and a serving card.",
+        "long_description": "Designed as a host gift or a quiet indulgence. Currently in development with a small San Francisco workshop. Join the waitlist to reserve a board from the first run.",
+        "ingredients": [
+            "Includes: 1× Not A Salami Classic",
+            "1× Olive-wood serving board, ~10in",
+            "1× Italian linen napkin",
+            "1× Letterpress serving card",
+            "Wrapped in natural kraft, sealed with wax",
+        ],
+        "pairings": [
+            "Espresso, naturally",
+            "A late afternoon with friends",
+            "Anyone hosting their first dinner of the season",
+        ],
+        "serving": [
+            "Present the board unwrapped at the table.",
+            "Slice generously, share generously.",
+            "Keep the board — it gets better with use.",
+        ],
+        "images": [
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg",
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg",
+        ],
+        "badge": "Future bundle",
+        "available": False,
+        "status": "future",
     },
 ]
 

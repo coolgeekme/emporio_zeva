@@ -98,6 +98,15 @@ export default function WaitlistDialog({ open, onClose, product }) {
           >
             {product.name}
           </h2>
+          {product.pronunciation && (
+            <p
+              className="mt-2 text-[11px] tracking-[0.18em] uppercase text-[#B9935A] italic"
+              data-testid="waitlist-pronunciation"
+            >
+              <span className="text-[#5C4E4A] not-italic">say it · </span>
+              {product.pronunciation}
+            </p>
+          )}
           <p className="text-sm text-[#5C4E4A] mt-4 leading-relaxed">
             Leave your name. We'll write the moment it's ready — small batch, in
             order of reservation. No spam, no newsletter.

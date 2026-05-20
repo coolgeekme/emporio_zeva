@@ -14,7 +14,7 @@ export const BRAND = {
 };
 
 export const CONTACT = {
-  email_primary: "eva@emporiozeva.com",
+  email_primary: "hello@emporiozeva.com",
   email_hello: "hello@emporiozeva.com",
   phone: "+1 415-640-3005",
   phone_display: "415 · 640 · 3005",
