@@ -16,8 +16,9 @@ export default function Journal() {
         {JOURNAL.map((j, i) => (
           <article
             key={j.slug}
+            id={j.slug}
             data-testid={`journal-article-${j.slug}`}
-            className={`grid grid-cols-1 md:grid-cols-12 gap-10 items-center ${
+            className={`grid grid-cols-1 md:grid-cols-12 gap-10 items-center scroll-mt-28 ${
               i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""
             }`}
           >

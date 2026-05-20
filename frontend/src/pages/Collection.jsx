@@ -115,7 +115,7 @@ export default function Collection() {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-end">
                   <div className="md:col-span-7">
                     <p className="overline text-[#C05A3A]">
-                      From Eva's kitchen · future experiments
+                      From Eva's kitchen · future offerings
                     </p>
                     <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight mt-4 text-[#2A1F1D] leading-[1.05]">
                       Coming next.
@@ -137,31 +137,37 @@ export default function Collection() {
                       data-testid={`future-card-${p.slug}`}
                       className="group"
                     >
-                      <div className="img-wash aspect-[4/5]">
-                        <img src={p.images[0]} alt={p.name} />
-                      </div>
-                      <div className="mt-5">
-                        {p.badge && (
-                          <span className="text-[10px] tracking-[0.22em] uppercase font-semibold text-[#C05A3A] border border-[#C05A3A] px-2 py-1">
-                            {p.badge}
-                          </span>
-                        )}
-                        <h3 className="font-serif text-2xl md:text-3xl mt-4 text-[#2A1F1D] leading-tight">
-                          {p.name}
-                        </h3>
-                        {p.pronunciation && (
-                          <p
-                            className="mt-2 text-[11px] tracking-[0.18em] uppercase text-[#B9935A] italic"
-                            data-testid={`future-pronunciation-${p.slug}`}
-                          >
-                            <span className="text-[#5C4E4A] not-italic">say it · </span>
-                            {p.pronunciation}
+                      <Link
+                        to={`/products/${p.slug}`}
+                        data-testid={`future-card-link-${p.slug}`}
+                        className="block"
+                      >
+                        <div className="img-wash aspect-[4/5]">
+                          <img src={p.images[0]} alt={p.name} />
+                        </div>
+                        <div className="mt-5">
+                          {p.badge && (
+                            <span className="text-[10px] tracking-[0.22em] uppercase font-semibold text-[#C05A3A] border border-[#C05A3A] px-2 py-1">
+                              {p.badge}
+                            </span>
+                          )}
+                          <h3 className="font-serif text-2xl md:text-3xl mt-4 text-[#2A1F1D] leading-tight group-hover:text-[#C05A3A] transition-colors">
+                            {p.name}
+                          </h3>
+                          {p.pronunciation && (
+                            <p
+                              className="mt-2 text-[11px] tracking-[0.18em] uppercase text-[#B9935A] italic"
+                              data-testid={`future-pronunciation-${p.slug}`}
+                            >
+                              <span className="text-[#5C4E4A] not-italic">say it · </span>
+                              {p.pronunciation}
+                            </p>
+                          )}
+                          <p className="text-sm text-[#5C4E4A] mt-3 max-w-md leading-relaxed">
+                            {p.tagline}
                           </p>
-                        )}
-                        <p className="text-sm text-[#5C4E4A] mt-3 max-w-md leading-relaxed">
-                          {p.tagline}
-                        </p>
-                      </div>
+                        </div>
+                      </Link>
                       <button
                         type="button"
                         onClick={() => setWaitlistProduct(p)}

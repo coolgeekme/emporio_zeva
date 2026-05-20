@@ -29,6 +29,7 @@ export default function Home() {
   const r4 = useReveal();
   const r5 = useReveal();
   const r6 = useReveal();
+  const rFuture = useReveal();
 
   useEffect(() => {
     axios.get(`${API}/products`).then((res) => setProducts(res.data)).catch(() => {});
@@ -235,7 +236,7 @@ export default function Home() {
 
       {/* ============== COLLECTION TEASER — the signature ============== */}
       <section
-        className="bg-[#EAE4D9]/50 py-24 md:py-32 reveal"
+        className="bg-[#EAE4D9]/50 pt-24 md:pt-32 pb-12 md:pb-16 reveal"
         ref={r2}
         data-testid="collection-teaser-section"
       >
@@ -280,9 +281,15 @@ export default function Home() {
                 </Link>
                 <div className="md:col-span-5">
                   {hero.badge && <p className="overline text-[#C05A3A]">{hero.badge}</p>}
-                  <h3 className="font-serif text-3xl md:text-4xl lg:text-5xl mt-3 text-[#2A1F1D] leading-tight">
-                    {hero.name}
-                  </h3>
+                  <Link
+                    to={`/products/${hero.slug}`}
+                    data-testid={`home-view-product-title-${hero.slug}`}
+                    className="inline-block"
+                  >
+                    <h3 className="font-serif text-3xl md:text-4xl lg:text-5xl mt-3 text-[#2A1F1D] leading-tight hover:text-[#C05A3A] transition-colors">
+                      {hero.name}
+                    </h3>
+                  </Link>
                   <p className="text-base text-[#5C4E4A] mt-5 max-w-md leading-relaxed">
                     {hero.tagline}
                   </p>
@@ -310,71 +317,85 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ============== FUTURE FLAVORS · FROM EVA'S KITCHEN ============== */}
+      {/* ============== FUTURE OFFERINGS · FROM EVA'S KITCHEN ============== */}
       <section
-        className="max-w-[1400px] mx-auto px-6 md:px-10 py-24 md:py-32 reveal"
+        ref={rFuture}
+        className="bg-[#EAE4D9]/50 pt-4 md:pt-8 pb-24 md:pb-32 reveal"
         data-testid="future-flavors-section"
       >
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-end">
-          <div className="md:col-span-7">
-            <p className="overline text-[#C05A3A]">From Eva's kitchen · what's next</p>
-            <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight mt-4 text-[#2A1F1D] leading-[1.05]">
-              Future flavors,
-              <br />
-              <span className="italic text-[#C05A3A]">future experiments.</span>
-            </h2>
-          </div>
-          <p className="md:col-span-5 text-[#5C4E4A] leading-relaxed max-w-md">
-            New formats and flavors arrive only when Eva is happy with them. Reserve
-            your place — we'll write when each one comes out of the kitchen.
-          </p>
-        </div>
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+          <div className="border-t border-[#DFD7CA] pt-16 md:pt-20">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-end">
+              <div className="md:col-span-7">
+                <p className="overline text-[#C05A3A]">
+                  From Eva's kitchen · future offerings
+                </p>
+                <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight mt-4 text-[#2A1F1D] leading-[1.05]">
+                  Coming next.
+                  <br />
+                  <span className="italic text-[#C05A3A]">Reservable today.</span>
+                </h2>
+              </div>
+              <p className="md:col-span-5 text-[#5C4E4A] leading-relaxed max-w-md">
+                New formats and flavors arrive only when Eva is happy with them.
+                Reserve your place — we'll write when each one comes out of the
+                kitchen.
+              </p>
+            </div>
 
-        <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
-          {products
-            .filter((p) => p.status === "future")
-            .slice(0, 3)
-            .map((p) => (
-              <article
-                key={p.slug}
-                data-testid={`future-flavor-card-${p.slug}`}
-                className="group"
-              >
-                <div className="img-wash aspect-[4/5]">
-                  <img src={p.images[0]} alt={p.name} />
-                </div>
-                <div className="mt-5">
-                  {p.badge && (
-                    <span className="text-[10px] tracking-[0.22em] uppercase font-semibold text-[#C05A3A] border border-[#C05A3A] px-2 py-1">
-                      {p.badge}
-                    </span>
-                  )}
-                  <h3 className="font-serif text-2xl md:text-3xl mt-4 text-[#2A1F1D] leading-tight">
-                    {p.name}
-                  </h3>
-                  {p.pronunciation && (
-                    <p
-                      className="mt-2 text-[11px] tracking-[0.18em] uppercase text-[#B9935A] italic"
-                      data-testid={`future-flavor-pronunciation-${p.slug}`}
+            <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+              {products
+                .filter((p) => p.status === "future")
+                .slice(0, 3)
+                .map((p) => (
+                  <article
+                    key={p.slug}
+                    data-testid={`future-flavor-card-${p.slug}`}
+                    className="group"
+                  >
+                    <Link
+                      to={`/products/${p.slug}`}
+                      data-testid={`future-flavor-link-${p.slug}`}
+                      className="block"
                     >
-                      <span className="text-[#5C4E4A] not-italic">say it · </span>
-                      {p.pronunciation}
-                    </p>
-                  )}
-                  <p className="text-sm text-[#5C4E4A] mt-3 leading-relaxed">
-                    {p.tagline}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setWaitlistProduct(p)}
-                  className="btn-outline mt-6 text-sm"
-                  data-testid={`future-flavor-waitlist-${p.slug}`}
-                >
-                  Join the Waitlist →
-                </button>
-              </article>
-            ))}
+                      <div className="img-wash aspect-[4/5]">
+                        <img src={p.images[0]} alt={p.name} />
+                      </div>
+                      <div className="mt-5">
+                        {p.badge && (
+                          <span className="text-[10px] tracking-[0.22em] uppercase font-semibold text-[#C05A3A] border border-[#C05A3A] px-2 py-1">
+                            {p.badge}
+                          </span>
+                        )}
+                        <h3 className="font-serif text-2xl md:text-3xl mt-4 text-[#2A1F1D] leading-tight group-hover:text-[#C05A3A] transition-colors">
+                          {p.name}
+                        </h3>
+                        {p.pronunciation && (
+                          <p
+                            className="mt-2 text-[11px] tracking-[0.18em] uppercase text-[#B9935A] italic"
+                            data-testid={`future-flavor-pronunciation-${p.slug}`}
+                          >
+                            <span className="text-[#5C4E4A] not-italic">say it · </span>
+                            {p.pronunciation}
+                          </p>
+                        )}
+                        <p className="text-sm text-[#5C4E4A] mt-3 leading-relaxed">
+                          {p.tagline}
+                        </p>
+                      </div>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setWaitlistProduct(p)}
+                      className="btn-outline mt-6 text-sm"
+                      data-testid={`future-flavor-waitlist-${p.slug}`}
+                    >
+                      Join the Waitlist →
+                    </button>
+                  </article>
+                ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -491,10 +512,11 @@ export default function Home() {
 
         <div className="mt-16 grid md:grid-cols-3 gap-10 md:gap-12">
           {JOURNAL.map((j, i) => (
-            <article
+            <Link
               key={j.slug}
+              to={`/journal#${j.slug}`}
               data-testid={`journal-card-${j.slug}`}
-              className={`group ${i === 1 ? "md:translate-y-12" : ""}`}
+              className={`group block ${i === 1 ? "md:translate-y-12" : ""}`}
             >
               <div className="img-wash aspect-[4/5]">
                 <img src={j.image} alt={j.title} />
@@ -506,7 +528,7 @@ export default function Home() {
                 </h3>
                 <p className="text-sm text-[#5C4E4A] mt-3 leading-relaxed">{j.excerpt}</p>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </section>
