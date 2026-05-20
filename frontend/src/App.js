@@ -14,6 +14,7 @@ import Ritual from "./pages/Ritual";
 import OneSheet from "./pages/OneSheet";
 import Admin from "./pages/Admin";
 import DeckView from "./pages/DeckView";
+import JournalArticle from "./pages/JournalArticle";
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -51,6 +52,7 @@ function Shell() {
           <Route path="/products/:slug" element={<ProductDetail />} />
           <Route path="/our-story" element={<OurStory />} />
           <Route path="/journal" element={<Journal />} />
+          <Route path="/journal/:slug" element={<JournalArticle />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/blackrock" element={<BlackRock />} />
           <Route path="/deck/:slug" element={<DeckView />} />

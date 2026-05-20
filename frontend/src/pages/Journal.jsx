@@ -1,5 +1,6 @@
-import { JOURNAL } from "../content";
+import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { JOURNAL } from "../content";
 
 export default function Journal() {
   return (
@@ -22,18 +23,34 @@ export default function Journal() {
               i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""
             }`}
           >
-            <div className="md:col-span-7 img-wash aspect-[4/3]">
-              <img src={j.image} alt={j.title} />
-            </div>
+            <Link
+              to={`/journal/${j.slug}`}
+              className="md:col-span-7 group block"
+              data-testid={`journal-article-image-link-${j.slug}`}
+            >
+              <div className="img-wash aspect-[4/3]">
+                <img src={j.image} alt={j.title} />
+              </div>
+            </Link>
             <div className="md:col-span-5">
               <p className="overline text-[#5C4E4A]">No 0{i + 1} · {j.date} · {j.read}</p>
-              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.1] mt-4 text-[#2A1F1D]">
-                {j.title}
-              </h2>
+              <Link
+                to={`/journal/${j.slug}`}
+                className="inline-block group"
+                data-testid={`journal-article-title-link-${j.slug}`}
+              >
+                <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.1] mt-4 text-[#2A1F1D] group-hover:text-[#C05A3A] transition-colors">
+                  {j.title}
+                </h2>
+              </Link>
               <p className="mt-5 text-[#5C4E4A] leading-relaxed">{j.excerpt}</p>
-              <a href="#" className="mt-7 link-underline inline-flex" data-testid={`journal-read-${j.slug}`}>
+              <Link
+                to={`/journal/${j.slug}`}
+                className="mt-7 link-underline inline-flex"
+                data-testid={`journal-read-${j.slug}`}
+              >
                 Read article <ArrowRight size={14} />
-              </a>
+              </Link>
             </div>
           </article>
         ))}

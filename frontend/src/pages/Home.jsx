@@ -514,7 +514,7 @@ export default function Home() {
           {JOURNAL.map((j, i) => (
             <Link
               key={j.slug}
-              to={`/journal#${j.slug}`}
+              to={`/journal/${j.slug}`}
               data-testid={`journal-card-${j.slug}`}
               className={`group block ${i === 1 ? "md:translate-y-12" : ""}`}
             >
