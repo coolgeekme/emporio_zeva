@@ -361,7 +361,7 @@ SEED_PRODUCTS = [
             "Keep the board — it gets better with use.",
         ],
         "images": [
-            "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg",
+            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
             "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg",
         ],
         "badge": "Future bundle",
