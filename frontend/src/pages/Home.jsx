@@ -141,8 +141,8 @@ export default function Home() {
                 }}
               />
             </div>
-            <div className="absolute -bottom-6 -left-6 md:-left-10 bg-[#F9F6F0] border border-[#DFD7CA] py-5 px-6 max-w-[220px]">
-              <p className="overline text-[#C05A3A]">No 01 · Cocoa Classic</p>
+            <div className="hidden md:block absolute -bottom-6 -left-6 md:-left-10 bg-[#F9F6F0] border border-[#DFD7CA] py-5 px-6 max-w-[220px]">
+              <p className="overline text-[#C05A3A]">No 01 · Sicilian Cocoa Confection</p>
               <p className="font-serif text-2xl mt-2 leading-tight text-[#2A1F1D]">
                 A little peculiar, <br />always delicious.
               </p>
@@ -294,14 +294,13 @@ export default function Home() {
                     {hero.tagline}
                   </p>
                   <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-                    <button
-                      type="button"
-                      onClick={() => setWaitlistProduct(hero)}
+                    <Link
+                      to={`/contact?product=${hero.slug}`}
                       className="btn-primary"
-                      data-testid={`home-waitlist-button-${hero.slug}`}
+                      data-testid={`home-inquire-button-${hero.slug}`}
                     >
-                      Join the Waitlist
-                    </button>
+                      Inquire to order
+                    </Link>
                     <Link
                       to={`/products/${hero.slug}`}
                       className="link-underline inline-flex items-center gap-2"

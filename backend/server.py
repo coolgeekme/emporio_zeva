@@ -178,21 +178,19 @@ async def require_admin(request: Request) -> dict:
 SEED_PRODUCTS = [
     {
         "slug": "not-a-salami-classic",
-        "name": "Not A Salami — Classic Cocoa",
+        "name": "Not A Salami — Sicilian Cocoa Confection",
         "tagline": "A truly Sicilian treat. For the unexpected.",
         "price": "$32",
         "weight": "300g · 16–17 slices",
-        "description": "Rich cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-shaped, wrapped, and tied. Slice at the table.",
-        "long_description": "Inspired by Eva's grandmother's recipe from Modica, Sicily — premium cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-rolled and rested to develop its signature firm-yet-tender bite. Wrapped in butcher's twine and parchment so it arrives looking impossibly like cured meat. Cut it open at the table and watch the room turn.",
+        "description": "Rich Guittard cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-shaped, wrapped, and tied. Slice at the table.",
+        "long_description": "Inspired by Eva's grandmother's recipe from Modica, Sicily — premium Guittard cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-rolled and rested to develop its signature firm-yet-tender bite. Wrapped in butcher's twine and parchment so it arrives looking impossibly like cured meat. Cut it open at the table and watch the room turn.",
         "ingredients": [
-            "Rich cocoa",
+            "Guittard cocoa powder",
             "Crunchy biscotti",
             "Chocolate chips",
             "Delicate sugar crystals",
+            "Powdered sugar",
             "Unsalted butter",
-            "Cane sugar",
-            "Free-range eggs",
-            "A whisper of espresso",
         ],
         "pairings": [
             "Coffee",

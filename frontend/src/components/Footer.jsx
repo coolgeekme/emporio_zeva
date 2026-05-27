@@ -15,11 +15,11 @@ export default function Footer() {
           <div className="md:col-span-6">
             <p className="overline text-[#B9935A]">The Journal</p>
             <h3 className="font-serif text-4xl md:text-5xl leading-[1.05] mt-4 max-w-md">
-              Get <span className="italic text-[#C05A3A]">10% off</span> your first Not A Salami.
+              Slow notes from <span className="italic text-[#C05A3A]">Eva's kitchen.</span>
             </h3>
             <p className="mt-5 text-[#DFD7CA] max-w-md leading-relaxed">
-              Slow notes from Eva's kitchen. New flavor drops, dinner pairings,
-              and a quiet head-start on holiday gift boxes.
+              New flavor drops, dinner pairings, and a quiet head-start on
+              holiday gift boxes — sent rarely, written by hand.
             </p>
           </div>
           <div className="md:col-span-6 flex md:items-end">

@@ -61,13 +61,16 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
 // ============================================================================
 
 export default function BlackRock({ deck = null }) {
-  // Personalization overrides — fall back to BlackRock defaults when not provided.
-  const clientName = deck?.client_name || "BlackRock";
-  const clientFull = deck ? deck.client_name : "BlackRock, Inc.";
-  const introText = deck?.intro_text || "A Curated Italian Gifting Experience.";
+  // Personalization overrides — when no deck is provided, render a clean general version.
+  const isGeneric = !deck;
+  const clientName = deck?.client_name || "Your Team";
+  const clientFull = deck ? deck.client_name : null;
+  const introText =
+    deck?.intro_text ||
+    "A curated Italian gifting experience, prepared by hand in San Francisco.";
   const clientLogo = deck?.logo_url || null;
-  const clientDomain = (deck?.domain || "blackrock").replace(/^www\./, "").split(".")[0];
-  const emailPlaceholder = `you@${(deck?.domain) || "blackrock.com"}`;
+  const clientDomain = (deck?.domain || "company").replace(/^www\./, "").split(".")[0];
+  const emailPlaceholder = `you@${(deck?.domain) || "company.com"}`;
 
   const trackRef = useRef(null);
   const rafRef = useRef(0);
@@ -159,8 +162,10 @@ export default function BlackRock({ deck = null }) {
   }, []);
 
   useEffect(() => {
-    document.title = `A Corporate Gifting Presentation for ${clientName} · Not A Salami`;
-  }, [clientName]);
+    document.title = isGeneric
+      ? "Corporate Gifting Presentation · Not A Salami"
+      : `A Corporate Gifting Presentation for ${clientName} · Not A Salami`;
+  }, [isGeneric, clientName]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -222,15 +227,25 @@ export default function BlackRock({ deck = null }) {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-14 items-center">
             <div className="md:col-span-7">
               <p className="overline text-[#5C4E4A] mb-5 fx fx-down fx-d1">
-                Confidential · Prepared for {clientFull}
+                {isGeneric ? "Corporate gifting · 2026" : `Confidential · Prepared for ${clientFull}`}
               </p>
               <h1
                 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[88px] leading-[0.95] tracking-tight text-[#2A1F1D] fx fx-left fx-d2"
                 data-testid="pitch-cover-title"
               >
-                A Corporate Gifting Presentation
-                <br />
-                for <span className="italic text-[#C05A3A]">{clientName}</span>.
+                {isGeneric ? (
+                  <>
+                    A Corporate Gifting
+                    <br />
+                    <span className="italic text-[#C05A3A]">Presentation.</span>
+                  </>
+                ) : (
+                  <>
+                    A Corporate Gifting Presentation
+                    <br />
+                    for <span className="italic text-[#C05A3A]">{clientName}</span>.
+                  </>
+                )}
               </h1>
               <p className="mt-7 text-xl md:text-2xl font-serif text-[#5C4E4A] max-w-2xl leading-snug italic fx fx-up fx-d3">
                 {introText}

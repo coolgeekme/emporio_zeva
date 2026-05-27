@@ -120,13 +120,23 @@ export default function ProductDetail() {
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3" data-testid="product-ctas">
-              <button
-                onClick={() => setWaitlistOpen(true)}
-                className="btn-primary"
-                data-testid="product-waitlist-button"
-              >
-                Join the Waitlist
-              </button>
+              {product.status === "future" ? (
+                <button
+                  onClick={() => setWaitlistOpen(true)}
+                  className="btn-primary"
+                  data-testid="product-waitlist-button"
+                >
+                  Join the Waitlist
+                </button>
+              ) : (
+                <Link
+                  to={`/contact?product=${product.slug}`}
+                  className="btn-primary"
+                  data-testid="product-inquire-button"
+                >
+                  Inquire to order
+                </Link>
+              )}
               <Link to="/contact" className="btn-outline" data-testid="product-contact-link">
                 Wholesale & press
               </Link>

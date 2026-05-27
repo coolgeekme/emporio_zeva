@@ -38,7 +38,7 @@ function ScrollToTop() {
 
 function Shell() {
   const { pathname } = useLocation();
-  const isDeck = pathname === "/blackrock" || pathname.startsWith("/deck/");
+  const isDeck = pathname === "/blackrock" || pathname === "/corporate" || pathname.startsWith("/deck/");
   const isAdmin = pathname.startsWith("/admin");
   const isChrome = !isDeck && !isAdmin;
   return (
@@ -55,6 +55,7 @@ function Shell() {
           <Route path="/journal/:slug" element={<JournalArticle />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/blackrock" element={<BlackRock />} />
+          <Route path="/corporate" element={<BlackRock />} />
           <Route path="/deck/:slug" element={<DeckView />} />
           <Route path="/ritual" element={<Ritual />} />
           <Route path="/one-sheet" element={<OneSheet />} />

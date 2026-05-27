@@ -84,14 +84,13 @@ export default function Collection() {
                   </p>
 
                   <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
-                    <button
-                      type="button"
-                      onClick={() => setWaitlistProduct(p)}
+                    <Link
+                      to={`/contact?product=${p.slug}`}
                       className="btn-primary"
-                      data-testid={`waitlist-button-${p.slug}`}
+                      data-testid={`inquire-button-${p.slug}`}
                     >
-                      Join the Waitlist
-                    </button>
+                      Inquire to order
+                    </Link>
                     <Link
                       to={`/products/${p.slug}`}
                       className="link-underline inline-flex items-center gap-2"

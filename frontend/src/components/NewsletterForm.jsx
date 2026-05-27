@@ -15,7 +15,7 @@ export default function NewsletterForm({ variant = "dark" }) {
     try {
       await axios.post(`${API}/newsletter`, { email });
       setStatus("ok");
-      setMsg("Benvenuto. Watch your inbox for your 10% code.");
+      setMsg("Benvenuto. We'll write when there's news worth sharing.");
       setEmail("");
     } catch (err) {
       setStatus("err");

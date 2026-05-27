@@ -1,8 +1,11 @@
 import { Mail, MapPin, Instagram, Phone } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import InquiryForm from "../components/InquiryForm";
 import { CONTACT } from "../content";
 
 export default function Contact() {
+  const [searchParams] = useSearchParams();
+  const productSlug = searchParams.get("product");
   return (
     <div className="pt-[90px]" data-testid="contact-page">
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-12 border-b border-[#DFD7CA]">
@@ -58,14 +61,14 @@ export default function Contact() {
             <p className="mt-3 text-sm text-[#5C4E4A] leading-relaxed">
               We ship within the continental United States in small batches.
               Standard lead time is 5–7 days. For corporate programs (24-unit minimum),
-              see the <a href="/blackrock" className="underline text-[#2A1F1D]">corporate deck</a> or
+              see the <a href="/corporate" className="underline text-[#2A1F1D]">corporate deck</a> or
               request the <a href="/one-sheet" className="underline text-[#2A1F1D]">one-sheet</a>.
             </p>
           </div>
         </aside>
 
         <div className="md:col-span-8">
-          <InquiryForm />
+          <InquiryForm productSlug={productSlug} />
         </div>
       </section>
     </div>

@@ -6,7 +6,7 @@ import {
   TAGLINES,
   CORPORATE_PACKAGES,
   IMAGES,
-  LOGO_URL,
+  NOT_A_SALAMI_SEAL,
 } from "../content";
 import MonogramDivider from "../components/MonogramDivider";
 
@@ -36,10 +36,11 @@ export default function OneSheet() {
           {/* Header */}
           <header className="text-center pb-10 border-b border-[#DFD7CA]">
             <img
-              src={LOGO_URL}
-              alt="Emporio Zeva"
-              className="h-20 w-auto mx-auto select-none"
+              src={NOT_A_SALAMI_SEAL}
+              alt="Not A Salami"
+              className="h-24 w-24 mx-auto rounded-full select-none"
               draggable="false"
+              style={{ mixBlendMode: "multiply" }}
             />
             <p className="overline text-[#C05A3A] mt-6">A Sicilian Cocoa Confection</p>
             <h1 className="font-serif text-5xl md:text-6xl mt-3 text-[#2A1F1D] leading-tight">
