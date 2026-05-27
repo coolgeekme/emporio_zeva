@@ -1,8 +1,22 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { JOURNAL } from "../content";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Journal() {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios
+      .get(`${API}/journal`)
+      .then((r) => setArticles(r.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <div className="pt-[90px]" data-testid="journal-page">
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-20 border-b border-[#DFD7CA]">
@@ -14,7 +28,8 @@ export default function Journal() {
       </section>
 
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28 space-y-24">
-        {JOURNAL.map((j, i) => (
+        {loading && <p className="text-[#5C4E4A]" data-testid="journal-loading">Loading…</p>}
+        {articles.map((j, i) => (
           <article
             key={j.slug}
             id={j.slug}

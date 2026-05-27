@@ -45,6 +45,30 @@ class Product(BaseModel):
     pronunciation: Optional[str] = None
 
 
+class JournalArticle(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    slug: str
+    title: str
+    excerpt: str
+    image: str
+    date: str
+    read: str
+    body: List[str]
+    order: int = 0
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class JournalArticleUpdate(BaseModel):
+    title: Optional[str] = None
+    excerpt: Optional[str] = None
+    image: Optional[str] = None
+    date: Optional[str] = None
+    read: Optional[str] = None
+    body: Optional[List[str]] = None
+    order: Optional[int] = None
+
+
 class InquiryCreate(BaseModel):
     name: str
     email: EmailStr
@@ -359,6 +383,75 @@ async def seed_products():
     logging.getLogger(__name__).info("Upserted %d products", len(SEED_PRODUCTS))
 
 
+# ---------- Journal seed + persistence ----------
+SEED_JOURNAL = [
+    {
+        "slug": "a-sweet-journey-through-sicily",
+        "title": "Not A Salami: A Sweet Journey Through Sicily and Beyond",
+        "excerpt": "Not A Salami may seem like a modern culinary trend, but its roots run deep in the traditions of Sicilian holiday tables, where cocoa salami was made from what the pantry offered.",
+        "image": "https://www.emporiozeva.com/wp-content/uploads/2024/06/image015.jpg",
+        "date": "Summer 2024",
+        "read": "6 min read",
+        "order": 1,
+        "body": [
+            "Long before Not A Salami was a brand, it was simply something Eva's grandmother made on the kitchen table in Modica. A wooden board, a long sheet of butcher's paper, a length of twine. Cocoa folded into broken biscotti, butter, a measure of sugar, and whatever was in the pantry that week. Rolled by hand, tied at both ends, set in the cold corner of the cellar to firm up.",
+            "It wasn't a recipe written down. It was the recipe — passed from one woman to another, slightly different in every house, never quite the same twice. In Sicilian, it had as many names as it had grandmothers. Salame di cioccolato. Salame turco. Salame del nonno. In our house, it was just la salame inglese — the English salami — for the way it sat on the table looking like one thing and revealing itself as another.",
+            "The original use of the salami shape was practical, not theatrical. Cured meats hung from rafters; sweets were rolled to a similar diameter so they could be wrapped in the same paper and tied with the same twine, then placed alongside the prosciutto and the bresaola at the holidays. The wink was a happy accident. The reveal — that the dense, cool, fragrant slice was chocolate, not pork — became the joke that made the meal.",
+            "We brought the recipe to San Francisco in our own kitchen, then a small commissary, then a slightly larger one. We tested cocoa from four continents and settled on Guittard, a San Francisco institution whose cocoa holds its temper even at room temperature. We tracked down biscotti with the precise crunch — not too sweet, not too soft. We argued about sugar crystals (yes, in the end). And then we did the only thing that mattered: we slowed down.",
+            "Every Not A Salami is still rolled by hand, tied by hand, rested in our cold room for the same number of days. Each one travels in the same parchment and twine our family has used for three generations. When you cut it open at the table, what you're slicing is not a product — it's a small piece of a Sunday afternoon in Sicily, half a century ago, in a kitchen that smelled like coffee and cocoa and rain on the cobblestones.",
+            "That's the journey. From Modica to a table in San Francisco — or yours, wherever it sits.",
+        ],
+    },
+    {
+        "slug": "the-ultimate-gourmet-gift",
+        "title": "Elevate Your Dessert Game: Not A Salami as the Ultimate Gourmet Gift",
+        "excerpt": "Finding the perfect gift can be a challenge, especially when you want something unique and unforgettable. Here is why a sliceable cocoa confection belongs on every host's table.",
+        "image": "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg",
+        "date": "Autumn 2024",
+        "read": "4 min read",
+        "order": 2,
+        "body": [
+            "The best gifts hold a secret. A wrapped object that hints at one thing and turns out to be another. A box that opens slowly. A name in a language the recipient doesn't quite speak yet. Generosity is, almost always, a small act of theater.",
+            "Not A Salami was designed for exactly that. From the outside, it looks like a hand-tied cured meat — heavy in the hand, wrapped in butcher's paper, dusted in cocoa powder that reads as fresh pepper or fine mold. Most people, even the food-curious ones, miss the wink at first. They lift it, smell it, ask about the curing. Then someone slices it.",
+            "What they find inside is the moment we built the whole thing around. A dense, cool interior speckled with crunchy biscotti, dark chocolate chips, and the faintest glitter of sugar crystals. Not too sweet. Not soft. Architectural. The room goes quiet for a second and then everyone laughs.",
+            "We've heard this story dozens of times from corporate clients, hosts, restaurants. The cardiologist who unwrapped one at the office and watched colleagues stage an intervention. The wine bar that started slicing it alongside their cheese plate. The mother-in-law who hid hers in the fridge for two months and gave a slice to anyone she liked. (Apparently three people made the list.)",
+            "It works as a gift because it does what gifts are supposed to do — it surprises, it photographs well, it travels well, it lasts about a week longer than it should, and it gives the recipient a story they'll tell for months. The unboxing alone tends to live on a phone for a while.",
+            "For corporate gifting, we ship in white or black boxes with letterpressed serving cards, custom messages, and your logo tucked discreetly into the tissue. Eva packs each one. We deliver to one address or fifty. The story is the same either way: someone unwraps a salami, finds chocolate, and remembers who sent it.",
+            "That's the whole pitch. It's a small thing, but it's a very good one.",
+        ],
+    },
+    {
+        "slug": "rediscovering-a-classic",
+        "title": "A Nostalgic Journey: Rediscovering a Classic Treat",
+        "excerpt": "In a world where culinary trends come and go, there is something comforting about a classic treat that pulls you back to a kitchen you used to know.",
+        "image": "https://www.emporiozeva.com/wp-content/uploads/2024/06/image019.jpg",
+        "date": "Winter 2024",
+        "read": "5 min read",
+        "order": 3,
+        "body": [
+            "There is a particular way that cocoa smells when it's being worked by hand, and if you grew up in a house where someone made dessert from scratch, you know it. Not the dry powder smell. The hydrated one. The smell of Guittard cocoa meeting warm butter, sugar dissolving, biscotti turning slightly soft at the edges. That smell does something to memory.",
+            "When we started serving Not A Salami at small dinners in San Francisco, the most common reaction was not 'wow, what is this?' It was 'wait — this is the thing my grandmother used to make.' Italian-American guests would go silent for a moment and then start naming their nonnas. A guest from Buenos Aires recognized it as the salchichón de chocolate from her childhood. Someone from Lebanon called it lazy cake. The Polish version is similar enough that the recognition was instant.",
+            "What we kept hearing was a version of the same sentence: 'I haven't had this in twenty years.' Sometimes thirty. Sometimes since their mother passed.",
+            "We didn't set out to make something nostalgic. We set out to make something good — to honor the original Sicilian recipe and the technique it deserved. But food, more than almost anything else, is a vehicle for memory. A flavor you ate as a child is wired into the same neural circuits as your bedroom from age six. Bite into the right thing as an adult and you are eight years old again, in a kitchen that doesn't exist anymore.",
+            "We think this is the quiet power of a classic treat done carefully. It doesn't compete with new desserts. It is, by design, older than the room you're standing in. It asks nothing of you except to slice it and pass it around.",
+            "In a year when food trends seem to arrive and exit at speed, we are content to be making something one woman in our family was already making in 1962. The recipe has barely changed. The room around it has changed completely. That contrast is the point.",
+            "Cut a slice. Pass it to your left. Tell whoever takes it about the kitchen you used to know.",
+        ],
+    },
+]
+
+
+async def seed_journal():
+    """One-time seed if the collection is empty (does not overwrite admin edits)."""
+    count = await db.journal.count_documents({})
+    if count > 0:
+        return
+    for j in SEED_JOURNAL:
+        article = JournalArticle(**j)
+        await db.journal.insert_one(article.model_dump())
+    logging.getLogger(__name__).info("Seeded %d journal articles", len(SEED_JOURNAL))
+
+
 # ---------- Routes ----------
 @api_router.get("/")
 async def root():
@@ -376,6 +469,21 @@ async def get_product(slug: str):
     doc = await db.products.find_one({"slug": slug}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Product not found")
+    return doc
+
+
+# ---------- Journal (public) ----------
+@api_router.get("/journal", response_model=List[JournalArticle])
+async def list_journal():
+    docs = await db.journal.find({}, {"_id": 0}).sort("order", 1).to_list(200)
+    return docs
+
+
+@api_router.get("/journal/{slug}", response_model=JournalArticle)
+async def get_journal(slug: str):
+    doc = await db.journal.find_one({"slug": slug}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Article not found")
     return doc
 
 
@@ -462,6 +570,42 @@ async def admin_list_newsletter(_: dict = Depends(require_admin)):
 async def admin_list_waitlist(_: dict = Depends(require_admin)):
     docs = await db.waitlist.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
     return docs
+
+
+# ---------- Admin: Journal ----------
+@api_router.get("/admin/journal", response_model=List[JournalArticle])
+async def admin_list_journal(_: dict = Depends(require_admin)):
+    docs = await db.journal.find({}, {"_id": 0}).sort("order", 1).to_list(200)
+    return docs
+
+
+@api_router.get("/admin/journal/{slug}", response_model=JournalArticle)
+async def admin_get_journal(slug: str, _: dict = Depends(require_admin)):
+    doc = await db.journal.find_one({"slug": slug}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Article not found")
+    return doc
+
+
+@api_router.patch("/admin/journal/{slug}", response_model=JournalArticle)
+async def admin_update_journal(
+    slug: str,
+    payload: JournalArticleUpdate,
+    _: dict = Depends(require_admin),
+):
+    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not update:
+        raise HTTPException(status_code=422, detail="No fields to update")
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.journal.find_one_and_update(
+        {"slug": slug},
+        {"$set": update},
+        return_document=True,
+        projection={"_id": 0},
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Article not found")
+    return result
 
 
 @api_router.post("/admin/waitlist/delete")
@@ -590,6 +734,7 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def on_startup():
     await seed_products()
+    await seed_journal()
 
 
 @app.on_event("shutdown")

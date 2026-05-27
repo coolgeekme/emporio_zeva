@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import {
   TESTIMONIALS,
-  JOURNAL,
   PRESS,
   IMAGES,
   SF_MADE_BADGE,
@@ -21,6 +20,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Home() {
   const [products, setProducts] = useState([]);
+  const [journal, setJournal] = useState([]);
   const [waitlistProduct, setWaitlistProduct] = useState(null);
   const heroImgRef = useRef(null);
   const r1 = useReveal();
@@ -33,6 +33,7 @@ export default function Home() {
 
   useEffect(() => {
     axios.get(`${API}/products`).then((res) => setProducts(res.data)).catch(() => {});
+    axios.get(`${API}/journal`).then((res) => setJournal(res.data)).catch(() => {});
   }, []);
 
   // Subtle parallax — image translates at ~22% of scroll speed within its frame.
@@ -510,7 +511,7 @@ export default function Home() {
         </div>
 
         <div className="mt-16 grid md:grid-cols-3 gap-10 md:gap-12">
-          {JOURNAL.map((j, i) => (
+          {journal.map((j, i) => (
             <Link
               key={j.slug}
               to={`/journal/${j.slug}`}

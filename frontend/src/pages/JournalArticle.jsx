@@ -1,15 +1,58 @@
+import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { JOURNAL } from "../content";
 import MonogramDivider from "../components/MonogramDivider";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function JournalArticle() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const idx = JOURNAL.findIndex((j) => j.slug === slug);
-  const article = idx >= 0 ? JOURNAL[idx] : null;
+  const [article, setArticle] = useState(null);
+  const [siblings, setSiblings] = useState({ prev: null, next: null, idx: 0 });
+  const [status, setStatus] = useState("loading"); // loading | ok | notfound
 
-  if (!article) {
+  useEffect(() => {
+    let alive = true;
+    setStatus("loading");
+    Promise.all([
+      axios.get(`${API}/journal/${slug}`),
+      axios.get(`${API}/journal`),
+    ])
+      .then(([single, all]) => {
+        if (!alive) return;
+        const list = all.data || [];
+        const i = list.findIndex((a) => a.slug === slug);
+        setArticle(single.data);
+        setSiblings({
+          idx: i,
+          prev: i > 0 ? list[i - 1] : null,
+          next: i >= 0 && i < list.length - 1 ? list[i + 1] : null,
+        });
+        setStatus("ok");
+      })
+      .catch((err) => {
+        if (!alive) return;
+        setStatus(err?.response?.status === 404 ? "notfound" : "notfound");
+      });
+    return () => {
+      alive = false;
+    };
+  }, [slug]);
+
+  if (status === "loading") {
+    return (
+      <div
+        className="pt-[180px] max-w-[1100px] mx-auto px-6 md:px-10 pb-32"
+        data-testid="journal-article-loading"
+      >
+        <p className="text-[#5C4E4A]">Loading…</p>
+      </div>
+    );
+  }
+
+  if (status === "notfound" || !article) {
     return (
       <div
         className="pt-[180px] max-w-[1400px] mx-auto px-6 md:px-10 pb-32"
@@ -33,15 +76,13 @@ export default function JournalArticle() {
     );
   }
 
-  const prev = idx > 0 ? JOURNAL[idx - 1] : null;
-  const next = idx < JOURNAL.length - 1 ? JOURNAL[idx + 1] : null;
+  const { prev, next, idx } = siblings;
 
   return (
     <article
       className="pt-[90px]"
       data-testid={`journal-article-page-${article.slug}`}
     >
-      {/* Breadcrumb */}
       <div className="max-w-[1100px] mx-auto px-6 md:px-10 pt-12">
         <button
           type="button"
@@ -53,7 +94,6 @@ export default function JournalArticle() {
         </button>
       </div>
 
-      {/* Header */}
       <header className="max-w-[1100px] mx-auto px-6 md:px-10 pt-10 pb-12">
         <p className="overline text-[#C05A3A]" data-testid="journal-article-meta">
           The Journal · No 0{idx + 1} · {article.date} · {article.read}
@@ -72,14 +112,12 @@ export default function JournalArticle() {
         </p>
       </header>
 
-      {/* Hero image */}
       <figure className="max-w-[1400px] mx-auto px-6 md:px-10">
         <div className="img-wash aspect-[16/9]" data-testid="journal-article-hero">
           <img src={article.image} alt={article.title} />
         </div>
       </figure>
 
-      {/* Body */}
       <section className="max-w-[760px] mx-auto px-6 md:px-10 py-20 md:py-28">
         <div className="prose-zeva" data-testid="journal-article-body">
           {(article.body || []).map((para, i) => (
@@ -99,7 +137,6 @@ export default function JournalArticle() {
         </p>
       </section>
 
-      {/* Prev / Next */}
       <nav
         className="bg-[#EAE4D9]/50 border-t border-[#DFD7CA]"
         data-testid="journal-article-nav"

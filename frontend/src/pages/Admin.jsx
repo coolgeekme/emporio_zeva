@@ -18,6 +18,7 @@ const TOKEN_KEY = "ez_admin_token";
 
 const TABS = [
   { key: "decks", label: "Decks", path: "/admin/decks" },
+  { key: "journal", label: "Journal", path: "/admin/journal" },
   { key: "waitlist", label: "Waitlist", path: "/admin/waitlist" },
   { key: "inquiries", label: "Inquiries", path: "/admin/inquiries" },
   { key: "newsletter", label: "Newsletter", path: "/admin/newsletter" },
@@ -450,6 +451,289 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
   );
 }
 
+// ============================================================================
+// Journal panel — Eva can edit article copy in-place
+// ============================================================================
+function JournalEditor({ article, token, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    title: article.title,
+    excerpt: article.excerpt,
+    image: article.image,
+    date: article.date,
+    read: article.read,
+    body: (article.body || []).join("\n\n"),
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const handler = (e) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", handler);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handler);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  const update = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+
+  const save = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const body = form.body
+        .split(/\n\s*\n/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+      await axios.patch(
+        `${API}/admin/journal/${article.slug}`,
+        {
+          title: form.title,
+          excerpt: form.excerpt,
+          image: form.image,
+          date: form.date,
+          read: form.read,
+          body,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      onSaved();
+      onClose();
+    } catch {
+      setError("Couldn't save. Try again or check your token.");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8"
+      role="dialog"
+      aria-modal="true"
+      data-testid="journal-editor-dialog"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute inset-0 bg-[#2A1F1D]/60 backdrop-blur-sm animate-fadeIn"
+        aria-label="Close"
+      />
+      <div className="relative bg-[#F5EFE2] w-full max-w-3xl shadow-2xl border border-[#DFD7CA] animate-riseIn max-h-[92vh] overflow-y-auto">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-[#5C4E4A] hover:text-[#2A1F1D]"
+          aria-label="Close"
+          data-testid="journal-editor-close"
+        >
+          <X size={18} />
+        </button>
+        <div className="p-8 md:p-10">
+          <p className="overline text-[#C05A3A]">Edit Article</p>
+          <h2 className="font-serif text-2xl mt-2 text-[#2A1F1D] leading-tight">
+            {article.slug}
+          </h2>
+          <p className="text-xs text-[#5C4E4A] mt-1">
+            Saved changes appear on the public site immediately.
+          </p>
+
+          <div className="mt-8 space-y-5">
+            <div className="field">
+              <label htmlFor="je-title">Title</label>
+              <input
+                id="je-title"
+                type="text"
+                value={form.title}
+                onChange={update("title")}
+                data-testid="journal-editor-title"
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="je-excerpt">Excerpt (subhead under the title)</label>
+              <textarea
+                id="je-excerpt"
+                rows={3}
+                value={form.excerpt}
+                onChange={update("excerpt")}
+                data-testid="journal-editor-excerpt"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="field">
+                <label htmlFor="je-date">Date</label>
+                <input
+                  id="je-date"
+                  type="text"
+                  value={form.date}
+                  onChange={update("date")}
+                  data-testid="journal-editor-date"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="je-read">Read time</label>
+                <input
+                  id="je-read"
+                  type="text"
+                  value={form.read}
+                  onChange={update("read")}
+                  placeholder="6 min read"
+                  data-testid="journal-editor-read"
+                />
+              </div>
+              <div className="field md:col-span-1">
+                <label htmlFor="je-image">Hero image URL</label>
+                <input
+                  id="je-image"
+                  type="url"
+                  value={form.image}
+                  onChange={update("image")}
+                  data-testid="journal-editor-image"
+                />
+              </div>
+            </div>
+            <div className="field">
+              <label htmlFor="je-body">
+                Body — separate paragraphs with a blank line
+              </label>
+              <textarea
+                id="je-body"
+                rows={16}
+                value={form.body}
+                onChange={update("body")}
+                className="font-serif text-base leading-relaxed"
+                data-testid="journal-editor-body"
+              />
+              <p className="text-xs text-[#5C4E4A] mt-2">
+                {form.body.split(/\n\s*\n/).filter(Boolean).length} paragraphs ·{" "}
+                {form.body.split(/\s+/).filter(Boolean).length} words
+              </p>
+            </div>
+
+            {error && (
+              <p className="text-sm text-[#C05A3A]" data-testid="journal-editor-error">
+                {error}
+              </p>
+            )}
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={save}
+                disabled={saving}
+                className="btn-primary"
+                data-testid="journal-editor-save"
+              >
+                {saving ? "Saving…" : "Save changes"}
+              </button>
+              <button
+                onClick={onClose}
+                className="text-sm text-[#5C4E4A] hover:text-[#2A1F1D]"
+                data-testid="journal-editor-cancel"
+              >
+                Cancel
+              </button>
+              <a
+                href={`/journal/${article.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-auto text-xs uppercase tracking-wider text-[#C05A3A] hover:text-[#2A1F1D] inline-flex items-center gap-1.5"
+                data-testid="journal-editor-preview"
+              >
+                <ExternalLink size={12} /> Preview live
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function JournalPanel({ articles, token, onChange }) {
+  const [editing, setEditing] = useState(null);
+
+  return (
+    <div data-testid="journal-panel">
+      <p className="text-sm text-[#5C4E4A] mb-6">
+        Edit any article's title, excerpt, dates, hero image, or body. Changes
+        appear live on the public site immediately. (Adding new articles still
+        requires a code change — ask the team.)
+      </p>
+
+      {articles.length === 0 ? (
+        <div className="border border-dashed border-[#DFD7CA] bg-[#FBF7EE] py-16 text-center">
+          <p className="text-[#5C4E4A]">No articles yet.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-testid="journal-grid">
+          {articles.map((a) => (
+            <div
+              key={a.slug}
+              className="bg-[#FBF7EE] border border-[#DFD7CA] p-6 flex flex-col gap-3"
+              data-testid={`journal-card-${a.slug}`}
+            >
+              <div className="flex items-start gap-4">
+                <img
+                  src={a.image}
+                  alt=""
+                  className="h-20 w-20 object-cover border border-[#DFD7CA] flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="overline text-[#5C4E4A] !text-[9px]">
+                    No 0{a.order} · {a.date} · {a.read}
+                  </p>
+                  <h3 className="font-serif text-xl text-[#2A1F1D] mt-1 leading-tight">
+                    {a.title}
+                  </h3>
+                </div>
+              </div>
+              <p className="text-sm text-[#5C4E4A] line-clamp-3 leading-relaxed">
+                {a.excerpt}
+              </p>
+              <p className="text-xs text-[#5C4E4A]">
+                {(a.body || []).length} paragraphs ·{" "}
+                {(a.body || []).join(" ").split(/\s+/).filter(Boolean).length} words
+              </p>
+              <div className="flex items-center gap-3 pt-2 border-t border-[#DFD7CA] mt-1">
+                <button
+                  onClick={() => setEditing(a)}
+                  className="btn-outline inline-flex items-center gap-2 text-xs px-3 py-2"
+                  data-testid={`journal-edit-${a.slug}`}
+                >
+                  Edit article
+                </button>
+                <a
+                  href={`/journal/${a.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-auto text-xs text-[#C05A3A] hover:text-[#2A1F1D] inline-flex items-center gap-1.5"
+                  data-testid={`journal-view-${a.slug}`}
+                >
+                  <ExternalLink size={12} /> View live
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {editing && (
+        <JournalEditor
+          article={editing}
+          token={token}
+          onClose={() => setEditing(null)}
+          onSaved={() => onChange()}
+        />
+      )}
+    </div>
+  );
+}
+
+
 function DecksPanel({ decks, token, onChange, error }) {
   const [creating, setCreating] = useState(false);
   const [copiedSlug, setCopiedSlug] = useState(null);
@@ -608,7 +892,7 @@ function DecksPanel({ decks, token, onChange, error }) {
 
 function AdminDashboard({ token, onLogout }) {
   const [active, setActive] = useState("decks");
-  const [data, setData] = useState({ decks: [], waitlist: [], inquiries: [], newsletter: [] });
+  const [data, setData] = useState({ decks: [], journal: [], waitlist: [], inquiries: [], newsletter: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   // selection state — keyed by tab so switching tabs doesn't lose checkmarks
@@ -805,7 +1089,7 @@ function AdminDashboard({ token, onLogout }) {
           >
             <RefreshCw size={14} /> Refresh
           </button>
-          {active !== "decks" && (
+          {active !== "decks" && active !== "journal" && (
             <button
               onClick={exportCsv}
               disabled={!current.length}
@@ -831,6 +1115,12 @@ function AdminDashboard({ token, onLogout }) {
             token={token}
             onChange={() => fetchTab("decks")}
             error={error}
+          />
+        ) : active === "journal" ? (
+          <JournalPanel
+            articles={current}
+            token={token}
+            onChange={() => fetchTab("journal")}
           />
         ) : (
           <Table
