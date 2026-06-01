@@ -177,7 +177,7 @@ export const JOURNAL = [
     title: "Not A Salami: A Sweet Journey Through Sicily and Beyond",
     excerpt:
       "Not A Salami may seem like a modern culinary trend, but its roots run deep in the traditions of Sicilian holiday tables, where cocoa salami was made from what the pantry offered.",
-    image: "https://www.emporiozeva.com/wp-content/uploads/2024/06/image015.jpg",
+    image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
     date: "Summer 2024",
     read: "6 min read",
     body: [
@@ -194,7 +194,7 @@ export const JOURNAL = [
     title: "Elevate Your Dessert Game: Not A Salami as the Ultimate Gourmet Gift",
     excerpt:
       "Finding the perfect gift can be a challenge, especially when you want something unique and unforgettable. Here is why a sliceable cocoa confection belongs on every host's table.",
-    image: "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg",
+    image: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
     date: "Autumn 2024",
     read: "4 min read",
     body: [
@@ -212,7 +212,7 @@ export const JOURNAL = [
     title: "A Nostalgic Journey: Rediscovering a Classic Treat",
     excerpt:
       "In a world where culinary trends come and go, there is something comforting about a classic treat that pulls you back to a kitchen you used to know.",
-    image: "https://www.emporiozeva.com/wp-content/uploads/2024/06/image019.jpg",
+    image: "https://images.unsplash.com/photo-1481833761820-0509d3217039?auto=format&fit=crop&w=1600&q=80",
     date: "Winter 2024",
     read: "5 min read",
     body: [
@@ -234,8 +234,18 @@ export const PRESS = [
   "Small batch · Hand rolled · San Francisco",
 ];
 
+// Inline SVG badge — SFMade.org wordmark replacement (origin host suspended).
+// Crisp at any size, no external dependency.
 export const SF_MADE_BADGE =
-  "https://emporiozeva.com/wp-content/uploads/2025/02/SFMADE.png";
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 64'>
+       <rect width='220' height='64' rx='4' fill='#2A1F1D'/>
+       <text x='110' y='27' text-anchor='middle' font-family='Bodoni Moda, Georgia, serif' font-style='italic' font-size='22' fill='#F9F6F0'>SF Made</text>
+       <line x1='40' y1='36' x2='180' y2='36' stroke='#C05A3A' stroke-width='1'/>
+       <text x='110' y='52' text-anchor='middle' font-family='Manrope, sans-serif' font-size='9' letter-spacing='3' fill='#B9935A'>HERE &amp; NOW · 2024</text>
+     </svg>`
+  );
 
 export const LOGO_URL =
   "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/p5bi7qmt_EMPORIO-ZEVA-logo.png";
@@ -245,12 +255,15 @@ export const NOT_A_SALAMI_SEAL =
 
 export const IMAGES = {
   hero: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
-  product: "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg",
-  founder: "https://www.emporiozeva.com/wp-content/uploads/2025/03/IMG_5209-scaled.jpg",
-  sicily: "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1170670861-scaled.jpg",
-  italian_moment: "https://emporiozeva.com/wp-content/uploads/2025/03/iStock-1286886227-scaled.jpg",
-  gift: "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg",
-  split_blog: "https://www.emporiozeva.com/wp-content/themes/evasiciliandelights/images/split-blog2.jpg",
-  journal_1: "https://www.emporiozeva.com/wp-content/uploads/2024/06/image015.jpg",
-  nostalgia: "https://www.emporiozeva.com/wp-content/uploads/2024/06/image019.jpg",
+  // Real product hero — Salami_board.JPG from Emergent assets
+  product: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG",
+  // Curated editorial stock (Unsplash, royalty-free) — placeholders for true founder/landscape shots
+  founder: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1400&q=80",
+  sicily: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1800&q=80",
+  italian_moment: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
+  // Branded "NOT A SALAMI" board (image1.jpeg from Emergent assets)
+  gift: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
+  split_blog: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
+  journal_1: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
+  nostalgia: "https://images.unsplash.com/photo-1481833761820-0509d3217039?auto=format&fit=crop&w=1600&q=80",
 };
