@@ -208,7 +208,7 @@ export default function Home() {
             It is <span className="italic text-[#C05A3A]">entirely</span> chocolate.
           </h2>
           <p className="mt-7 text-lg text-[#5C4E4A] leading-relaxed max-w-lg">
-            Wrapped in butcher paper and tied with twine. Cut at the table.
+            Wrapped in parchment paper and gold foil. Cut at the table.
             The reveal — that rich cocoa interior speckled with crunchy biscotti,
             chocolate chips, and delicate sugar crystals — is part of the dessert.
           </p>
@@ -230,7 +230,11 @@ export default function Home() {
         </div>
         <div className="md:col-span-6 md:order-1">
           <div className="img-wash aspect-[5/6]">
-            <img src={IMAGES.product} alt="Not A Salami on a wood board" data-testid="illusion-image" />
+            <img
+              src="https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg"
+              alt="Not A Salami chocolate salami sliced on a branded wood board"
+              data-testid="illusion-image"
+            />
           </div>
         </div>
       </section>

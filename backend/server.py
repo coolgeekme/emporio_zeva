@@ -120,6 +120,8 @@ class AdminToken(BaseModel):
 
 class DeckCreate(BaseModel):
     client_name: str
+    intro_text: Optional[str] = None
+    logo_url: Optional[str] = None
 
 
 class DeckUpdate(BaseModel):
@@ -207,7 +209,7 @@ SEED_PRODUCTS = [
         "price": "$32",
         "weight": "300g · 16–17 slices",
         "description": "Rich Guittard cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-shaped, wrapped, and tied. Slice at the table.",
-        "long_description": "Inspired by Eva's grandmother's recipe from Modica, Sicily — premium Guittard cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-rolled and rested to develop its signature firm-yet-tender bite. Wrapped in butcher's twine and parchment so it arrives looking impossibly like cured meat. Cut it open at the table and watch the room turn.",
+        "long_description": "Inspired by Eva's grandmother's recipe from Modica, Sicily — premium Guittard cocoa folded with crunchy biscotti, chocolate chips, and delicate sugar crystals. Hand-rolled and rested to develop its signature firm-yet-tender bite. Wrapped in parchment paper and gold foil so it arrives looking impossibly like cured meat. Cut it open at the table and watch the room turn.",
         "ingredients": [
             "Guittard cocoa powder",
             "Crunchy biscotti",
@@ -361,8 +363,8 @@ SEED_PRODUCTS = [
             "Keep the board — it gets better with use.",
         ],
         "images": [
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
-            "https://www.emporiozeva.com/wp-content/uploads/2024/06/product-scaled.jpg",
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/image017.jpg",
+            "https://www.emporiozeva.com/wp-content/uploads/2024/06/image019.jpg",
         ],
         "badge": "Future bundle",
         "available": False,
@@ -394,7 +396,7 @@ SEED_JOURNAL = [
         "read": "6 min read",
         "order": 1,
         "body": [
-            "Long before Not A Salami was a brand, it was simply something Eva's grandmother made on the kitchen table in Modica. A wooden board, a long sheet of butcher's paper, a length of twine. Cocoa folded into broken biscotti, butter, a measure of sugar, and whatever was in the pantry that week. Rolled by hand, tied at both ends, set in the cold corner of the cellar to firm up.",
+            "Long before Not A Salami was a brand, it was simply something Eva's grandmother made on the kitchen table in Modica. A wooden board, a long sheet of parchment paper, a length of twine. Cocoa folded into broken biscotti, butter, a measure of sugar, and whatever was in the pantry that week. Rolled by hand, tied at both ends, set in the cold corner of the cellar to firm up.",
             "It wasn't a recipe written down. It was the recipe — passed from one woman to another, slightly different in every house, never quite the same twice. In Sicilian, it had as many names as it had grandmothers. Salame di cioccolato. Salame turco. Salame del nonno. In our house, it was just la salame inglese — the English salami — for the way it sat on the table looking like one thing and revealing itself as another.",
             "The original use of the salami shape was practical, not theatrical. Cured meats hung from rafters; sweets were rolled to a similar diameter so they could be wrapped in the same paper and tied with the same twine, then placed alongside the prosciutto and the bresaola at the holidays. The wink was a happy accident. The reveal — that the dense, cool, fragrant slice was chocolate, not pork — became the joke that made the meal.",
             "We brought the recipe to San Francisco in our own kitchen, then a small commissary, then a slightly larger one. We tested cocoa from four continents and settled on Guittard, a San Francisco institution whose cocoa holds its temper even at room temperature. We tracked down biscotti with the precise crunch — not too sweet, not too soft. We argued about sugar crystals (yes, in the end). And then we did the only thing that mattered: we slowed down.",
@@ -412,7 +414,7 @@ SEED_JOURNAL = [
         "order": 2,
         "body": [
             "The best gifts hold a secret. A wrapped object that hints at one thing and turns out to be another. A box that opens slowly. A name in a language the recipient doesn't quite speak yet. Generosity is, almost always, a small act of theater.",
-            "Not A Salami was designed for exactly that. From the outside, it looks like a hand-tied cured meat — heavy in the hand, wrapped in butcher's paper, dusted in cocoa powder that reads as fresh pepper or fine mold. Most people, even the food-curious ones, miss the wink at first. They lift it, smell it, ask about the curing. Then someone slices it.",
+            "Not A Salami was designed for exactly that. From the outside, it looks like a hand-tied cured meat — wrapped in parchment paper and gold foil, dusted in cocoa powder that reads as fresh pepper or fine mold. Most people, even the food-curious ones, miss the wink at first. They lift it, smell it, ask about the curing. Then someone slices it.",
             "What they find inside is the moment we built the whole thing around. A dense, cool interior speckled with crunchy biscotti, dark chocolate chips, and the faintest glitter of sugar crystals. Not too sweet. Not soft. Architectural. The room goes quiet for a second and then everyone laughs.",
             "We've heard this story dozens of times from corporate clients, hosts, restaurants. The cardiologist who unwrapped one at the office and watched colleagues stage an intervention. The wine bar that started slicing it alongside their cheese plate. The mother-in-law who hid hers in the fridge for two months and gave a slice to anyone she liked. (Apparently three people made the list.)",
             "It works as a gift because it does what gifts are supposed to do — it surprises, it photographs well, it travels well, it lasts about a week longer than it should, and it gives the recipient a story they'll tell for months. The unboxing alone tends to live on a phone for a while.",
@@ -651,13 +653,23 @@ async def admin_create_deck(payload: DeckCreate, _: dict = Depends(require_admin
     name = payload.client_name.strip()
     if not name:
         raise HTTPException(status_code=422, detail="client_name is required")
-    data = await personalize(name)
+    # If the admin already supplied an intro/logo (from the preview step), trust
+    # them and skip the personalize() round-trip for those fields.
+    if payload.intro_text and (payload.logo_url is not None):
+        intro_text = payload.intro_text.strip()
+        logo_url = payload.logo_url
+        domain = None  # may be backfilled in a future PATCH
+    else:
+        data = await personalize(name)
+        intro_text = (payload.intro_text or data["intro_text"]).strip()
+        logo_url = payload.logo_url if payload.logo_url is not None else data["logo_url"]
+        domain = data["domain"]
     deck = Deck(
         slug=make_slug(name),
         client_name=name,
-        domain=data["domain"],
-        logo_url=data["logo_url"],
-        intro_text=data["intro_text"],
+        domain=domain,
+        logo_url=logo_url,
+        intro_text=intro_text,
     )
     await db.decks.insert_one(deck.model_dump())
     return deck

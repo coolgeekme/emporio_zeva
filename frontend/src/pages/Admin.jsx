@@ -280,7 +280,11 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
     try {
       const { data } = await axios.post(
         `${API}/admin/decks`,
-        { client_name: clientName.trim() },
+        {
+          client_name: clientName.trim(),
+          intro_text: preview?.intro_text,
+          logo_url: preview?.logo_url,
+        },
         { headers }
       );
       onCreated(data);
@@ -399,13 +403,17 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
               </div>
 
               <div>
-                <p className="overline text-[#5C4E4A] mb-2">Intro · cover slide</p>
-                <p
-                  className="font-serif text-lg italic text-[#2A1F1D] leading-snug bg-[#FBF7EE] border border-[#DFD7CA] p-5"
+                <p className="overline text-[#5C4E4A] mb-2">Intro · cover slide (editable)</p>
+                <textarea
+                  value={preview.intro_text}
+                  onChange={(e) =>
+                    setPreview((p) => ({ ...p, intro_text: e.target.value }))
+                  }
+                  rows={4}
+                  className="font-serif text-lg italic text-[#2A1F1D] leading-snug bg-[#FBF7EE] border border-[#DFD7CA] p-5 w-full focus:outline-none focus:border-[#C05A3A] transition-colors"
                   data-testid="new-deck-preview-intro"
-                >
-                  {preview.intro_text}
-                </p>
+                  placeholder="Write the opening sentence for the cover slide…"
+                />
                 <button
                   type="button"
                   onClick={regenerateIntro}
@@ -414,7 +422,7 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
                   data-testid="new-deck-regenerate-button"
                 >
                   <RefreshCw size={12} />
-                  {busy ? "Writing…" : "Try a different intro"}
+                  {busy ? "Writing…" : "Try a different intro (AI)"}
                 </button>
               </div>
 
@@ -734,8 +742,128 @@ function JournalPanel({ articles, token, onChange }) {
 }
 
 
+function EditDeckDialog({ deck, token, onClose, onSaved }) {
+  const [introText, setIntroText] = useState(deck.intro_text || "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const handler = (e) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", handler);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handler);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  const save = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      await axios.patch(
+        `${API}/admin/decks/${deck.id}`,
+        { intro_text: introText.trim() || deck.intro_text },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      onSaved();
+      onClose();
+    } catch {
+      setError("Couldn't save. Try again.");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8"
+      role="dialog"
+      aria-modal="true"
+      data-testid="edit-deck-dialog"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute inset-0 bg-[#2A1F1D]/60 backdrop-blur-sm animate-fadeIn"
+        aria-label="Close"
+      />
+      <div className="relative bg-[#F5EFE2] w-full max-w-2xl shadow-2xl border border-[#DFD7CA] animate-riseIn max-h-[90vh] overflow-y-auto">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-[#5C4E4A] hover:text-[#2A1F1D]"
+          aria-label="Close"
+          data-testid="edit-deck-close"
+        >
+          <X size={18} />
+        </button>
+        <div className="p-8 md:p-10">
+          <p className="overline text-[#C05A3A]">Edit Presentation</p>
+          <h2 className="font-serif text-2xl md:text-3xl mt-2 leading-tight text-[#2A1F1D]">
+            {deck.client_name}
+          </h2>
+          <p className="text-xs text-[#5C4E4A] mt-1">
+            Edit the intro line that appears on the cover slide. Changes go live immediately.
+          </p>
+
+          <div className="mt-8">
+            <p className="overline text-[#5C4E4A] mb-2">Intro · cover slide</p>
+            <textarea
+              value={introText}
+              onChange={(e) => setIntroText(e.target.value)}
+              rows={5}
+              className="font-serif text-lg italic text-[#2A1F1D] leading-snug bg-[#FBF7EE] border border-[#DFD7CA] p-5 w-full focus:outline-none focus:border-[#C05A3A] transition-colors"
+              data-testid="edit-deck-intro"
+              placeholder="Write the opening sentence for the cover slide…"
+            />
+            <p className="text-xs text-[#5C4E4A] mt-2">
+              {introText.split(/\s+/).filter(Boolean).length} words
+            </p>
+          </div>
+
+          {error && (
+            <p className="text-sm text-[#C05A3A] mt-4" data-testid="edit-deck-error">
+              {error}
+            </p>
+          )}
+
+          <div className="flex items-center gap-3 pt-6">
+            <button
+              onClick={save}
+              disabled={saving}
+              className="btn-primary"
+              data-testid="edit-deck-save"
+            >
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+            <button
+              onClick={onClose}
+              className="text-sm text-[#5C4E4A] hover:text-[#2A1F1D]"
+              data-testid="edit-deck-cancel"
+            >
+              Cancel
+            </button>
+            <a
+              href={`/deck/${deck.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto text-xs uppercase tracking-wider text-[#C05A3A] hover:text-[#2A1F1D] inline-flex items-center gap-1.5"
+              data-testid="edit-deck-preview"
+            >
+              <ExternalLink size={12} /> Preview live
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 function DecksPanel({ decks, token, onChange, error }) {
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(null);
   const [copiedSlug, setCopiedSlug] = useState(null);
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -850,6 +978,13 @@ function DecksPanel({ decks, token, onChange, error }) {
 
               <div className="flex flex-wrap items-center gap-2">
                 <button
+                  onClick={() => setEditing(d)}
+                  className="btn-outline inline-flex items-center gap-2 text-xs px-3 py-2"
+                  data-testid={`deck-edit-${d.slug}`}
+                >
+                  Edit intro
+                </button>
+                <button
                   onClick={() => copyLink(d.slug)}
                   className="btn-outline inline-flex items-center gap-2 text-xs px-3 py-2"
                   data-testid={`deck-copy-${d.slug}`}
@@ -886,6 +1021,15 @@ function DecksPanel({ decks, token, onChange, error }) {
         onCreated={() => onChange()}
         token={token}
       />
+
+      {editing && (
+        <EditDeckDialog
+          deck={editing}
+          token={token}
+          onClose={() => setEditing(null)}
+          onSaved={() => onChange()}
+        />
+      )}
     </div>
   );
 }
