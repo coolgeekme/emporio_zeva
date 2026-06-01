@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -727,6 +728,13 @@ async def get_deck(slug: str):
 
 
 app.include_router(api_router)
+
+# Serve product/journal placeholder images.
+# Files live in /app/backend/static/ and are referenced from product seed data
+# as `/api/static/products/<filename>`. They ship with the deploy.
+_static_dir = Path(__file__).parent / "static"
+_static_dir.mkdir(exist_ok=True)
+app.mount("/api/static", StaticFiles(directory=str(_static_dir)), name="static")
 
 app.add_middleware(
     CORSMiddleware,
