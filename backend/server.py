@@ -265,8 +265,8 @@ SEED_PRODUCTS = [
             "Serve at room temperature with a chilled dessert wine.",
         ],
         "images": [
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG",
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
+            "/api/static/products/pistacchio-di-bronte-hero.png",
+            "/api/static/products/pistacchio-di-bronte-slice.png",
         ],
         "badge": "Future flavor",
         "available": False,
@@ -298,8 +298,8 @@ SEED_PRODUCTS = [
             "Ideal for tasting flights and curated corporate boxes.",
         ],
         "images": [
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG",
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
+            "/api/static/products/il-mini-hero.png",
+            "/api/static/products/il-mini-detail.png",
         ],
         "badge": "On the workbench",
         "available": False,
