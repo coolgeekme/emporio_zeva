@@ -265,8 +265,8 @@ SEED_PRODUCTS = [
             "Serve at room temperature with a chilled dessert wine.",
         ],
         "images": [
-            "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=1600&q=80",
-            "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?auto=format&fit=crop&w=1600&q=80",
+            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG",
+            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
         ],
         "badge": "Future flavor",
         "available": False,
