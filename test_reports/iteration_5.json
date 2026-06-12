@@ -1,0 +1,54 @@
+{
+  "summary": "Iteration 5 — Products CRUD + Site Content editor. Backend: 50/50 pytest pass (24 NEW in test_products_and_content.py + 26 regression in test_admin_v2_api.py). Frontend: admin sidebar shows new admin-nav-content & admin-nav-products entries; ProductsPanel renders 5 seeded products grouped by status; product edit (Pistacchio tagline → TEST QA TAGLINE UI) and restore round-trips against /api/admin/products/{slug} and reflects on public /api/products/{slug}; New product flow (QA Smoke Product, status=future) creates row in Future group and Delete removes it. SiteContent panel renders all 6 tabs (home/collection/ritual/our_story/journal_index/contact); tab switching re-populates fields; editing Home hero_overline → 'QA OVERLINE TEST', Save → save indicator visible, public / hero overline reflects the override; PATCH with empty string restores manifest default and public / reverts. MediaPicker dialog opens from SiteContent image-field Browse button. All public pages (/, /collection, /ritual, /our-story, /journal, /contact) render without JS error.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "PATCH /api/admin/site-content/{page}",
+        "issue": "Storage uses $set: {fields: cleaned} which REPLACES the entire stored override doc. The current frontend SiteContent.jsx appears to send the full form buffer, so it works in the happy path, but any client that sends a partial PATCH will silently wipe other previously-saved overrides. Suggest $set per nested key (fields.<key>) or document the full-buffer requirement. Not blocking — UI flow validated end-to-end."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_products_and_content.py",
+    "/app/backend/tests/test_admin_v2_api.py",
+    "/app/test_reports/pytest/products_content_results.xml",
+    "/app/test_reports/pytest/full_regression_results.xml"
+  ],
+  "action_items": [
+    "(Optional) Make PATCH /api/admin/site-content/{page} merge per-key instead of replacing the whole 'fields' subdoc — guards against partial-update data loss for any future client.",
+    "(Optional) Add a public GET /api/admin/products/{slug} (admin variant) — currently admin can only list, not fetch one; the UI works because public /api/products/{slug} still works, but admin viewing of archived products will be impossible (public filters them out).",
+    "(Optional) Cleanup obsolete /app/backend/tests/test_admin_api.py (legacy {password}-only login) noted in iteration_4 — still applies."
+  ],
+  "critical_code_review_comments": [
+    "Products CRUD endpoints clean: auto-slug, incrementing slug on collision, status validated to {active,future,archived}, slug-collision on PATCH returns 409, empty-name returns 422, double-delete returns 404 — all behaviours match spec and have pytest coverage.",
+    "seed_products() correctly switched to insert-only — admin edits to seeded products persist across backend restart. Verified by code inspection (lines 590-602) and round-tripped via API: PATCH tagline → public GET reflects change → restored.",
+    "RBAC enforced on every new endpoint: viewer = 403 on /admin/products list/create/delete + /admin/site-content GET/PATCH; editor = 200. Verified via pytest.",
+    "SITE_CONTENT_MANIFEST covers all 6 pages with structured sections/fields. Defaults render via _merged_content() with empty-string fallback to manifest default.",
+    "Public /api/site-content/home returns a flat {key: value} dict (not nested by section). hero_h1_line1='Not A', hero_h1_italic='Salami.' verified.",
+    "Public unknown page → 404. PATCH unknown page → 404. PATCH unknown key → silently dropped (200). All match spec.",
+    "Admin UI: ProductsPanel and SiteContentPanel both have proper data-testid coverage (admin-products-panel, admin-site-content-panel, content-tab-{key}, content-field-{key}, products-edit-{slug}, products-delete-{slug}, product-editor-* form fields).",
+    "MediaPicker integration works inside both ProductsPanel (ImagesField) and SiteContentPanel (image-type field renders a Browse button that opens media-picker-dialog).",
+    "Hot reload on backend respects seed_products insert-only semantics (verified architecturally — no code path re-inserts on existing slug).",
+    "MINOR: PATCH /api/admin/site-content uses $set: {fields: cleaned} — wholesale replace. Could lose data on partial updates from third-party clients. Current SiteContent.jsx is unaffected because it submits the full buffer.",
+    "MINOR: ProductCreate.status has a Python default of 'active' but no Pydantic Literal/Enum constraint — invalid values are caught only by the manual check in the handler (returns 422 as expected). Consider Literal['active','future','archived'] for self-documentation."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_products_and_content.py (new — 24 pytest cases)"
+  ],
+  "success_rate": {
+    "backend": "100% (50/50 across products+site-content+v2 regression)",
+    "frontend": "100% (login, sidebar nav with admin-nav-content + admin-nav-products visible; Products panel renders 5 rows, edit+save+restore round-trip works, new product create + delete works; SiteContent renders 6 tabs, tab-switch repopulates fields, save shows indicator, override reflects on public /, reset reverts, MediaPicker opens; all 6 public pages render with non-trivial content)"
+  },
+  "test_credentials": "admin@notasalami.com / zeva-admin-2026 (from /app/memory/test_credentials.md). All editor/viewer test users created in pytest fixtures are deleted in teardown. No new persistent creds.",
+  "seed_data_creation": "All test products prefixed 'TEST '. The only product mutated against the live seed was 'not-a-salami-pistachio' (tagline transiently set to 'TEST QA TAGLINE'/'TEST QA TAGLINE UI' then restored to original). A 'QA Smoke Product' was created and deleted within the UI test. No leakage. Final cleanup PATCH set Home hero_overline back to empty string (which resolves to manifest default on public side) — confirmed public / shows 'SICILIAN COCOA CONFECTION · EST. SF' again.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run `REACT_APP_BACKEND_URL=<url> pytest /app/backend/tests/test_products_and_content.py /app/backend/tests/test_admin_v2_api.py -v` for the full backend regression (50 cases). The new tests are completely isolated — they create their own TEST-prefixed products and clean up. test_patch_updates_fields mutates the seeded 'not-a-salami-pistachio' tagline transiently then restores it; if the test crashes mid-run the seeded tagline may be left as 'TEST QA TAGLINE' and you'd need to restore via API or admin UI. seed_products is insert-only, so the original tagline will NOT come back on restart. Frontend testids landed: admin-nav-content, admin-nav-products, admin-products-panel, admin-site-content-panel, content-tab-{home|collection|ritual|our_story|journal_index|contact}, content-field-{key}, content-field-{key}-browse, content-field-{key}-reset (sometimes), content-save-button, content-saved-indicator, products-new-button, products-edit-{slug}, products-delete-{slug}, product-row-{slug}, products-group-{status}, product-editor-dialog, product-editor-form, product-name-input, product-slug-input, product-tagline-input, product-status-select, product-editor-save-button.",
+  "rca of the issue": "No bugs found. One minor architectural concern in PATCH /api/admin/site-content/{page}: it does `$set: {fields: cleaned}` which replaces the entire stored override map. The shipped SiteContent.jsx submits the full buffer so this works, but a partial-PATCH from a different client would wipe other keys. Recommend switching to per-key `$set: {f\"fields.{key}\": value}` mutation or documenting the full-buffer contract. Not blocking the iteration."
+}

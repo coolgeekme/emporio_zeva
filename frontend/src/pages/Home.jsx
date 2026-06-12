@@ -13,6 +13,7 @@ import {
   NOT_A_SALAMI_SEAL,
 } from "../content";
 import { useReveal } from "../hooks/useReveal";
+import { useSiteContent } from "../hooks/useSiteContent";
 import MonogramDivider from "../components/MonogramDivider";
 import WaitlistDialog from "../components/WaitlistDialog";
 
@@ -23,6 +24,7 @@ export default function Home() {
   const [journal, setJournal] = useState([]);
   const [waitlistProduct, setWaitlistProduct] = useState(null);
   const heroImgRef = useRef(null);
+  const c = useSiteContent("home");
   const r1 = useReveal();
   const r2 = useReveal();
   const r3 = useReveal();
@@ -72,13 +74,13 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-20 grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 items-end">
           <div className="md:col-span-6 md:pr-8">
             <p className="overline text-[#C05A3A]" data-testid="hero-overline">
-              Sicilian Cocoa Confection · Est. SF
+              {c("hero_overline", "Sicilian Cocoa Confection · Est. SF")}
             </p>
             <h1
               className="font-serif text-[56px] leading-[0.95] sm:text-7xl md:text-8xl lg:text-[112px] tracking-tight mt-6 text-[#2A1F1D]"
               data-testid="hero-product-name"
             >
-              Not A <span className="italic text-[#C05A3A]">Salami</span>.
+              {c("hero_h1_line1", "Not A")} <span className="italic text-[#C05A3A]">{c("hero_h1_italic", "Salami.")}</span>
             </h1>
             <p
               className="font-serif text-2xl sm:text-3xl md:text-4xl leading-[1.1] tracking-tight mt-5 text-[#2A1F1D] italic"
@@ -87,9 +89,7 @@ export default function Home() {
               {TAGLINES.primary}
             </p>
             <p className="mt-8 text-lg text-[#5C4E4A] max-w-md leading-relaxed">
-              A handcrafted Italian confection inspired by a traditional Sicilian
-              recipe from Modica. Shaped like a salami, it creates a moment of
-              surprise — then reveals a rich, sliceable chocolate experience.
+              {c("hero_intro_body", "A handcrafted Italian confection inspired by a traditional Sicilian recipe from Modica. Shaped like a salami, it creates a moment of surprise — then reveals a rich, sliceable chocolate experience.")}
             </p>
             <div className="mt-10 flex flex-wrap gap-4" data-testid="hero-ctas">
               <Link to="/collection" className="btn-primary" data-testid="hero-shop-cta">
@@ -117,7 +117,7 @@ export default function Home() {
             <div className="img-wash aspect-[4/5] md:aspect-[5/6] relative overflow-hidden">
               <img
                 ref={heroImgRef}
-                src={IMAGES.hero}
+                src={c("hero_image", IMAGES.hero)}
                 alt="Hands slicing Not A Salami beside hand-wrapped gift boxes"
                 data-testid="hero-image"
                 className="will-change-transform"
@@ -143,9 +143,11 @@ export default function Home() {
               />
             </div>
             <div className="hidden md:block absolute -bottom-6 -left-6 md:-left-10 bg-[#F9F6F0] border border-[#DFD7CA] py-5 px-6 max-w-[220px]">
-              <p className="overline text-[#C05A3A]">No 01 · Sicilian Cocoa Confection</p>
+              <p className="overline text-[#C05A3A]">{c("hero_card_overline", "No 01 · Sicilian Cocoa Confection")}</p>
               <p className="font-serif text-2xl mt-2 leading-tight text-[#2A1F1D]">
-                A little peculiar, <br />always delicious.
+                {c("hero_card_title", "A little peculiar, always delicious.").split(",").map((part, i, arr) => (
+                  <span key={i}>{part}{i < arr.length - 1 ? "," : ""}{i < arr.length - 1 ? <br /> : null}</span>
+                ))}
               </p>
             </div>
           </div>
@@ -174,9 +176,9 @@ export default function Home() {
         data-testid="why-it-works-section"
       >
         <div className="text-center">
-          <p className="overline text-[#C05A3A]">Why it works</p>
+          <p className="overline text-[#C05A3A]">{c("why_overline", "Why it works")}</p>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl mt-4 text-[#2A1F1D] max-w-3xl mx-auto leading-tight">
-            A different kind of chocolate.
+            {c("why_title", "A different kind of chocolate.")}
           </h2>
         </div>
         <div className="mt-12 grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-10">
@@ -201,16 +203,14 @@ export default function Home() {
         data-testid="illusion-section"
       >
         <div className="md:col-span-6 md:order-2">
-          <p className="overline text-[#C05A3A]">The wink, on the table</p>
+          <p className="overline text-[#C05A3A]">{c("illusion_overline", "The wink, on the table")}</p>
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 text-[#2A1F1D]">
-            It looks like salami.
+            {c("illusion_title_line1", "It looks like salami.")}
             <br />
-            It is <span className="italic text-[#C05A3A]">entirely</span> chocolate.
+            It is <span className="italic text-[#C05A3A]">{c("illusion_title_line2", "entirely")}</span> chocolate.
           </h2>
           <p className="mt-7 text-lg text-[#5C4E4A] leading-relaxed max-w-lg">
-            Wrapped in parchment paper and gold foil. Cut at the table.
-            The reveal — that rich cocoa interior speckled with crunchy biscotti,
-            chocolate chips, and delicate sugar crystals — is part of the dessert.
+            {c("illusion_body", "Wrapped in parchment paper and gold foil. Cut at the table. The reveal — that rich cocoa interior speckled with crunchy biscotti, chocolate chips, and delicate sugar crystals — is part of the dessert.")}
           </p>
           <div className="mt-8 divider" />
           <dl className="mt-8 grid grid-cols-3 gap-6">
@@ -231,7 +231,7 @@ export default function Home() {
         <div className="md:col-span-6 md:order-1">
           <div className="img-wash aspect-[5/6]">
             <img
-              src="https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg"
+              src={c("illusion_image", "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg")}
               alt="Not A Salami chocolate salami sliced on a branded wood board"
               data-testid="illusion-image"
             />
@@ -248,11 +248,11 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-6 md:px-10">
           <div className="flex items-end justify-between flex-wrap gap-6">
             <div>
-              <p className="overline text-[#C05A3A]">The Collection</p>
+              <p className="overline text-[#C05A3A]">{c("collection_overline", "The Collection")}</p>
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight mt-4 text-[#2A1F1D] max-w-xl leading-[1.05]">
-                One signature.
+                {c("collection_title_line1", "One signature.")}
                 <br />
-                <span className="italic text-[#C05A3A]">Made slowly.</span>
+                <span className="italic text-[#C05A3A]">{c("collection_title_line2", "Made slowly.")}</span>
               </h2>
             </div>
             <Link to="/collection" data-testid="collection-teaser-cta" className="link-underline">
@@ -332,18 +332,16 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-end">
               <div className="md:col-span-7">
                 <p className="overline text-[#C05A3A]">
-                  From Eva's kitchen · future offerings
+                  {c("future_overline", "From Eva's kitchen · future offerings")}
                 </p>
                 <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight mt-4 text-[#2A1F1D] leading-[1.05]">
-                  Coming next.
+                  {c("future_title_line1", "Coming next.")}
                   <br />
-                  <span className="italic text-[#C05A3A]">Reservable today.</span>
+                  <span className="italic text-[#C05A3A]">{c("future_title_line2", "Reservable today.")}</span>
                 </h2>
               </div>
               <p className="md:col-span-5 text-[#5C4E4A] leading-relaxed max-w-md">
-                New formats and flavors arrive only when Eva is happy with them.
-                Reserve your place — we'll write when each one comes out of the
-                kitchen.
+                {c("future_body", "New formats and flavors arrive only when Eva is happy with them. Reserve your place — we'll write when each one comes out of the kitchen.")}
               </p>
             </div>
 
@@ -417,7 +415,7 @@ export default function Home() {
       >
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
           <div className="md:col-span-5">
-            <p className="overline text-[#C05A3A]">The serving ritual</p>
+            <p className="overline text-[#C05A3A]">{c("ritual_overline", "The serving ritual")}</p>
             <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 text-[#2A1F1D]">
               Sliced.
               <br />
@@ -428,8 +426,7 @@ export default function Home() {
               <span className="italic text-[#C05A3A]">Shared.</span>
             </h2>
             <p className="mt-7 text-[#5C4E4A] leading-relaxed max-w-md">
-              Not A Salami is meant to be sliced, shared, and savored. Four
-              moments. One small ritual, the Italian way.
+              {c("ritual_body", "Not A Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way.")}
             </p>
             <Link to="/ritual" className="link-underline mt-8 inline-flex" data-testid="ritual-section-cta">
               Read the full ritual <ArrowRight size={14} />
@@ -469,10 +466,18 @@ export default function Home() {
           data-testid="testimonials-watermark"
         />
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 relative">
-          <p className="overline text-[#B9935A]">What people say</p>
+          <p className="overline text-[#B9935A]">{c("testimonials_overline", "What people say")}</p>
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 max-w-3xl">
-            The smile, the moment they realise
-            <span className="italic text-[#C05A3A]"> — there is no meat.</span>
+            {(() => {
+              const title = c("testimonials_title", "The smile, the moment they realise — there is no meat.");
+              const parts = title.split("—");
+              return parts.length > 1 ? (
+                <>
+                  {parts[0]}
+                  <span className="italic text-[#C05A3A]"> —{parts.slice(1).join("—")}</span>
+                </>
+              ) : title;
+            })()}
           </h2>
 
           <div className="mt-16 grid md:grid-cols-2 gap-y-14 gap-x-16">
@@ -504,9 +509,9 @@ export default function Home() {
       >
         <div className="flex items-end justify-between flex-wrap gap-6">
           <div>
-            <p className="overline text-[#C05A3A]">From the journal</p>
+            <p className="overline text-[#C05A3A]">{c("journal_overline", "From the journal")}</p>
             <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4 text-[#2A1F1D] max-w-2xl">
-              Notes, pairings, and small heritage detours.
+              {c("journal_title", "Notes, pairings, and small heritage detours.")}
             </h2>
           </div>
           <Link to="/journal" data-testid="journal-teaser-cta" className="link-underline">

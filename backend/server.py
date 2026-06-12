@@ -49,6 +49,42 @@ class Product(BaseModel):
     pronunciation: Optional[str] = None
 
 
+class ProductCreate(BaseModel):
+    slug: Optional[str] = None
+    name: str
+    tagline: str = ""
+    price: str = ""
+    weight: str = ""
+    description: str = ""
+    long_description: str = ""
+    ingredients: List[str] = Field(default_factory=list)
+    pairings: List[str] = Field(default_factory=list)
+    serving: List[str] = Field(default_factory=list)
+    images: List[str] = Field(default_factory=list)
+    badge: Optional[str] = None
+    available: bool = True
+    status: str = "active"
+    pronunciation: Optional[str] = None
+
+
+class ProductUpdate(BaseModel):
+    slug: Optional[str] = None
+    name: Optional[str] = None
+    tagline: Optional[str] = None
+    price: Optional[str] = None
+    weight: Optional[str] = None
+    description: Optional[str] = None
+    long_description: Optional[str] = None
+    ingredients: Optional[List[str]] = None
+    pairings: Optional[List[str]] = None
+    serving: Optional[List[str]] = None
+    images: Optional[List[str]] = None
+    badge: Optional[str] = None
+    available: Optional[bool] = None
+    status: Optional[str] = None
+    pronunciation: Optional[str] = None
+
+
 class JournalArticle(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     slug: str
@@ -552,15 +588,18 @@ SEED_PRODUCTS = [
 
 
 async def seed_products():
-    # Idempotent upsert by slug — keeps the catalog in sync with code on every restart
+    # Insert-only by slug — preserves admin edits on restart.
+    # To reseed from code, drop a product manually (admin Delete) and restart.
+    inserted = 0
     for p in SEED_PRODUCTS:
+        existing = await db.products.find_one({"slug": p["slug"]})
+        if existing:
+            continue
         doc = Product(**p).model_dump()
-        await db.products.update_one(
-            {"slug": p["slug"]},
-            {"$set": doc},
-            upsert=True,
-        )
-    logging.getLogger(__name__).info("Upserted %d products", len(SEED_PRODUCTS))
+        await db.products.insert_one(doc)
+        inserted += 1
+    if inserted:
+        logging.getLogger(__name__).info("Seeded %d new products", inserted)
 
 
 # ---------- Journal seed + persistence ----------
@@ -1303,6 +1342,315 @@ async def admin_update_settings(payload: SettingsUpdate, _: dict = Depends(requi
 @api_router.get("/settings", response_model=SiteSettings)
 async def public_get_settings():
     return await _load_settings()
+
+
+
+
+# ---------- Admin: Products CRUD ----------
+@api_router.get("/admin/products", response_model=List[Product])
+async def admin_list_products(_: dict = Depends(require_editor)):
+    """Admin sees all products regardless of status."""
+    docs = await db.products.find({}, {"_id": 0}).sort("status", 1).to_list(500)
+    return docs
+
+
+@api_router.post("/admin/products", response_model=Product)
+async def admin_create_product(payload: ProductCreate, _: dict = Depends(require_editor)):
+    name = payload.name.strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="name is required")
+    base_slug = _slugify(payload.slug or name)
+    candidate = base_slug
+    n = 2
+    while await db.products.find_one({"slug": candidate}):
+        candidate = f"{base_slug}-{n}"
+        n += 1
+    if payload.status not in ("active", "future", "archived"):
+        raise HTTPException(status_code=422, detail="status must be active, future, or archived")
+    data = payload.model_dump()
+    data["slug"] = candidate
+    data["name"] = name
+    product = Product(**data)
+    await db.products.insert_one(product.model_dump())
+    return product
+
+
+@api_router.patch("/admin/products/{slug}", response_model=Product)
+async def admin_update_product(
+    slug: str, payload: ProductUpdate, _: dict = Depends(require_editor)
+):
+    raw = payload.model_dump(exclude_unset=True)
+    if not raw:
+        raise HTTPException(status_code=422, detail="No fields to update")
+    if "status" in raw and raw["status"] not in ("active", "future", "archived"):
+        raise HTTPException(status_code=422, detail="status must be active, future, or archived")
+    if "slug" in raw and raw["slug"]:
+        new_slug = _slugify(raw["slug"])
+        if new_slug != slug:
+            conflict = await db.products.find_one({"slug": new_slug})
+            if conflict:
+                raise HTTPException(status_code=409, detail="A product with that slug already exists")
+            raw["slug"] = new_slug
+        else:
+            raw.pop("slug", None)
+    if "name" in raw and raw["name"] is not None:
+        raw["name"] = raw["name"].strip()
+        if not raw["name"]:
+            raise HTTPException(status_code=422, detail="name cannot be empty")
+    result = await db.products.find_one_and_update(
+        {"slug": slug},
+        {"$set": raw},
+        return_document=True,
+        projection={"_id": 0},
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return result
+
+
+@api_router.delete("/admin/products/{slug}")
+async def admin_delete_product(slug: str, _: dict = Depends(require_editor)):
+    result = await db.products.delete_one({"slug": slug})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"deleted": True}
+
+
+# ---------- Site Content (field-level CMS for hardcoded pages) ----------
+SITE_CONTENT_MANIFEST = {
+    "home": {
+        "label": "Home",
+        "sections": [
+            {"label": "Hero", "fields": [
+                {"key": "hero_overline", "type": "text", "label": "Overline",
+                 "default": "Sicilian Cocoa Confection · Est. SF"},
+                {"key": "hero_h1_line1", "type": "text", "label": "H1 — first word(s)", "default": "Not A"},
+                {"key": "hero_h1_italic", "type": "text", "label": "H1 — italic word", "default": "Salami."},
+                {"key": "hero_intro_body", "type": "textarea", "label": "Hero intro paragraph",
+                 "default": "A handcrafted Italian confection inspired by a traditional Sicilian recipe from Modica. Shaped like a salami, it creates a moment of surprise — then reveals a rich, sliceable chocolate experience."},
+                {"key": "hero_image", "type": "image", "label": "Hero image", "default": ""},
+                {"key": "hero_card_overline", "type": "text", "label": "Floating card overline",
+                 "default": "No 01 · Sicilian Cocoa Confection"},
+                {"key": "hero_card_title", "type": "textarea", "label": "Floating card title",
+                 "default": "A little peculiar, always delicious."},
+            ]},
+            {"label": "Why it works", "fields": [
+                {"key": "why_overline", "type": "text", "label": "Overline", "default": "Why it works"},
+                {"key": "why_title", "type": "textarea", "label": "H2", "default": "A different kind of chocolate."},
+            ]},
+            {"label": "The illusion", "fields": [
+                {"key": "illusion_overline", "type": "text", "label": "Overline", "default": "The wink, on the table"},
+                {"key": "illusion_title_line1", "type": "text", "label": "H2 — first line",
+                 "default": "It looks like salami."},
+                {"key": "illusion_title_line2", "type": "text", "label": "H2 — italic word",
+                 "default": "entirely"},
+                {"key": "illusion_body", "type": "textarea", "label": "Body",
+                 "default": "Wrapped in parchment paper and gold foil. Cut at the table. The reveal — that rich cocoa interior speckled with crunchy biscotti, chocolate chips, and delicate sugar crystals — is part of the dessert."},
+                {"key": "illusion_image", "type": "image", "label": "Image",
+                 "default": "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg"},
+            ]},
+            {"label": "Collection teaser", "fields": [
+                {"key": "collection_overline", "type": "text", "label": "Overline", "default": "The Collection"},
+                {"key": "collection_title_line1", "type": "text", "label": "H2 line 1", "default": "One signature."},
+                {"key": "collection_title_line2", "type": "text", "label": "H2 line 2 (italic)", "default": "Made slowly."},
+            ]},
+            {"label": "Future offerings", "fields": [
+                {"key": "future_overline", "type": "text", "label": "Overline",
+                 "default": "From Eva's kitchen · future offerings"},
+                {"key": "future_title_line1", "type": "text", "label": "H2 line 1", "default": "Coming next."},
+                {"key": "future_title_line2", "type": "text", "label": "H2 line 2 (italic)", "default": "Reservable today."},
+                {"key": "future_body", "type": "textarea", "label": "Body",
+                 "default": "New formats and flavors arrive only when Eva is happy with them. Reserve your place — we'll write when each one comes out of the kitchen."},
+            ]},
+            {"label": "Ritual teaser", "fields": [
+                {"key": "ritual_overline", "type": "text", "label": "Overline", "default": "The serving ritual"},
+                {"key": "ritual_body", "type": "textarea", "label": "Body",
+                 "default": "Not A Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way."},
+            ]},
+            {"label": "Testimonials", "fields": [
+                {"key": "testimonials_overline", "type": "text", "label": "Overline", "default": "What people say"},
+                {"key": "testimonials_title", "type": "textarea", "label": "H2 (italic part starts after em-dash)",
+                 "default": "The smile, the moment they realise — there is no meat."},
+            ]},
+            {"label": "Journal teaser", "fields": [
+                {"key": "journal_overline", "type": "text", "label": "Overline", "default": "From the journal"},
+                {"key": "journal_title", "type": "textarea", "label": "H2",
+                 "default": "Notes, pairings, and small heritage detours."},
+            ]},
+        ],
+    },
+    "collection": {
+        "label": "Collection",
+        "sections": [
+            {"label": "Header", "fields": [
+                {"key": "header_overline", "type": "text", "label": "Overline", "default": "The Collection"},
+                {"key": "header_title_line1", "type": "text", "label": "H1 line 1", "default": "One signature."},
+                {"key": "header_title_line2", "type": "text", "label": "H1 line 2 (italic)", "default": "Made slowly."},
+                {"key": "header_body", "type": "textarea", "label": "Body",
+                 "default": "We make one thing for now — and we make it well. Below: the signature Not A Salami. Further down: what's next from Eva's kitchen, reservable today."},
+            ]},
+            {"label": "Future offerings", "fields": [
+                {"key": "future_overline", "type": "text", "label": "Overline",
+                 "default": "From Eva's kitchen · future offerings"},
+                {"key": "future_title_line1", "type": "text", "label": "H2 line 1", "default": "Coming next."},
+                {"key": "future_title_line2", "type": "text", "label": "H2 line 2 (italic)", "default": "Reservable today."},
+                {"key": "future_body", "type": "textarea", "label": "Body",
+                 "default": "A small house grows slowly. These are the flavors, formats, and bundles in development — join a list and we'll write when each comes out of the kitchen."},
+            ]},
+        ],
+    },
+    "ritual": {
+        "label": "Ritual",
+        "sections": [
+            {"label": "Hero", "fields": [
+                {"key": "hero_overline", "type": "text", "label": "Overline", "default": "The serving ritual"},
+                {"key": "hero_h1", "type": "textarea", "label": "H1 (newlines as line breaks)",
+                 "default": "Sliced. Served. Savored. Shared."},
+                {"key": "hero_body", "type": "textarea", "label": "Body",
+                 "default": "Not A Salami is meant to be sliced, shared, and savored. Four moments — one small ritual, the Italian way."},
+            ]},
+            {"label": "Pairings", "fields": [
+                {"key": "pairings_overline", "type": "text", "label": "Overline", "default": "Pair it with"},
+                {"key": "pairings_h2_line1", "type": "text", "label": "H2 line 1", "default": "Coffee. Wine."},
+                {"key": "pairings_h2_line2", "type": "text", "label": "H2 line 2 (italic)", "default": "Fruit. Cheese."},
+                {"key": "pairings_body", "type": "textarea", "label": "Body",
+                 "default": "Each pairing pulls a different layer forward — espresso heightens the cocoa, a glass of red lengthens the finish, fresh fruit brightens the biscotti crunch, aged cheese surprises everyone."},
+                {"key": "pairings_image", "type": "image", "label": "Image", "default": ""},
+            ]},
+            {"label": "Closing", "fields": [
+                {"key": "closing_overline", "type": "text", "label": "Overline",
+                 "default": "Slice thin. Serve slow. Share generously."},
+                {"key": "closing_quote", "type": "textarea", "label": "H2 quote",
+                 "default": "I am at peace with where I have arrived, and proud of the path I followed."},
+            ]},
+        ],
+    },
+    "our_story": {
+        "label": "Our Story",
+        "sections": [
+            {"label": "Hero", "fields": [
+                {"key": "hero_overline", "type": "text", "label": "Overline",
+                 "default": "An Italian tradition, reimagined"},
+                {"key": "hero_h1_line1", "type": "text", "label": "H1 line 1", "default": "A Sicilian"},
+                {"key": "hero_h1_line2", "type": "text", "label": "H1 line 2 (italic)", "default": "tradition."},
+                {"key": "hero_body", "type": "textarea", "label": "Body",
+                 "default": "Returning to my roots, I reconnected with my grandmother's recipe and the chocolate tradition of Modica, Sicily — brought together in a confection designed to surprise, to be sliced and shared."},
+            ]},
+            {"label": "Founder image", "fields": [
+                {"key": "founder_image", "type": "image", "label": "Founder portrait", "default": ""},
+                {"key": "founder_caption", "type": "text", "label": "Caption below image",
+                 "default": "Eva · Founder · From Sicily, with seriousness"},
+            ]},
+            {"label": "Sicily / espresso pair", "fields": [
+                {"key": "sicily_image", "type": "image", "label": "Sicily landscape image", "default": ""},
+                {"key": "italian_moment_image", "type": "image", "label": "Italian moment image", "default": ""},
+            ]},
+            {"label": "Closing", "fields": [
+                {"key": "closing_overline", "type": "text", "label": "Overline", "default": "A modern ritual"},
+                {"key": "closing_h2_line1", "type": "text", "label": "H2 line 1",
+                 "default": "Everything is produced in small batches in California"},
+                {"key": "closing_h2_line2", "type": "text", "label": "H2 line 2 (italic)",
+                 "default": "with a hands-on approach."},
+                {"key": "closing_body", "type": "textarea", "label": "Body",
+                 "default": "Italian tradition, crafted in California. Unexpected in appearance yet deeply nostalgic at heart — meant to create a moment of surprise, sharing, and conversation."},
+            ]},
+        ],
+    },
+    "journal_index": {
+        "label": "Journal (index)",
+        "sections": [
+            {"label": "Header", "fields": [
+                {"key": "header_overline", "type": "text", "label": "Overline", "default": "The Journal"},
+                {"key": "header_title_line1", "type": "text", "label": "H1 line 1",
+                 "default": "Pairings, heritage, and slow notes"},
+                {"key": "header_title_line2", "type": "text", "label": "H1 line 2 (italic)",
+                 "default": "from Eva's kitchen."},
+            ]},
+        ],
+    },
+    "contact": {
+        "label": "Contact",
+        "sections": [
+            {"label": "Hero", "fields": [
+                {"key": "hero_overline", "type": "text", "label": "Overline",
+                 "default": "Inquire · Wholesale · Press · Corporate"},
+                {"key": "hero_h1_line1", "type": "text", "label": "H1 line 1",
+                 "default": "Let's create a memorable"},
+                {"key": "hero_h1_line2", "type": "text", "label": "H1 line 2 (italic)",
+                 "default": "gifting experience."},
+                {"key": "hero_body", "type": "textarea", "label": "Body",
+                 "default": "Whether it's a dinner party, a corporate program, a wedding favor run, or a shop that wants to stock the classic — leave us a note. Eva reads every one."},
+            ]},
+            {"label": "Shipping & corporate sidebar", "fields": [
+                {"key": "shipping_overline", "type": "text", "label": "Overline", "default": "Shipping & corporate"},
+                {"key": "shipping_body", "type": "textarea", "label": "Body",
+                 "default": "We ship within the continental United States in small batches. Standard lead time is 5–7 days. For corporate programs (24-unit minimum), see the corporate deck or request the one-sheet."},
+            ]},
+        ],
+    },
+}
+
+VALID_CONTENT_PAGES = set(SITE_CONTENT_MANIFEST.keys())
+
+
+async def _load_site_content(page: str) -> dict:
+    doc = await db.site_content.find_one({"_id": page})
+    return doc.get("fields", {}) if doc else {}
+
+
+def _merged_content(page: str, overrides: dict) -> dict:
+    out = {}
+    cfg = SITE_CONTENT_MANIFEST.get(page, {"sections": []})
+    for section in cfg.get("sections", []):
+        for f in section["fields"]:
+            stored = overrides.get(f["key"])
+            out[f["key"]] = stored if stored not in (None, "") else f.get("default", "")
+    return out
+
+
+@api_router.get("/site-content/{page}")
+async def public_site_content(page: str):
+    if page not in VALID_CONTENT_PAGES:
+        raise HTTPException(status_code=404, detail="Unknown page")
+    overrides = await _load_site_content(page)
+    return _merged_content(page, overrides)
+
+
+@api_router.get("/admin/site-content")
+async def admin_site_content(_: dict = Depends(require_editor)):
+    """Returns the full manifest plus stored overrides — drives the admin editor."""
+    pages = []
+    for page_key, cfg in SITE_CONTENT_MANIFEST.items():
+        overrides = await _load_site_content(page_key)
+        pages.append({
+            "key": page_key,
+            "label": cfg["label"],
+            "sections": cfg["sections"],
+            "overrides": overrides,
+        })
+    return {"pages": pages}
+
+
+@api_router.patch("/admin/site-content/{page}")
+async def admin_update_site_content(
+    page: str, payload: dict, _: dict = Depends(require_editor)
+):
+    if page not in VALID_CONTENT_PAGES:
+        raise HTTPException(status_code=404, detail="Unknown page")
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=422, detail="Expected an object of {key: value}")
+    valid_keys = {
+        f["key"]
+        for section in SITE_CONTENT_MANIFEST[page]["sections"]
+        for f in section["fields"]
+    }
+    cleaned = {k: ("" if v is None else str(v)) for k, v in payload.items() if k in valid_keys}
+    await db.site_content.update_one(
+        {"_id": page},
+        {"$set": {"fields": cleaned, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    return _merged_content(page, cleaned)
 
 
 

@@ -2,23 +2,23 @@ import { Mail, MapPin, Instagram, Phone } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import InquiryForm from "../components/InquiryForm";
 import { CONTACT } from "../content";
+import { useSiteContent } from "../hooks/useSiteContent";
 
 export default function Contact() {
   const [searchParams] = useSearchParams();
   const productSlug = searchParams.get("product");
+  const c = useSiteContent("contact");
   return (
     <div className="pt-[90px]" data-testid="contact-page">
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-12 border-b border-[#DFD7CA]">
-        <p className="overline text-[#C05A3A]">Inquire · Wholesale · Press · Corporate</p>
+        <p className="overline text-[#C05A3A]">{c("hero_overline", "Inquire · Wholesale · Press · Corporate")}</p>
         <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl leading-[1.02] tracking-tight mt-5 max-w-4xl text-[#2A1F1D]">
-          Let's create a memorable
+          {c("hero_h1_line1", "Let's create a memorable")}
           <br />
-          <span className="italic text-[#C05A3A]">gifting experience.</span>
+          <span className="italic text-[#C05A3A]">{c("hero_h1_line2", "gifting experience.")}</span>
         </h1>
         <p className="mt-7 text-[#5C4E4A] leading-relaxed max-w-xl">
-          Whether it's a dinner party, a corporate program, a wedding favor run,
-          or a shop that wants to stock the classic — leave us a note. Eva
-          reads every one.
+          {c("hero_body", "Whether it's a dinner party, a corporate program, a wedding favor run, or a shop that wants to stock the classic — leave us a note. Eva reads every one.")}
         </p>
       </section>
 
@@ -57,12 +57,9 @@ export default function Contact() {
             </ul>
           </div>
           <div className="border-t border-[#DFD7CA] pt-10">
-            <p className="overline text-[#C05A3A]">Shipping & corporate</p>
+            <p className="overline text-[#C05A3A]">{c("shipping_overline", "Shipping & corporate")}</p>
             <p className="mt-3 text-sm text-[#5C4E4A] leading-relaxed">
-              We ship within the continental United States in small batches.
-              Standard lead time is 5–7 days. For corporate programs (24-unit minimum),
-              see the <a href="/corporate" className="underline text-[#2A1F1D]">corporate deck</a> or
-              request the <a href="/one-sheet" className="underline text-[#2A1F1D]">one-sheet</a>.
+              {c("shipping_body", "We ship within the continental United States in small batches. Standard lead time is 5–7 days. For corporate programs (24-unit minimum), see the corporate deck or request the one-sheet.")}
             </p>
           </div>
         </aside>

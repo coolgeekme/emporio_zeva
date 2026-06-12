@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { ArrowRight } from "lucide-react";
 import WaitlistDialog from "../components/WaitlistDialog";
+import { useSiteContent } from "../hooks/useSiteContent";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -10,6 +11,7 @@ export default function Collection() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [waitlistProduct, setWaitlistProduct] = useState(null);
+  const c = useSiteContent("collection");
 
   useEffect(() => {
     axios
@@ -27,18 +29,16 @@ export default function Collection() {
       {/* Header */}
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-12 border-b border-[#DFD7CA]">
         <p className="overline text-[#C05A3A]" data-testid="collection-overline">
-          The Collection
+          {c("header_overline", "The Collection")}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 mt-6 items-end">
           <h1 className="md:col-span-8 font-serif text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[1.02] text-[#2A1F1D]">
-            One signature.
+            {c("header_title_line1", "One signature.")}
             <br />
-            <span className="italic text-[#C05A3A]">Made slowly.</span>
+            <span className="italic text-[#C05A3A]">{c("header_title_line2", "Made slowly.")}</span>
           </h1>
           <p className="md:col-span-4 text-[#5C4E4A] leading-relaxed max-w-md">
-            We make one thing for now — and we make it well. Below: the signature
-            Not A Salami. Further down: what's next from Eva's kitchen, reservable
-            today.
+            {c("header_body", "We make one thing for now — and we make it well. Below: the signature Not A Salami. Further down: what's next from Eva's kitchen, reservable today.")}
           </p>
         </div>
       </section>
@@ -114,18 +114,16 @@ export default function Collection() {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-end">
                   <div className="md:col-span-7">
                     <p className="overline text-[#C05A3A]">
-                      From Eva's kitchen · future offerings
+                      {c("future_overline", "From Eva's kitchen · future offerings")}
                     </p>
                     <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight mt-4 text-[#2A1F1D] leading-[1.05]">
-                      Coming next.
+                      {c("future_title_line1", "Coming next.")}
                       <br />
-                      <span className="italic text-[#C05A3A]">Reservable today.</span>
+                      <span className="italic text-[#C05A3A]">{c("future_title_line2", "Reservable today.")}</span>
                     </h2>
                   </div>
                   <p className="md:col-span-5 text-[#5C4E4A] leading-relaxed max-w-md">
-                    A small house grows slowly. These are the flavors, formats, and
-                    bundles in development — join a list and we'll write when each
-                    comes out of the kitchen.
+                    {c("future_body", "A small house grows slowly. These are the flavors, formats, and bundles in development — join a list and we'll write when each comes out of the kitchen.")}
                   </p>
                 </div>
 

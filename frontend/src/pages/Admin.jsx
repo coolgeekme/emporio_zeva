@@ -21,6 +21,8 @@ import {
   Mail,
   Users as UsersIcon,
   Settings as SettingsIcon,
+  ShoppingBag,
+  Type as TypeIcon,
   Menu as MenuIcon,
 } from "lucide-react";
 import DashboardPanel from "../admin/panels/Dashboard";
@@ -28,6 +30,8 @@ import PagesPanel from "../admin/panels/Pages";
 import MediaPanel from "../admin/panels/Media";
 import UsersPanel from "../admin/panels/Users";
 import SettingsPanel from "../admin/panels/Settings";
+import ProductsPanel from "../admin/panels/Products";
+import SiteContentPanel from "../admin/panels/SiteContent";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const TOKEN_KEY = "ez_admin_token";
@@ -1343,7 +1347,9 @@ export default function Admin() {
 // ----------------------------------------------------------------------------
 const PANELS = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "editor", "viewer"] },
+  { key: "content", label: "Site Content", icon: TypeIcon, roles: ["admin", "editor"] },
   { key: "pages", label: "Pages", icon: FileText, roles: ["admin", "editor"] },
+  { key: "products", label: "Products", icon: ShoppingBag, roles: ["admin", "editor"] },
   { key: "media", label: "Media", icon: ImageIcon, roles: ["admin", "editor"] },
   { key: "journal", label: "Journal", icon: BookOpen, roles: ["admin", "editor"] },
   { key: "decks", label: "Decks", icon: Presentation, roles: ["admin", "editor"] },
@@ -1447,7 +1453,9 @@ function AdminShell({ token, user, onLogout }) {
 
         <div className="max-w-[1400px] mx-auto px-4 md:px-10 py-6 md:py-10">
           {active === "dashboard" && <DashboardPanel token={token} user={user} />}
+          {active === "content" && <SiteContentPanel token={token} />}
           {active === "pages" && <PagesPanel token={token} />}
+          {active === "products" && <ProductsPanel token={token} />}
           {active === "media" && <MediaPanel token={token} />}
           {active === "users" && <UsersPanel token={token} currentUser={user} />}
           {active === "settings" && <SettingsPanel token={token} readOnly={role !== "admin"} />}

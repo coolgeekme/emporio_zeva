@@ -3,27 +3,36 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import MonogramDivider from "../components/MonogramDivider";
 import { useReveal } from "../hooks/useReveal";
+import { useSiteContent } from "../hooks/useSiteContent";
 
 export default function Ritual() {
   const r1 = useReveal();
   const r2 = useReveal();
+  const c = useSiteContent("ritual");
 
   return (
     <div className="pt-[90px]" data-testid="ritual-page">
       {/* HERO */}
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-16 border-b border-[#DFD7CA]">
-        <p className="overline text-[#C05A3A]">The serving ritual</p>
+        <p className="overline text-[#C05A3A]">{c("hero_overline", "The serving ritual")}</p>
         <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl leading-[1.02] tracking-tight mt-5 text-[#2A1F1D] max-w-3xl">
-          Sliced.
-          <br />
-          <span className="italic">Served.</span>{" "}
-          Savored.
-          <br />
-          <span className="italic text-[#C05A3A]">Shared.</span>
+          {(() => {
+            const h1 = c("hero_h1", "Sliced. Served. Savored. Shared.");
+            const words = h1.split(/\s+/).filter(Boolean);
+            return words.map((w, i) => {
+              const italic = i === 1 || (i === words.length - 1);
+              const ember = i === words.length - 1;
+              return (
+                <span key={i}>
+                  <span className={italic ? (ember ? "italic text-[#C05A3A]" : "italic") : undefined}>{w}</span>
+                  {i < words.length - 1 ? (i === 1 ? "\u00a0" : <br />) : null}
+                </span>
+              );
+            });
+          })()}
         </h1>
         <p className="mt-7 text-lg text-[#5C4E4A] max-w-xl leading-relaxed">
-          Not A Salami is meant to be sliced, shared, and savored. Four moments
-          — one small ritual, the Italian way.
+          {c("hero_body", "Not A Salami is meant to be sliced, shared, and savored. Four moments — one small ritual, the Italian way.")}
         </p>
       </section>
 
@@ -61,16 +70,14 @@ export default function Ritual() {
       <section className="bg-[#2A1F1D] text-[#F9F6F0] py-20 md:py-28 grain relative">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
           <div className="md:col-span-7">
-            <p className="overline text-[#B9935A]">Pair it with</p>
+            <p className="overline text-[#B9935A]">{c("pairings_overline", "Pair it with")}</p>
             <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5">
-              Coffee. Wine.
+              {c("pairings_h2_line1", "Coffee. Wine.")}
               <br />
-              <span className="italic text-[#C05A3A]">Fruit. Cheese.</span>
+              <span className="italic text-[#C05A3A]">{c("pairings_h2_line2", "Fruit. Cheese.")}</span>
             </h2>
             <p className="mt-7 text-lg text-[#DFD7CA] leading-relaxed max-w-xl">
-              Each pairing pulls a different layer forward — espresso heightens
-              the cocoa, a glass of red lengthens the finish, fresh fruit
-              brightens the biscotti crunch, aged cheese surprises everyone.
+              {c("pairings_body", "Each pairing pulls a different layer forward — espresso heightens the cocoa, a glass of red lengthens the finish, fresh fruit brightens the biscotti crunch, aged cheese surprises everyone.")}
             </p>
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-6">
               {["Coffee", "Wine", "Fruit", "Cheese"].map((p, i) => (
@@ -82,7 +89,7 @@ export default function Ritual() {
             </div>
           </div>
           <div className="md:col-span-5 img-wash aspect-[4/5]">
-            <img src={IMAGES.product} alt="Sliced Not A Salami with espresso" />
+            <img src={c("pairings_image", IMAGES.product)} alt="Sliced Not A Salami with espresso" />
           </div>
         </div>
       </section>
@@ -115,9 +122,9 @@ export default function Ritual() {
 
       {/* CLOSING */}
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-24 text-center">
-        <p className="overline text-[#C05A3A]">{TAGLINES.secondary}</p>
+        <p className="overline text-[#C05A3A]">{c("closing_overline", TAGLINES.secondary)}</p>
         <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 text-[#2A1F1D] max-w-3xl mx-auto">
-          {FOUNDER_LETTER[2]}
+          {c("closing_quote", FOUNDER_LETTER[2])}
         </h2>
         <p className="font-serif text-2xl italic text-[#C05A3A] mt-8">
           Buon Appetito, <span className="not-italic text-[#2A1F1D]">— {BRAND.founder}</span>

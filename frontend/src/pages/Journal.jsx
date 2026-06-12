@@ -2,12 +2,14 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useSiteContent } from "../hooks/useSiteContent";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Journal() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const c = useSiteContent("journal_index");
 
   useEffect(() => {
     axios
@@ -20,10 +22,10 @@ export default function Journal() {
   return (
     <div className="pt-[90px]" data-testid="journal-page">
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-20 border-b border-[#DFD7CA]">
-        <p className="overline text-[#C05A3A]">The Journal</p>
+        <p className="overline text-[#C05A3A]">{c("header_overline", "The Journal")}</p>
         <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl leading-[1.02] tracking-tight mt-5 max-w-3xl text-[#2A1F1D]">
-          Pairings, heritage, and slow notes
-          <span className="italic text-[#C05A3A]"> from Eva's kitchen.</span>
+          {c("header_title_line1", "Pairings, heritage, and slow notes")}
+          <span className="italic text-[#C05A3A]"> {c("header_title_line2", "from Eva's kitchen.")}</span>
         </h1>
       </section>
 
