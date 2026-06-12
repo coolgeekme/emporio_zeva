@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ChevronLeft, ChevronRight, ArrowRight, Mail, Phone, Globe } from "lucide-react";
 import {
   IMAGES,
@@ -18,8 +20,37 @@ import {
   FOUNDER_LETTER,
 } from "../content";
 import MonogramDivider from "../components/MonogramDivider";
+import { getSlideField, TEMPLATE_SLIDES } from "../admin/deckManifest";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Inline markdown renderer for slide copy. Restricts to safe tags + matches
+// the deck visual rhythm (paragraph spacing, bullet style, no headings since
+// each slide controls its own H2).
+function SlideMarkdown({ children, dark = false, className = "" }) {
+  if (!children) return null;
+  const text = String(children);
+  return (
+    <div className={`md-slide ${dark ? "md-slide-dark" : ""} ${className}`}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          p: ({ node, ...props }) => <p className="mb-3 last:mb-0 leading-relaxed" {...props} />,
+          ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-3 space-y-1" {...props} />,
+          ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
+          li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
+          a: ({ node, ...props }) => (
+            <a className={`underline ${dark ? "text-[#C05A3A] hover:text-[#F9F6F0]" : "text-[#C05A3A] hover:text-[#2A1F1D]"}`} {...props} />
+          ),
+          strong: ({ node, ...props }) => <strong className={dark ? "text-[#F9F6F0]" : "text-[#2A1F1D]"} {...props} />,
+          em: ({ node, ...props }) => <em className="italic" {...props} />,
+        }}
+      >
+        {text}
+      </ReactMarkdown>
+    </div>
+  );
+}
 
 // ============================================================================
 // Slide chrome
@@ -71,6 +102,12 @@ export default function BlackRock({ deck = null }) {
   const clientLogo = deck?.logo_url || null;
   const clientDomain = (deck?.domain || "company").replace(/^www\./, "").split(".")[0];
   const emailPlaceholder = `you@${(deck?.domain) || "company.com"}`;
+
+  // Override helper — returns slide field value or `defaultValue` when not set.
+  const ov = (slideKey, fieldKey, defaultValue) => {
+    const v = getSlideField(deck, slideKey, fieldKey);
+    return v === undefined ? defaultValue : v;
+  };
 
   const trackRef = useRef(null);
   const rafRef = useRef(0);
@@ -227,49 +264,67 @@ export default function BlackRock({ deck = null }) {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-14 items-center">
             <div className="md:col-span-7">
               <p className="overline text-[#5C4E4A] mb-5 fx fx-down fx-d1">
-                {isGeneric ? "Corporate gifting · 2026" : `Confidential · Prepared for ${clientFull}`}
+                {ov("slide_1_cover", "label_top",
+                  isGeneric ? "Corporate gifting · 2026" : `Confidential · Prepared for ${clientFull}`)}
               </p>
               <h1
                 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[88px] leading-[0.95] tracking-tight text-[#2A1F1D] fx fx-left fx-d2"
                 data-testid="pitch-cover-title"
               >
-                {isGeneric ? (
-                  <>
-                    A Corporate Gifting
-                    <br />
-                    <span className="italic text-[#C05A3A]">Presentation.</span>
-                  </>
-                ) : (
-                  <>
-                    A Corporate Gifting Presentation
-                    <br />
-                    for <span className="italic text-[#C05A3A]">{clientName}</span>.
-                  </>
-                )}
+                {(() => {
+                  const titleMainOverride = ov("slide_1_cover", "title_main", null);
+                  const titleItalicOverride = ov("slide_1_cover", "title_italic", null);
+                  if (titleMainOverride || titleItalicOverride) {
+                    return (
+                      <>
+                        {titleMainOverride || (isGeneric ? "A Corporate Gifting" : "A Corporate Gifting Presentation")}
+                        {titleItalicOverride ? (
+                          <>
+                            <br />
+                            <span className="italic text-[#C05A3A]">{titleItalicOverride}</span>
+                          </>
+                        ) : null}
+                      </>
+                    );
+                  }
+                  return isGeneric ? (
+                    <>
+                      A Corporate Gifting
+                      <br />
+                      <span className="italic text-[#C05A3A]">Presentation.</span>
+                    </>
+                  ) : (
+                    <>
+                      A Corporate Gifting Presentation
+                      <br />
+                      for <span className="italic text-[#C05A3A]">{clientName}</span>.
+                    </>
+                  );
+                })()}
               </h1>
-              <p className="mt-7 text-xl md:text-2xl font-serif text-[#5C4E4A] max-w-2xl leading-snug italic fx fx-up fx-d3">
-                {introText}
-              </p>
+              <div className="mt-7 text-xl md:text-2xl font-serif text-[#5C4E4A] max-w-2xl leading-snug italic fx fx-up fx-d3">
+                <SlideMarkdown>{ov("slide_1_cover", "subtitle", introText)}</SlideMarkdown>
+              </div>
               <div className="mt-10 flex flex-wrap gap-x-10 gap-y-4 text-sm text-[#5C4E4A] fx fx-up fx-d4">
                 <div>
-                  <p className="overline">Prepared by</p>
-                  <p className="mt-1 text-[#2A1F1D]">{BRAND.founder} · Founder</p>
+                  <p className="overline">{ov("slide_1_cover", "prepared_by_label", "Prepared by")}</p>
+                  <p className="mt-1 text-[#2A1F1D]">{ov("slide_1_cover", "prepared_by_value", `${BRAND.founder} · Founder`)}</p>
                 </div>
                 <div>
-                  <p className="overline">Date</p>
+                  <p className="overline">{ov("slide_1_cover", "date_label", "Date")}</p>
                   <p className="mt-1 text-[#2A1F1D]">
-                    {new Date().toLocaleString("en-US", { month: "long", year: "numeric" })}
+                    {ov("slide_1_cover", "date_value", new Date().toLocaleString("en-US", { month: "long", year: "numeric" }))}
                   </p>
                 </div>
                 <div>
-                  <p className="overline">Audience</p>
-                  <p className="mt-1 text-[#2A1F1D]">Corporate Gifting · Brand</p>
+                  <p className="overline">{ov("slide_1_cover", "audience_label", "Audience")}</p>
+                  <p className="mt-1 text-[#2A1F1D]">{ov("slide_1_cover", "audience_value", "Corporate Gifting · Brand")}</p>
                 </div>
               </div>
             </div>
             <div className="md:col-span-5 hidden md:block">
               <div className="img-wash aspect-[4/5] max-h-[60vh] fx fx-right fx-d2">
-                <img src={IMAGES.product} alt="Not A Salami presentation" />
+                <img src={ov("slide_1_cover", "hero_image", IMAGES.product)} alt="Not A Salami presentation" />
               </div>
               {clientLogo && (
                 <div
@@ -306,27 +361,29 @@ export default function BlackRock({ deck = null }) {
         <Slide id="tradition" n={2} total={TOTAL} testid="deck-slide-tradition" isActive={visited.has(1)}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-6">
-              <p className="overline text-[#C05A3A] fx fx-down fx-d1">{TAGLINES.italian_tradition}</p>
+              <p className="overline text-[#C05A3A] fx fx-down fx-d1">
+                {ov("slide_2_tradition", "overline", TAGLINES.italian_tradition)}
+              </p>
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4 text-[#2A1F1D] fx fx-left fx-d2">
-                Returning to my roots,
+                {ov("slide_2_tradition", "title_line1", "Returning to my roots,")}
                 <br />
-                <span className="italic text-[#C05A3A]">a Sicilian story.</span>
+                <span className="italic text-[#C05A3A]">{ov("slide_2_tradition", "title_italic", "a Sicilian story.")}</span>
               </h2>
-              <p className="mt-6 text-base md:text-lg text-[#2A1F1D] leading-relaxed max-w-xl fx fx-up fx-d3">
-                Returning to my roots, I reconnected with my grandmother's
-                recipe and the chocolate tradition of <strong>Modica, Sicily</strong> —
-                brought together in a confection designed to surprise, and to be
-                sliced and shared.
-              </p>
-              <p className="mt-4 text-sm text-[#5C4E4A] leading-relaxed max-w-xl italic fx fx-up fx-d4">
-                {FOUNDER_LETTER[1]}
-              </p>
+              <div className="mt-6 text-base md:text-lg text-[#2A1F1D] leading-relaxed max-w-xl fx fx-up fx-d3">
+                <SlideMarkdown>
+                  {ov("slide_2_tradition", "body",
+                    "Returning to my roots, I reconnected with my grandmother's recipe and the chocolate tradition of **Modica, Sicily** — brought together in a confection designed to surprise, and to be sliced and shared.")}
+                </SlideMarkdown>
+              </div>
+              <div className="mt-4 text-sm text-[#5C4E4A] leading-relaxed max-w-xl italic fx fx-up fx-d4">
+                <SlideMarkdown>{ov("slide_2_tradition", "letter", FOUNDER_LETTER[1])}</SlideMarkdown>
+              </div>
               <p className="font-serif text-2xl italic text-[#C05A3A] mt-6 fx fx-up fx-d5">
-                — {BRAND.founder}, Founder
+                {ov("slide_2_tradition", "signature", `— ${BRAND.founder}, Founder`)}
               </p>
             </div>
             <div className="md:col-span-6 img-wash aspect-[4/5] max-h-[65vh] fx fx-right fx-d2">
-              <img src={IMAGES.founder} alt="View of Modica, Sicily from a rooftop terrace" />
+              <img src={ov("slide_2_tradition", "image", IMAGES.founder)} alt="View of Modica, Sicily from a rooftop terrace" />
             </div>
           </div>
         </Slide>
@@ -335,20 +392,22 @@ export default function BlackRock({ deck = null }) {
         <Slide id="why-it-works" n={3} total={TOTAL} dark testid="deck-slide-why-it-works" isActive={visited.has(2)}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[60vh]">
-              <img src={IMAGES.hero} alt="Sliced Not A Salami" />
+              <img src={ov("slide_3_why", "image", IMAGES.hero)} alt="Sliced Not A Salami" />
             </div>
             <div className="md:col-span-7">
-              <p className="overline text-[#B9935A]">A different kind of chocolate</p>
+              <p className="overline text-[#B9935A]">{ov("slide_3_why", "overline", "A different kind of chocolate")}</p>
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4">
-                Unexpected at first.
+                {ov("slide_3_why", "title_line1", "Unexpected at first.")}
                 <br />
-                <span className="italic text-[#C05A3A]">Designed to surprise.</span>
+                <span className="italic text-[#C05A3A]">{ov("slide_3_why", "title_italic", "Designed to surprise.")}</span>
               </h2>
-              <p className="mt-6 text-base md:text-lg text-[#DFD7CA] leading-relaxed max-w-xl">
-                A traditional Sicilian chocolate confection, shaped like a salami.
-                Unexpected at first — designed to surprise, then to be shared.
-              </p>
-              <p className="overline text-[#B9935A] mt-8">Why it works</p>
+              <div className="mt-6 text-base md:text-lg text-[#DFD7CA] leading-relaxed max-w-xl">
+                <SlideMarkdown dark>
+                  {ov("slide_3_why", "body",
+                    "A traditional Sicilian chocolate confection, shaped like a salami. Unexpected at first — designed to surprise, then to be shared.")}
+                </SlideMarkdown>
+              </div>
+              <p className="overline text-[#B9935A] mt-8">{ov("slide_3_why", "pillars_label", "Why it works")}</p>
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-5 gap-y-6">
                 {PILLARS.map((p, i) => (
                   <div key={p} data-testid={`pitch-pillar-${i}`} className="min-w-0">
@@ -365,16 +424,18 @@ export default function BlackRock({ deck = null }) {
         <Slide id="product" n={4} total={TOTAL} testid="deck-slide-product" isActive={visited.has(3)}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-7">
-              <p className="overline text-[#C05A3A]">One product. Carefully executed.</p>
+              <p className="overline text-[#C05A3A]">{ov("slide_4_product", "overline", "One product. Carefully executed.")}</p>
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4 text-[#2A1F1D]">
-                From production
+                {ov("slide_4_product", "title_line1", "From production")}
                 <br />
-                to <span className="italic text-[#C05A3A]">your recipient's door.</span>
+                to <span className="italic text-[#C05A3A]">{ov("slide_4_product", "title_italic", "your recipient's door.")}</span>
               </h2>
-              <p className="mt-6 text-base md:text-lg text-[#5C4E4A] leading-relaxed max-w-xl">
-                Every order is personally overseen with attention and care — from
-                ingredient to packaging to delivery.
-              </p>
+              <div className="mt-6 text-base md:text-lg text-[#5C4E4A] leading-relaxed max-w-xl">
+                <SlideMarkdown>
+                  {ov("slide_4_product", "body",
+                    "Every order is personally overseen with attention and care — from ingredient to packaging to delivery.")}
+                </SlideMarkdown>
+              </div>
               <dl className="mt-8 grid grid-cols-2 sm:grid-cols-2 gap-5 max-w-xl">
                 {[
                   ["Storage", "Refrigerated"],
@@ -390,7 +451,7 @@ export default function BlackRock({ deck = null }) {
               </dl>
             </div>
             <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[60vh]">
-              <img src="https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG" alt="Not A Salami on a wooden board" />
+              <img src={ov("slide_4_product", "image", "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG")} alt="Not A Salami on a wooden board" />
             </div>
           </div>
         </Slide>
@@ -481,62 +542,88 @@ export default function BlackRock({ deck = null }) {
           <div>
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
               <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] max-w-3xl">
-                A curated, ready-to-ship
+                {ov("slide_8_pricing", "title_line1", "A curated, ready-to-ship")}
                 <br />
-                <span className="italic text-[#C05A3A]">corporate gift experience.</span>
+                <span className="italic text-[#C05A3A]">
+                  {ov("slide_8_pricing", "title_italic", "corporate gift experience.")}
+                </span>
               </h2>
-              <p className="text-sm text-[#5C4E4A] max-w-md">
-                All prices are per unit and include packaging, inserts, and
-                multi-recipient delivery. Shipping quoted separately.
-              </p>
+              <div className="text-sm text-[#5C4E4A] max-w-md">
+                <SlideMarkdown>
+                  {ov("slide_8_pricing", "subtitle",
+                    "All prices are per unit and include packaging, inserts, and multi-recipient delivery. Shipping quoted separately.")}
+                </SlideMarkdown>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-              {CORPORATE_PACKAGES.map((pkg, i) => (
-                <article
-                  key={pkg.name}
-                  data-testid={`pitch-package-${i}`}
-                  className={`fx ${i === 0 ? "fx-left" : "fx-right"} ${i === 0 ? "fx-d2" : "fx-d4"} border p-7 md:p-9 flex flex-col ${
-                    i === 1
-                      ? "bg-[#2A1F1D] text-[#F9F6F0] border-[#2A1F1D]"
-                      : "border-[#DFD7CA] bg-[#F9F6F0]"
-                  }`}
-                >
-                  {pkg.badge && (
-                    <p className="overline text-[#C05A3A] mb-3 text-[10px]">{pkg.badge}</p>
-                  )}
-                  <p className={`overline text-[10px] ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
-                    {pkg.name.toUpperCase()}
-                  </p>
-                  <h3
-                    className={`font-serif text-3xl md:text-4xl mt-2 leading-tight ${
-                      i === 1 ? "text-[#F9F6F0]" : "text-[#2A1F1D]"
+              {[0, 1].map((i) => {
+                const idx = i + 1; // 1 or 2 — matches manifest keys
+                const def = CORPORATE_PACKAGES[i] || CORPORATE_PACKAGES[0];
+                const pkg = {
+                  badge: ov("slide_8_pricing", `package_${idx}_badge`, def.badge),
+                  name: ov("slide_8_pricing", `package_${idx}_name`, def.name),
+                  box: ov("slide_8_pricing", `package_${idx}_box`, def.box),
+                  price: ov("slide_8_pricing", `package_${idx}_price`, def.price),
+                  unit: ov("slide_8_pricing", `package_${idx}_unit`, def.unit),
+                  blurb: ov("slide_8_pricing", `package_${idx}_blurb`, def.blurb),
+                  // includes can be overridden as a newline-separated string;
+                  // each line becomes a bullet
+                  includes_raw: ov("slide_8_pricing", `package_${idx}_includes`, null),
+                  min: ov("slide_8_pricing", `package_${idx}_min`, def.min),
+                };
+                const includesList = pkg.includes_raw
+                  ? pkg.includes_raw
+                      .split("\n")
+                      .map((s) => s.replace(/^\s*[-*]\s*/, "").trim())
+                      .filter(Boolean)
+                  : def.includes;
+                return (
+                  <article
+                    key={idx}
+                    data-testid={`pitch-package-${i}`}
+                    className={`fx ${i === 0 ? "fx-left" : "fx-right"} ${i === 0 ? "fx-d2" : "fx-d4"} border p-7 md:p-9 flex flex-col ${
+                      i === 1
+                        ? "bg-[#2A1F1D] text-[#F9F6F0] border-[#2A1F1D]"
+                        : "border-[#DFD7CA] bg-[#F9F6F0]"
                     }`}
                   >
-                    1 salami · {pkg.box}
-                  </h3>
-                  <p className="mt-4 font-serif text-5xl text-[#C05A3A]">
-                    {pkg.price}
-                    <span className={`text-base font-sans tracking-wide ml-2 ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
-                      {pkg.unit}
-                    </span>
-                  </p>
-                  <p className={`mt-4 text-sm md:text-base leading-relaxed ${i === 1 ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}`}>
-                    {pkg.blurb}
-                  </p>
-                  <ul className="mt-5 space-y-2 text-sm">
-                    {pkg.includes.map((inc) => (
-                      <li key={inc} className="flex gap-2 items-start">
-                        <span className="text-[#C05A3A]">·</span>
-                        <span className={i === 1 ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}>{inc}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className={`overline text-[10px] mt-6 pt-4 border-t ${i === 1 ? "border-[#5C4E4A] text-[#DFD7CA]" : "border-[#DFD7CA] text-[#5C4E4A]"}`}>
-                    {pkg.min}
-                  </p>
-                </article>
-              ))}
+                    {pkg.badge && (
+                      <p className="overline text-[#C05A3A] mb-3 text-[10px]">{pkg.badge}</p>
+                    )}
+                    <p className={`overline text-[10px] ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
+                      {(pkg.name || "").toUpperCase()}
+                    </p>
+                    <h3
+                      className={`font-serif text-3xl md:text-4xl mt-2 leading-tight ${
+                        i === 1 ? "text-[#F9F6F0]" : "text-[#2A1F1D]"
+                      }`}
+                    >
+                      1 salami · {pkg.box}
+                    </h3>
+                    <p className="mt-4 font-serif text-5xl text-[#C05A3A]">
+                      {pkg.price}
+                      <span className={`text-base font-sans tracking-wide ml-2 ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
+                        {pkg.unit}
+                      </span>
+                    </p>
+                    <div className={`mt-4 text-sm md:text-base leading-relaxed ${i === 1 ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}`}>
+                      <SlideMarkdown dark={i === 1}>{pkg.blurb}</SlideMarkdown>
+                    </div>
+                    <ul className="mt-5 space-y-2 text-sm">
+                      {includesList.map((inc, k) => (
+                        <li key={k} className="flex gap-2 items-start">
+                          <span className="text-[#C05A3A]">·</span>
+                          <span className={i === 1 ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}>{inc}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className={`overline text-[10px] mt-6 pt-4 border-t ${i === 1 ? "border-[#5C4E4A] text-[#DFD7CA]" : "border-[#DFD7CA] text-[#5C4E4A]"}`}>
+                      {pkg.min}
+                    </p>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </Slide>

@@ -1,8 +1,12 @@
 // Public renderer for CMS pages created from the admin dashboard.
 // Route: /p/:slug — fetches from GET /api/pages/:slug (404 if unpublished/missing).
+// Body is rendered as markdown: blank-line paragraphs, **bold**, *italic*, [links](url),
+// `- bullets`, headings, and `![alt](url)` images.
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 
@@ -65,7 +69,7 @@ export default function PagePublic() {
     );
   }
 
-  const paragraphs = (page.body || "").split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  const body = page.body || "";
 
   return (
     <>
@@ -73,7 +77,7 @@ export default function PagePublic() {
       <main className="bg-[#F9F6F0]" data-testid={`page-public-${page.slug}`}>
         <section className="max-w-3xl mx-auto px-6 md:px-10 py-20 md:py-28">
           <p className="overline text-[#C05A3A]" data-testid="page-public-overline">
-            Emporio Zeva
+            Not A Salami
           </p>
           <h1
             className="font-serif text-4xl md:text-5xl text-[#2A1F1D] mt-3 leading-tight"
@@ -86,13 +90,33 @@ export default function PagePublic() {
               {page.excerpt}
             </p>
           )}
-          <div className="mt-10 space-y-5 text-[#2A1F1D] leading-relaxed" data-testid="page-public-body">
-            {paragraphs.length > 0 ? (
-              paragraphs.map((p, i) => (
-                <p key={i} className="text-base">
-                  {p}
-                </p>
-              ))
+          <div
+            className="mt-10 text-[#2A1F1D] leading-relaxed prose-page"
+            data-testid="page-public-body"
+          >
+            {body.trim() ? (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  p: ({ node, ...props }) => <p className="text-base mb-5 leading-relaxed" {...props} />,
+                  h2: ({ node, ...props }) => <h2 className="font-serif text-2xl md:text-3xl mt-10 mb-4 text-[#2A1F1D]" {...props} />,
+                  h3: ({ node, ...props }) => <h3 className="font-serif text-xl md:text-2xl mt-8 mb-3 text-[#2A1F1D]" {...props} />,
+                  ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-5 space-y-1" {...props} />,
+                  ol: ({ node, ...props }) => <ol className="list-decimal pl-6 mb-5 space-y-1" {...props} />,
+                  li: ({ node, ...props }) => <li className="text-base leading-relaxed" {...props} />,
+                  a: ({ node, ...props }) => <a className="underline text-[#C05A3A] hover:text-[#2A1F1D]" {...props} />,
+                  img: ({ node, ...props }) => (
+                    <span className="block my-8 img-wash">
+                      <img className="w-full h-auto" loading="lazy" {...props} />
+                    </span>
+                  ),
+                  blockquote: ({ node, ...props }) => (
+                    <blockquote className="font-serif text-xl md:text-2xl italic text-[#5C4E4A] border-l-2 border-[#C05A3A] pl-5 my-6" {...props} />
+                  ),
+                }}
+              >
+                {body}
+              </ReactMarkdown>
             ) : (
               <p className="text-[#5C4E4A] italic">This page has no body content yet.</p>
             )}

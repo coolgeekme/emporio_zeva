@@ -279,6 +279,8 @@ class DeckCreate(BaseModel):
     client_name: str
     intro_text: Optional[str] = None
     logo_url: Optional[str] = None
+    template_mode: str = "template"  # "template" | "custom"
+    slide_overrides: Optional[dict] = None
 
 
 class DeckUpdate(BaseModel):
@@ -286,6 +288,8 @@ class DeckUpdate(BaseModel):
     logo_url: Optional[str] = None
     intro_text: Optional[str] = None
     domain: Optional[str] = None
+    template_mode: Optional[str] = None
+    slide_overrides: Optional[dict] = None
 
 
 class Deck(BaseModel):
@@ -295,6 +299,11 @@ class Deck(BaseModel):
     domain: Optional[str] = None
     logo_url: Optional[str] = None
     intro_text: str
+    # "template" = only slide_1 + slide_8 are editable in admin; "custom" = all slides
+    template_mode: str = "template"
+    # Free-form dict of slide-keyed overrides — schema enforced on the frontend
+    # via SLIDE_MANIFEST. Each value is a per-field dict.
+    slide_overrides: dict = Field(default_factory=dict)
     view_count: int = 0
     last_viewed_at: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -890,12 +899,17 @@ async def admin_create_deck(payload: DeckCreate, _: dict = Depends(require_edito
         intro_text = (payload.intro_text or data["intro_text"]).strip()
         logo_url = payload.logo_url if payload.logo_url is not None else data["logo_url"]
         domain = data["domain"]
+    mode = (payload.template_mode or "template").strip().lower()
+    if mode not in ("template", "custom"):
+        raise HTTPException(status_code=422, detail="template_mode must be 'template' or 'custom'")
     deck = Deck(
         slug=make_slug(name),
         client_name=name,
         domain=domain,
         logo_url=logo_url,
         intro_text=intro_text,
+        template_mode=mode,
+        slide_overrides=payload.slide_overrides or {},
     )
     await db.decks.insert_one(deck.model_dump())
     return deck
@@ -913,7 +927,9 @@ async def admin_update_deck(
     payload: DeckUpdate,
     _: dict = Depends(require_editor),
 ):
-    update = {k: v for k, v in payload.model_dump().items() if v is not None}
+    update = {k: v for k, v in payload.model_dump(exclude_unset=True).items() if v is not None}
+    if "template_mode" in update and update["template_mode"] not in ("template", "custom"):
+        raise HTTPException(status_code=422, detail="template_mode must be 'template' or 'custom'")
     if not update:
         raise HTTPException(status_code=422, detail="No fields to update")
     result = await db.decks.find_one_and_update(

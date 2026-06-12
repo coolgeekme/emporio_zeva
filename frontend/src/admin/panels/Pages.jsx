@@ -1,9 +1,59 @@
 // Pages panel — CMS create/edit/delete with parent/child hierarchy, bulk actions,
 // and Nav/Footer visibility checkboxes.
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import { Plus, Trash2, X, Edit2, ChevronRight } from "lucide-react";
+import { Plus, Trash2, X, Edit2, ChevronRight, Image as ImageIcon } from "lucide-react";
 import { API, authHeaders, formatApiErrorDetail, formatDate } from "../api";
+
+const BACKEND = process.env.REACT_APP_BACKEND_URL;
+
+// Modal that lets the editor pick an image from the Media library and inject
+// its markdown into a textarea at the current cursor position.
+function BodyMediaPicker({ open, onPick, onClose, token }) {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!open) return;
+    setLoading(true);
+    axios
+      .get(`${API}/admin/media`, { headers: authHeaders(token) })
+      .then(({ data }) => setItems(data.filter((m) => m.mime_type?.startsWith("image/"))))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [open, token]);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/60 flex items-start justify-center p-6 overflow-y-auto">
+      <div className="bg-white border border-[#DFD7CA] w-full max-w-4xl shadow-xl" data-testid="page-body-media-picker">
+        <header className="flex items-center justify-between px-6 py-4 border-b border-[#DFD7CA]">
+          <h3 className="font-serif text-lg text-[#2A1F1D]">Insert image into body</h3>
+          <button onClick={onClose} aria-label="Close"><X size={18} /></button>
+        </header>
+        <div className="p-6">
+          {loading ? (
+            <p className="text-sm text-[#5C4E4A]">Loading…</p>
+          ) : items.length === 0 ? (
+            <p className="text-sm text-[#5C4E4A]">No images in Media yet. Upload some in the Media tab first.</p>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              {items.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => onPick(m)}
+                  className="aspect-square bg-[#F5EFE2] hover:ring-2 hover:ring-[#C05A3A] overflow-hidden"
+                  data-testid={`page-body-media-pick-${m.id}`}
+                >
+                  <img src={`${BACKEND}${m.url}`} alt={m.alt_text || m.original_filename} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const EMPTY = {
   title: "",
@@ -35,6 +85,31 @@ function PageEditor({ token, page, allPages, onClose, onSaved }) {
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [mediaOpen, setMediaOpen] = useState(false);
+  const bodyRef = useRef(null);
+
+  const insertAtCursor = (snippet) => {
+    const el = bodyRef.current;
+    if (!el) {
+      setForm((f) => ({ ...f, body: (f.body || "") + "\n\n" + snippet }));
+      return;
+    }
+    const start = el.selectionStart ?? form.body.length;
+    const end = el.selectionEnd ?? form.body.length;
+    const before = form.body.slice(0, start);
+    const after = form.body.slice(end);
+    // Add surrounding newlines if needed so markdown image renders as block
+    const prefix = before && !before.endsWith("\n") ? "\n\n" : "";
+    const suffix = after && !after.startsWith("\n") ? "\n\n" : "";
+    const next = before + prefix + snippet + suffix + after;
+    setForm((f) => ({ ...f, body: next }));
+    // Restore caret after React updates
+    const caret = (before + prefix + snippet + suffix).length;
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(caret, caret);
+    });
+  };
 
   // Available parents = published or any pages, excluding self & own descendants
   const parents = useMemo(() => {
@@ -134,15 +209,29 @@ function PageEditor({ token, page, allPages, onClose, onSaved }) {
             />
           </div>
           <div className="field">
-            <label htmlFor="pg-body">Body</label>
+            <div className="flex items-center justify-between gap-3 mb-1">
+              <label htmlFor="pg-body" className="!mb-0">Body</label>
+              <button
+                type="button"
+                onClick={() => setMediaOpen(true)}
+                className="btn-outline text-xs inline-flex items-center gap-1"
+                data-testid="page-body-insert-image-button"
+              >
+                <ImageIcon size={12} /> Insert image
+              </button>
+            </div>
             <textarea
               id="pg-body"
-              rows={10}
+              ref={bodyRef}
+              rows={12}
               value={form.body}
               onChange={(e) => setForm({ ...form, body: e.target.value })}
-              placeholder="Plain text or markdown. Paragraphs separated by blank lines render correctly on /p/<slug>."
+              placeholder={"Markdown supported. Examples:\n\n## A heading\n\nA paragraph. Blank line above and below.\n\n- A bullet\n- Another bullet\n\n**bold** · *italic* · [link text](https://example.com)\n\n![alt text](https://image-url)"}
               data-testid="page-body-input"
             />
+            <p className="text-xs text-[#5C4E4A] mt-1">
+              Markdown supported: blank-line paragraphs, <code>**bold**</code>, <code>*italic*</code>, <code>- bullets</code>, <code>## headings</code>, links, images.
+            </p>
           </div>
           <div className="grid md:grid-cols-3 gap-4">
             <div className="field">
@@ -225,6 +314,17 @@ function PageEditor({ token, page, allPages, onClose, onSaved }) {
             </button>
           </div>
         </form>
+        <BodyMediaPicker
+          open={mediaOpen}
+          token={token}
+          onClose={() => setMediaOpen(false)}
+          onPick={(m) => {
+            const url = `${BACKEND}${m.url}`;
+            const alt = (m.alt_text || m.caption || m.original_filename || "image").replace(/[\[\]]/g, "");
+            insertAtCursor(`![${alt}](${url})`);
+            setMediaOpen(false);
+          }}
+        />
       </div>
     </div>
   );
