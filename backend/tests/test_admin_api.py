@@ -18,7 +18,10 @@ def session():
 
 @pytest.fixture(scope="module")
 def admin_token(session):
-    r = session.post(f"{API}/admin/login", json={"password": ADMIN_PASSWORD})
+    r = session.post(
+        f"{API}/admin/login",
+        json={"email": "admin@notasalami.com", "password": ADMIN_PASSWORD},
+    )
     assert r.status_code == 200, f"login failed: {r.status_code} {r.text}"
     data = r.json()
     assert "token" in data and "expires_at" in data
@@ -92,7 +95,10 @@ class TestWaitlistPublic:
 # ---------- Admin login ----------
 class TestAdminLogin:
     def test_login_success(self, session):
-        r = session.post(f"{API}/admin/login", json={"password": ADMIN_PASSWORD})
+        r = session.post(
+        f"{API}/admin/login",
+        json={"email": "admin@notasalami.com", "password": ADMIN_PASSWORD},
+    )
         assert r.status_code == 200
         data = r.json()
         assert isinstance(data["token"], str) and len(data["token"]) > 20
@@ -103,13 +109,19 @@ class TestAdminLogin:
         for i in range(3):
             r = session.post(
                 f"{API}/admin/login",
-                json={"password": f"WRONG_TEST_{uuid.uuid4().hex[:8]}"},
+                json={
+                    "email": f"nobody-{uuid.uuid4().hex[:6]}@notasalami.com",
+                    "password": f"WRONG_TEST_{uuid.uuid4().hex[:8]}",
+                },
             )
             assert r.status_code == 401, f"attempt {i}: {r.status_code} {r.text}"
 
     def test_real_password_still_works_after_wrong_attempts(self, session):
         # Make sure the real password is still accepted (no lockout from prior tests)
-        r = session.post(f"{API}/admin/login", json={"password": ADMIN_PASSWORD})
+        r = session.post(
+        f"{API}/admin/login",
+        json={"email": "admin@notasalami.com", "password": ADMIN_PASSWORD},
+    )
         assert r.status_code == 200, (
             f"Real password rejected (possible lockout): {r.status_code} {r.text}"
         )
