@@ -1,9 +1,43 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Instagram, Mail, Phone } from "lucide-react";
 import { SF_MADE_BADGE, NOT_A_SALAMI_SEAL, BRAND, CONTACT, TAGLINES } from "../content";
 import NewsletterForm from "./NewsletterForm";
 
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
 export default function Footer() {
+  const [cmsLinks, setCmsLinks] = useState([]);
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    axios
+      .get(`${API}/pages`)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setCmsLinks(
+          (data || [])
+            .filter((p) => p.show_in_footer)
+            .map((p) => ({ to: `/p/${p.slug}`, label: p.title }))
+        );
+      })
+      .catch(() => {});
+    axios
+      .get(`${API}/settings`)
+      .then(({ data }) => {
+        if (!cancelled) setSettings(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const email = settings?.general?.contact_email || CONTACT.email_primary;
+  const instagram = settings?.general?.instagram_handle || CONTACT.instagram;
+  const address = settings?.general?.address || CONTACT.city;
   return (
     <footer
       className="bg-[#2A1F1D] text-[#F9F6F0] mt-32 relative grain"
@@ -69,20 +103,31 @@ export default function Footer() {
               <li><Link to="/ritual" data-testid="footer-link-ritual" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">The Ritual</Link></li>
               <li><Link to="/journal" data-testid="footer-link-journal" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Journal</Link></li>
               <li><Link to="/contact" data-testid="footer-link-contact" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Contact</Link></li>
+              {cmsLinks.map((l) => (
+                <li key={l.to}>
+                  <Link
+                    to={l.to}
+                    data-testid={`footer-cms-${l.to.split("/").pop()}`}
+                    className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div className="md:col-span-3">
             <p className="overline text-[#B9935A]">Reach out</p>
             <ul className="mt-5 space-y-3 text-sm text-[#DFD7CA]">
-              <li>{CONTACT.city}</li>
+              <li>{address}</li>
               <li className="flex items-center gap-2">
                 <Mail size={14} className="text-[#C05A3A]" />
-                <a href={`mailto:${CONTACT.email_primary}`} data-testid="footer-email" className="hover:text-[#C05A3A] transition-colors">{CONTACT.email_primary}</a>
+                <a href={`mailto:${email}`} data-testid="footer-email" className="hover:text-[#C05A3A] transition-colors">{email}</a>
               </li>
               <li className="flex items-center gap-2">
                 <Instagram size={14} className="text-[#C05A3A]" />
-                <a href="#" data-testid="footer-instagram" className="hover:text-[#C05A3A] transition-colors">{CONTACT.instagram}</a>
+                <a href="#" data-testid="footer-instagram" className="hover:text-[#C05A3A] transition-colors">{instagram}</a>
               </li>
             </ul>
           </div>

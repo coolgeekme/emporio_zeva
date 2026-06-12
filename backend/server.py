@@ -1,12 +1,15 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import re
 import logging
 import secrets
+import shutil
 import jwt
+import bcrypt
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
@@ -111,12 +114,129 @@ class BulkDelete(BaseModel):
 
 
 class AdminLogin(BaseModel):
+    email: EmailStr
     password: str
 
 
 class AdminToken(BaseModel):
     token: str
     expires_at: str
+    user: "PublicUser"
+
+
+# ---------- User / Role models ----------
+ROLES = ("admin", "editor", "viewer")
+
+
+class PublicUser(BaseModel):
+    id: str
+    email: EmailStr
+    name: str
+    role: str
+    created_at: str
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: str
+    password: str
+    role: str = "viewer"
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    password: Optional[str] = None
+
+
+# ---------- Page (CMS) models ----------
+class PageCreate(BaseModel):
+    slug: Optional[str] = None
+    title: str
+    excerpt: str = ""
+    body: str = ""
+    parent_id: Optional[str] = None
+    menu_order: int = 0
+    status: str = "draft"  # draft | published
+    show_in_nav: bool = False
+    show_in_footer: bool = False
+
+
+class PageUpdate(BaseModel):
+    slug: Optional[str] = None
+    title: Optional[str] = None
+    excerpt: Optional[str] = None
+    body: Optional[str] = None
+    parent_id: Optional[str] = None
+    menu_order: Optional[int] = None
+    status: Optional[str] = None
+    show_in_nav: Optional[bool] = None
+    show_in_footer: Optional[bool] = None
+
+
+class Page(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    slug: str
+    title: str
+    excerpt: str = ""
+    body: str = ""
+    parent_id: Optional[str] = None
+    menu_order: int = 0
+    status: str = "draft"
+    show_in_nav: bool = False
+    show_in_footer: bool = False
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_by: Optional[str] = None
+
+
+class BulkAction(BaseModel):
+    ids: List[str]
+    action: str  # delete | publish | unpublish
+
+
+# ---------- Media models ----------
+class MediaItem(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    filename: str
+    original_filename: str
+    mime_type: str
+    size_bytes: int
+    url: str
+    alt_text: str = ""
+    caption: str = ""
+    uploaded_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    uploaded_by: Optional[str] = None
+
+
+class MediaUpdate(BaseModel):
+    alt_text: Optional[str] = None
+    caption: Optional[str] = None
+
+
+# ---------- Settings ----------
+class GeneralSettings(BaseModel):
+    brand_name: str = "Not A Salami"
+    tagline: str = "A truly Sicilian treat. For the unexpected."
+    contact_email: str = "hello@emporiozeva.com"
+    instagram_handle: str = "@notasalami"
+    address: str = "San Francisco, CA"
+
+
+class ReadingSettings(BaseModel):
+    journal_per_page: int = 10
+    show_future_products: bool = True
+    journal_enabled: bool = True
+
+
+class SiteSettings(BaseModel):
+    general: GeneralSettings = Field(default_factory=GeneralSettings)
+    reading: ReadingSettings = Field(default_factory=ReadingSettings)
+
+
+class SettingsUpdate(BaseModel):
+    general: Optional[GeneralSettings] = None
+    reading: Optional[ReadingSettings] = None
 
 
 class DeckCreate(BaseModel):
@@ -161,7 +281,11 @@ def _jwt_secret() -> str:
     return secret
 
 
-def _admin_password() -> str:
+def _bootstrap_admin_email() -> str:
+    return os.environ.get("ADMIN_EMAIL", "admin@notasalami.com").lower()
+
+
+def _bootstrap_admin_password() -> str:
     pw = os.environ.get("ADMIN_PASSWORD")
     if not pw:
         raise HTTPException(
@@ -171,6 +295,17 @@ def _admin_password() -> str:
     return pw
 
 
+def _hash_password(plain: str) -> str:
+    return bcrypt.hashpw(plain.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def _verify_password(plain: str, hashed: str) -> bool:
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    except (ValueError, AttributeError):
+        return False
+
+
 def _client_ip(request: Request) -> str:
     fwd = request.headers.get("x-forwarded-for", "")
     if fwd:
@@ -178,14 +313,30 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def _create_admin_token() -> AdminToken:
+def _create_admin_token(user: dict) -> AdminToken:
     exp = datetime.now(timezone.utc) + timedelta(hours=ADMIN_TOKEN_TTL_HOURS)
-    payload = {"role": "admin", "exp": exp, "iat": datetime.now(timezone.utc)}
+    payload = {
+        "sub": user["id"],
+        "email": user["email"],
+        "role": user["role"],
+        "exp": exp,
+        "iat": datetime.now(timezone.utc),
+    }
     token = jwt.encode(payload, _jwt_secret(), algorithm=JWT_ALGORITHM)
-    return AdminToken(token=token, expires_at=exp.isoformat())
+    return AdminToken(
+        token=token,
+        expires_at=exp.isoformat(),
+        user=PublicUser(
+            id=user["id"],
+            email=user["email"],
+            name=user["name"],
+            role=user["role"],
+            created_at=user["created_at"],
+        ),
+    )
 
 
-async def require_admin(request: Request) -> dict:
+async def _load_user_from_token(request: Request) -> dict:
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -196,9 +347,35 @@ async def require_admin(request: Request) -> dict:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
-    if payload.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Forbidden")
-    return payload
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="User no longer exists")
+    if user.get("role") not in ROLES:
+        raise HTTPException(status_code=403, detail="Invalid role")
+    return user
+
+
+def require_role(*allowed: str):
+    """Dependency factory — restricts an endpoint to the given role(s)."""
+
+    async def _inner(request: Request) -> dict:
+        user = await _load_user_from_token(request)
+        if user["role"] not in allowed:
+            raise HTTPException(
+                status_code=403, detail="Insufficient permissions"
+            )
+        return user
+
+    return _inner
+
+
+# Common shortcuts
+require_admin = require_role("admin")
+require_editor = require_role("admin", "editor")
+require_viewer = require_role("admin", "editor", "viewer")
 
 
 # ---------- Seed data ----------
@@ -526,10 +703,11 @@ async def join_waitlist(payload: WaitlistCreate):
 async def admin_login(payload: AdminLogin, request: Request):
     ip = _client_ip(request)
     now = datetime.now(timezone.utc)
-    rec = await db.admin_login_attempts.find_one({"_id": ip})
+    email = payload.email.lower().strip()
+    lockout_key = f"{ip}:{email}"
+    rec = await db.admin_login_attempts.find_one({"_id": lockout_key})
     locked_until = rec.get("locked_until") if rec else None
     if locked_until and locked_until.tzinfo is None:
-        # Mongo stores datetimes as naive UTC; restore tzinfo before comparing.
         locked_until = locked_until.replace(tzinfo=timezone.utc)
     if locked_until and locked_until > now:
         remaining = int((locked_until - now).total_seconds() // 60) + 1
@@ -537,53 +715,61 @@ async def admin_login(payload: AdminLogin, request: Request):
             status_code=429,
             detail=f"Too many attempts. Try again in {remaining} minute(s).",
         )
-    if not secrets.compare_digest(payload.password or "", _admin_password()):
+    user = await db.users.find_one({"email": email})
+    ok = bool(user) and _verify_password(payload.password, user.get("password_hash", ""))
+    if not ok:
         attempts = (rec.get("attempts", 0) if rec else 0) + 1
         update = {"attempts": attempts, "last_attempt": now}
         if attempts >= MAX_FAILED_ATTEMPTS:
             update["locked_until"] = now + timedelta(minutes=LOCKOUT_MINUTES)
             update["attempts"] = 0
         await db.admin_login_attempts.update_one(
-            {"_id": ip}, {"$set": update}, upsert=True
+            {"_id": lockout_key}, {"$set": update}, upsert=True
         )
-        raise HTTPException(status_code=401, detail="Invalid password")
-    # success — clear attempts
-    await db.admin_login_attempts.delete_one({"_id": ip})
-    return _create_admin_token()
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    await db.admin_login_attempts.delete_one({"_id": lockout_key})
+    user_doc = {k: user[k] for k in ("id", "email", "name", "role", "created_at")}
+    return _create_admin_token(user_doc)
 
 
-@api_router.get("/admin/me")
-async def admin_me(payload: dict = Depends(require_admin)):
-    return {"role": payload.get("role"), "exp": payload.get("exp")}
+@api_router.get("/admin/me", response_model=PublicUser)
+async def admin_me(user: dict = Depends(require_viewer)):
+    return PublicUser(
+        id=user["id"],
+        email=user["email"],
+        name=user["name"],
+        role=user["role"],
+        created_at=user["created_at"],
+    )
 
 
 @api_router.get("/admin/inquiries", response_model=List[Inquiry])
-async def admin_list_inquiries(_: dict = Depends(require_admin)):
+async def admin_list_inquiries(_: dict = Depends(require_editor)):
     docs = await db.inquiries.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
     return docs
 
 
 @api_router.get("/admin/newsletter", response_model=List[NewsletterEntry])
-async def admin_list_newsletter(_: dict = Depends(require_admin)):
+async def admin_list_newsletter(_: dict = Depends(require_editor)):
     docs = await db.newsletter.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
     return docs
 
 
 @api_router.get("/admin/waitlist", response_model=List[WaitlistEntry])
-async def admin_list_waitlist(_: dict = Depends(require_admin)):
+async def admin_list_waitlist(_: dict = Depends(require_editor)):
     docs = await db.waitlist.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
     return docs
 
 
 # ---------- Admin: Journal ----------
 @api_router.get("/admin/journal", response_model=List[JournalArticle])
-async def admin_list_journal(_: dict = Depends(require_admin)):
+async def admin_list_journal(_: dict = Depends(require_editor)):
     docs = await db.journal.find({}, {"_id": 0}).sort("order", 1).to_list(200)
     return docs
 
 
 @api_router.get("/admin/journal/{slug}", response_model=JournalArticle)
-async def admin_get_journal(slug: str, _: dict = Depends(require_admin)):
+async def admin_get_journal(slug: str, _: dict = Depends(require_editor)):
     doc = await db.journal.find_one({"slug": slug}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Article not found")
@@ -594,7 +780,7 @@ async def admin_get_journal(slug: str, _: dict = Depends(require_admin)):
 async def admin_update_journal(
     slug: str,
     payload: JournalArticleUpdate,
-    _: dict = Depends(require_admin),
+    _: dict = Depends(require_editor),
 ):
     update = {k: v for k, v in payload.model_dump().items() if v is not None}
     if not update:
@@ -612,7 +798,7 @@ async def admin_update_journal(
 
 
 @api_router.post("/admin/waitlist/delete")
-async def admin_delete_waitlist(payload: BulkDelete, _: dict = Depends(require_admin)):
+async def admin_delete_waitlist(payload: BulkDelete, _: dict = Depends(require_editor)):
     if not payload.ids:
         raise HTTPException(status_code=422, detail="No ids supplied")
     result = await db.waitlist.delete_many({"id": {"$in": payload.ids}})
@@ -620,7 +806,7 @@ async def admin_delete_waitlist(payload: BulkDelete, _: dict = Depends(require_a
 
 
 @api_router.post("/admin/inquiries/delete")
-async def admin_delete_inquiries(payload: BulkDelete, _: dict = Depends(require_admin)):
+async def admin_delete_inquiries(payload: BulkDelete, _: dict = Depends(require_editor)):
     if not payload.ids:
         raise HTTPException(status_code=422, detail="No ids supplied")
     result = await db.inquiries.delete_many({"id": {"$in": payload.ids}})
@@ -632,7 +818,7 @@ from decks import personalize, make_slug, generate_intro  # noqa: E402
 
 
 @api_router.post("/admin/decks/preview")
-async def admin_preview_deck(payload: DeckCreate, _: dict = Depends(require_admin)):
+async def admin_preview_deck(payload: DeckCreate, _: dict = Depends(require_editor)):
     """Generate logo + intro for a client name without saving."""
     if not payload.client_name.strip():
         raise HTTPException(status_code=422, detail="client_name is required")
@@ -641,7 +827,7 @@ async def admin_preview_deck(payload: DeckCreate, _: dict = Depends(require_admi
 
 
 @api_router.post("/admin/decks/regenerate-intro")
-async def admin_regenerate_intro(payload: DeckCreate, _: dict = Depends(require_admin)):
+async def admin_regenerate_intro(payload: DeckCreate, _: dict = Depends(require_editor)):
     """Re-roll the intro text for a given client name."""
     if not payload.client_name.strip():
         raise HTTPException(status_code=422, detail="client_name is required")
@@ -650,7 +836,7 @@ async def admin_regenerate_intro(payload: DeckCreate, _: dict = Depends(require_
 
 
 @api_router.post("/admin/decks", response_model=Deck)
-async def admin_create_deck(payload: DeckCreate, _: dict = Depends(require_admin)):
+async def admin_create_deck(payload: DeckCreate, _: dict = Depends(require_editor)):
     name = payload.client_name.strip()
     if not name:
         raise HTTPException(status_code=422, detail="client_name is required")
@@ -677,7 +863,7 @@ async def admin_create_deck(payload: DeckCreate, _: dict = Depends(require_admin
 
 
 @api_router.get("/admin/decks", response_model=List[Deck])
-async def admin_list_decks(_: dict = Depends(require_admin)):
+async def admin_list_decks(_: dict = Depends(require_editor)):
     docs = await db.decks.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
     return docs
 
@@ -686,7 +872,7 @@ async def admin_list_decks(_: dict = Depends(require_admin)):
 async def admin_update_deck(
     deck_id: str,
     payload: DeckUpdate,
-    _: dict = Depends(require_admin),
+    _: dict = Depends(require_editor),
 ):
     update = {k: v for k, v in payload.model_dump().items() if v is not None}
     if not update:
@@ -703,7 +889,7 @@ async def admin_update_deck(
 
 
 @api_router.delete("/admin/decks/{deck_id}")
-async def admin_delete_deck(deck_id: str, _: dict = Depends(require_admin)):
+async def admin_delete_deck(deck_id: str, _: dict = Depends(require_editor)):
     result = await db.decks.delete_one({"id": deck_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Deck not found")
@@ -725,6 +911,400 @@ async def get_deck(slug: str):
     if not deck:
         raise HTTPException(status_code=404, detail="Deck not found")
     return deck
+
+
+# ---------- Admin: Users ----------
+@api_router.get("/admin/users", response_model=List[PublicUser])
+async def admin_list_users(_: dict = Depends(require_admin)):
+    docs = await db.users.find({}, {"_id": 0, "password_hash": 0}).sort("created_at", -1).to_list(500)
+    return [PublicUser(**d) for d in docs]
+
+
+@api_router.post("/admin/users", response_model=PublicUser)
+async def admin_create_user(payload: UserCreate, current: dict = Depends(require_admin)):
+    if payload.role not in ROLES:
+        raise HTTPException(status_code=422, detail=f"role must be one of {ROLES}")
+    if len(payload.password) < 8:
+        raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
+    email = payload.email.lower().strip()
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=409, detail="A user with that email already exists")
+    user = {
+        "id": str(uuid.uuid4()),
+        "email": email,
+        "name": payload.name.strip() or email.split("@")[0],
+        "role": payload.role,
+        "password_hash": _hash_password(payload.password),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.users.insert_one(user)
+    return PublicUser(**{k: user[k] for k in ("id", "email", "name", "role", "created_at")})
+
+
+@api_router.patch("/admin/users/{user_id}", response_model=PublicUser)
+async def admin_update_user(
+    user_id: str, payload: UserUpdate, current: dict = Depends(require_admin)
+):
+    update: dict = {}
+    if payload.name is not None:
+        update["name"] = payload.name.strip()
+    if payload.role is not None:
+        if payload.role not in ROLES:
+            raise HTTPException(status_code=422, detail=f"role must be one of {ROLES}")
+        update["role"] = payload.role
+    if payload.password is not None:
+        if len(payload.password) < 8:
+            raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
+        update["password_hash"] = _hash_password(payload.password)
+    if not update:
+        raise HTTPException(status_code=422, detail="No fields to update")
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    # Guard: don't allow removing the last admin
+    if payload.role and payload.role != "admin":
+        target = await db.users.find_one({"id": user_id})
+        if target and target.get("role") == "admin":
+            admin_count = await db.users.count_documents({"role": "admin"})
+            if admin_count <= 1:
+                raise HTTPException(status_code=409, detail="Cannot demote the last admin")
+    result = await db.users.find_one_and_update(
+        {"id": user_id},
+        {"$set": update},
+        return_document=True,
+        projection={"_id": 0, "password_hash": 0},
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found")
+    return PublicUser(**result)
+
+
+@api_router.delete("/admin/users/{user_id}")
+async def admin_delete_user(user_id: str, current: dict = Depends(require_admin)):
+    if user_id == current["id"]:
+        raise HTTPException(status_code=409, detail="You cannot delete your own account")
+    target = await db.users.find_one({"id": user_id})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if target.get("role") == "admin":
+        admin_count = await db.users.count_documents({"role": "admin"})
+        if admin_count <= 1:
+            raise HTTPException(status_code=409, detail="Cannot delete the last admin")
+    await db.users.delete_one({"id": user_id})
+    return {"deleted": True}
+
+
+# ---------- Admin: Stats ----------
+@api_router.get("/admin/stats")
+async def admin_stats(_: dict = Depends(require_viewer)):
+    pages_count = await db.pages.count_documents({})
+    pages_published = await db.pages.count_documents({"status": "published"})
+    journal_count = await db.journal.count_documents({})
+    inquiries_count = await db.inquiries.count_documents({})
+    waitlist_count = await db.waitlist.count_documents({})
+    newsletter_count = await db.newsletter.count_documents({})
+    decks_count = await db.decks.count_documents({})
+    media_count = await db.media.count_documents({})
+    users_count = await db.users.count_documents({})
+    recent_inquiries = await db.inquiries.find(
+        {}, {"_id": 0}
+    ).sort("created_at", -1).limit(5).to_list(5)
+    recent_waitlist = await db.waitlist.find(
+        {}, {"_id": 0}
+    ).sort("created_at", -1).limit(5).to_list(5)
+    return {
+        "pages": {"total": pages_count, "published": pages_published},
+        "journal": journal_count,
+        "inquiries": inquiries_count,
+        "waitlist": waitlist_count,
+        "newsletter": newsletter_count,
+        "decks": decks_count,
+        "media": media_count,
+        "users": users_count,
+        "recent_inquiries": recent_inquiries,
+        "recent_waitlist": recent_waitlist,
+    }
+
+
+# ---------- Admin: Pages CMS ----------
+_SLUG_RE = re.compile(r"[^a-z0-9]+")
+
+
+def _slugify(text: str) -> str:
+    s = _SLUG_RE.sub("-", text.lower()).strip("-")
+    return s or f"page-{uuid.uuid4().hex[:6]}"
+
+
+async def _unique_page_slug(base: str, ignore_id: Optional[str] = None) -> str:
+    candidate = base
+    n = 2
+    while True:
+        q = {"slug": candidate}
+        if ignore_id:
+            q["id"] = {"$ne": ignore_id}
+        existing = await db.pages.find_one(q)
+        if not existing:
+            return candidate
+        candidate = f"{base}-{n}"
+        n += 1
+
+
+@api_router.get("/admin/pages", response_model=List[Page])
+async def admin_list_pages(_: dict = Depends(require_editor)):
+    docs = await db.pages.find({}, {"_id": 0}).sort([("menu_order", 1), ("created_at", -1)]).to_list(500)
+    return docs
+
+
+@api_router.post("/admin/pages", response_model=Page)
+async def admin_create_page(payload: PageCreate, current: dict = Depends(require_editor)):
+    title = payload.title.strip()
+    if not title:
+        raise HTTPException(status_code=422, detail="title is required")
+    base_slug = _slugify(payload.slug or title)
+    slug = await _unique_page_slug(base_slug)
+    if payload.status not in ("draft", "published"):
+        raise HTTPException(status_code=422, detail="status must be draft or published")
+    page = Page(
+        slug=slug,
+        title=title,
+        excerpt=payload.excerpt,
+        body=payload.body,
+        parent_id=payload.parent_id or None,
+        menu_order=payload.menu_order,
+        status=payload.status,
+        show_in_nav=payload.show_in_nav,
+        show_in_footer=payload.show_in_footer,
+        created_by=current["id"],
+    )
+    await db.pages.insert_one(page.model_dump())
+    return page
+
+
+@api_router.patch("/admin/pages/{page_id}", response_model=Page)
+async def admin_update_page(
+    page_id: str, payload: PageUpdate, _: dict = Depends(require_editor)
+):
+    update: dict = {}
+    raw = payload.model_dump(exclude_unset=True)
+    if "title" in raw and raw["title"] is not None:
+        update["title"] = raw["title"].strip()
+    if "slug" in raw and raw["slug"] is not None:
+        update["slug"] = await _unique_page_slug(_slugify(raw["slug"]), ignore_id=page_id)
+    for key in ("excerpt", "body", "parent_id", "menu_order", "show_in_nav", "show_in_footer"):
+        if key in raw:
+            update[key] = raw[key]
+    if "status" in raw and raw["status"] is not None:
+        if raw["status"] not in ("draft", "published"):
+            raise HTTPException(status_code=422, detail="status must be draft or published")
+        update["status"] = raw["status"]
+    if not update:
+        raise HTTPException(status_code=422, detail="No fields to update")
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.pages.find_one_and_update(
+        {"id": page_id},
+        {"$set": update},
+        return_document=True,
+        projection={"_id": 0},
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Page not found")
+    return result
+
+
+@api_router.delete("/admin/pages/{page_id}")
+async def admin_delete_page(page_id: str, _: dict = Depends(require_editor)):
+    # Detach children if any (set their parent_id to null)
+    await db.pages.update_many({"parent_id": page_id}, {"$set": {"parent_id": None}})
+    result = await db.pages.delete_one({"id": page_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Page not found")
+    return {"deleted": True}
+
+
+@api_router.post("/admin/pages/bulk")
+async def admin_pages_bulk(payload: BulkAction, _: dict = Depends(require_editor)):
+    if not payload.ids:
+        raise HTTPException(status_code=422, detail="No ids supplied")
+    if payload.action == "delete":
+        await db.pages.update_many(
+            {"parent_id": {"$in": payload.ids}}, {"$set": {"parent_id": None}}
+        )
+        r = await db.pages.delete_many({"id": {"$in": payload.ids}})
+        return {"action": "delete", "affected": r.deleted_count}
+    if payload.action in ("publish", "unpublish"):
+        status = "published" if payload.action == "publish" else "draft"
+        r = await db.pages.update_many(
+            {"id": {"$in": payload.ids}},
+            {"$set": {"status": status, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        )
+        return {"action": payload.action, "affected": r.modified_count}
+    raise HTTPException(status_code=422, detail="Unknown action")
+
+
+@api_router.post("/admin/journal/bulk")
+async def admin_journal_bulk(payload: BulkAction, _: dict = Depends(require_editor)):
+    if not payload.ids:
+        raise HTTPException(status_code=422, detail="No ids supplied")
+    if payload.action == "delete":
+        r = await db.journal.delete_many({"id": {"$in": payload.ids}})
+        return {"action": "delete", "affected": r.deleted_count}
+    raise HTTPException(status_code=422, detail="Unknown action")
+
+
+@api_router.post("/admin/newsletter/delete")
+async def admin_delete_newsletter(payload: BulkDelete, _: dict = Depends(require_editor)):
+    if not payload.ids:
+        raise HTTPException(status_code=422, detail="No ids supplied")
+    r = await db.newsletter.delete_many({"id": {"$in": payload.ids}})
+    return {"deleted_count": r.deleted_count}
+
+
+# ---------- Public: Pages ----------
+@api_router.get("/pages", response_model=List[Page])
+async def public_list_pages():
+    """Published pages — used to power Nav + Footer + sitemap."""
+    docs = await db.pages.find(
+        {"status": "published"}, {"_id": 0}
+    ).sort([("menu_order", 1), ("created_at", -1)]).to_list(200)
+    return docs
+
+
+@api_router.get("/pages/{slug}", response_model=Page)
+async def public_get_page(slug: str):
+    doc = await db.pages.find_one({"slug": slug, "status": "published"}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Page not found")
+    return doc
+
+
+# ---------- Admin: Media ----------
+_MEDIA_DIR = Path(__file__).parent / "static" / "media"
+_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+
+_ALLOWED_MIME_PREFIXES = ("image/", "video/", "application/pdf", "audio/")
+_MAX_MEDIA_BYTES = 25 * 1024 * 1024  # 25MB
+
+
+def _safe_filename(original: str) -> str:
+    stem = Path(original).stem
+    suffix = Path(original).suffix.lower()
+    safe = re.sub(r"[^a-z0-9._-]+", "-", stem.lower()).strip("-") or "file"
+    return f"{safe}-{uuid.uuid4().hex[:8]}{suffix}"
+
+
+@api_router.get("/admin/media", response_model=List[MediaItem])
+async def admin_list_media(_: dict = Depends(require_editor)):
+    docs = await db.media.find({}, {"_id": 0}).sort("uploaded_at", -1).to_list(500)
+    return docs
+
+
+@api_router.post("/admin/media", response_model=MediaItem)
+async def admin_upload_media(
+    file: UploadFile = File(...),
+    alt_text: str = Form(""),
+    caption: str = Form(""),
+    current: dict = Depends(require_editor),
+):
+    mime = file.content_type or "application/octet-stream"
+    if not any(mime == p or mime.startswith(p) for p in _ALLOWED_MIME_PREFIXES):
+        raise HTTPException(status_code=415, detail=f"Unsupported file type: {mime}")
+    safe_name = _safe_filename(file.filename or "upload")
+    target = _MEDIA_DIR / safe_name
+    size_bytes = 0
+    # Stream to disk in chunks; abort if over the cap
+    with target.open("wb") as out:
+        while True:
+            chunk = await file.read(1024 * 1024)
+            if not chunk:
+                break
+            size_bytes += len(chunk)
+            if size_bytes > _MAX_MEDIA_BYTES:
+                out.close()
+                target.unlink(missing_ok=True)
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"File exceeds {_MAX_MEDIA_BYTES // (1024 * 1024)}MB limit",
+                )
+            out.write(chunk)
+    item = MediaItem(
+        filename=safe_name,
+        original_filename=file.filename or safe_name,
+        mime_type=mime,
+        size_bytes=size_bytes,
+        url=f"/api/static/media/{safe_name}",
+        alt_text=alt_text,
+        caption=caption,
+        uploaded_by=current["id"],
+    )
+    await db.media.insert_one(item.model_dump())
+    return item
+
+
+@api_router.patch("/admin/media/{media_id}", response_model=MediaItem)
+async def admin_update_media(
+    media_id: str, payload: MediaUpdate, _: dict = Depends(require_editor)
+):
+    update = {k: v for k, v in payload.model_dump(exclude_unset=True).items() if v is not None}
+    if not update:
+        raise HTTPException(status_code=422, detail="No fields to update")
+    result = await db.media.find_one_and_update(
+        {"id": media_id},
+        {"$set": update},
+        return_document=True,
+        projection={"_id": 0},
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Media not found")
+    return result
+
+
+@api_router.delete("/admin/media/{media_id}")
+async def admin_delete_media(media_id: str, _: dict = Depends(require_editor)):
+    item = await db.media.find_one({"id": media_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Media not found")
+    fpath = _MEDIA_DIR / item["filename"]
+    if fpath.exists():
+        try:
+            fpath.unlink()
+        except OSError:
+            pass
+    await db.media.delete_one({"id": media_id})
+    return {"deleted": True}
+
+
+# ---------- Settings (general + reading) ----------
+async def _load_settings() -> SiteSettings:
+    doc = await db.settings.find_one({"_id": "site"})
+    if not doc:
+        return SiteSettings()
+    doc.pop("_id", None)
+    return SiteSettings(**doc)
+
+
+@api_router.get("/admin/settings", response_model=SiteSettings)
+async def admin_get_settings(_: dict = Depends(require_viewer)):
+    return await _load_settings()
+
+
+@api_router.patch("/admin/settings", response_model=SiteSettings)
+async def admin_update_settings(payload: SettingsUpdate, _: dict = Depends(require_admin)):
+    current = await _load_settings()
+    data = current.model_dump()
+    if payload.general is not None:
+        data["general"] = payload.general.model_dump()
+    if payload.reading is not None:
+        data["reading"] = payload.reading.model_dump()
+    await db.settings.update_one({"_id": "site"}, {"$set": data}, upsert=True)
+    return SiteSettings(**data)
+
+
+# Public read of settings — Nav/Footer can consume safely
+@api_router.get("/settings", response_model=SiteSettings)
+async def public_get_settings():
+    return await _load_settings()
+
+
 
 
 app.include_router(api_router)
@@ -751,10 +1331,50 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+async def seed_admin_user():
+    """Idempotent bootstrap of the seed admin user from ADMIN_EMAIL + ADMIN_PASSWORD."""
+    email = _bootstrap_admin_email()
+    pw = _bootstrap_admin_password()
+    existing = await db.users.find_one({"email": email})
+    if existing is None:
+        user = {
+            "id": str(uuid.uuid4()),
+            "email": email,
+            "name": "Eva",
+            "role": "admin",
+            "password_hash": _hash_password(pw),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.users.insert_one(user)
+        logging.getLogger(__name__).info("Seeded bootstrap admin user: %s", email)
+    else:
+        # If admin password was rotated in .env, keep the hash in sync
+        if not _verify_password(pw, existing.get("password_hash", "")):
+            await db.users.update_one(
+                {"email": email},
+                {"$set": {
+                    "password_hash": _hash_password(pw),
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                }},
+            )
+            logging.getLogger(__name__).info("Rotated bootstrap admin password")
+
+
+async def ensure_indexes():
+    await db.users.create_index("email", unique=True)
+    await db.users.create_index("id", unique=True)
+    await db.pages.create_index("slug", unique=True)
+    await db.pages.create_index("id", unique=True)
+    await db.media.create_index("id", unique=True)
+
+
 @app.on_event("startup")
 async def on_startup():
     await seed_products()
     await seed_journal()
+    await ensure_indexes()
+    await seed_admin_user()
 
 
 @app.on_event("shutdown")

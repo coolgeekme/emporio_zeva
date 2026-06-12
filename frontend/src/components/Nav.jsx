@@ -1,7 +1,10 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { Menu, X } from "lucide-react";
 import { NOT_A_SALAMI_SEAL } from "../content";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const links = [
   { to: "/", label: "Home" },
@@ -14,11 +17,32 @@ const links = [
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
+  const [cmsLinks, setCmsLinks] = useState([]);
   const location = useLocation();
 
   useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
+
+  // Fetch any CMS pages flagged show_in_nav. Quietly skip on failure.
+  useEffect(() => {
+    let cancelled = false;
+    axios
+      .get(`${API}/pages`)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const nav = (data || [])
+          .filter((p) => p.show_in_nav)
+          .map((p) => ({ to: `/p/${p.slug}`, label: p.title }));
+        setCmsLinks(nav);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname]);
+
+  const allLinks = [...links, ...cmsLinks];
 
   return (
     <header
@@ -40,7 +64,7 @@ export default function Nav() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-9">
-          {links.map((l) => (
+          {allLinks.map((l) => (
             <NavLink
               key={l.to}
               to={l.to}
@@ -81,7 +105,7 @@ export default function Nav() {
           data-testid="nav-mobile-panel"
         >
           <div className="px-6 py-8 flex flex-col gap-6">
-            {links.map((l) => (
+            {allLinks.map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}

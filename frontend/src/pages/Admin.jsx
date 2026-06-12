@@ -11,18 +11,37 @@ import {
   ExternalLink,
   Sparkles,
   X,
+  LayoutDashboard,
+  FileText,
+  Image as ImageIcon,
+  BookOpen,
+  Presentation,
+  MessageSquare,
+  Layers,
+  Mail,
+  Users as UsersIcon,
+  Settings as SettingsIcon,
+  Menu as MenuIcon,
 } from "lucide-react";
+import DashboardPanel from "../admin/panels/Dashboard";
+import PagesPanel from "../admin/panels/Pages";
+import MediaPanel from "../admin/panels/Media";
+import UsersPanel from "../admin/panels/Users";
+import SettingsPanel from "../admin/panels/Settings";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const TOKEN_KEY = "ez_admin_token";
+const USER_KEY = "ez_admin_user";
 
-const TABS = [
+const LEGACY_TABS = [
   { key: "decks", label: "Decks", path: "/admin/decks" },
   { key: "journal", label: "Journal", path: "/admin/journal" },
   { key: "waitlist", label: "Waitlist", path: "/admin/waitlist" },
   { key: "inquiries", label: "Inquiries", path: "/admin/inquiries" },
   { key: "newsletter", label: "Newsletter", path: "/admin/newsletter" },
 ];
+// Backwards-compat: existing AdminDashboard uses TABS
+const TABS = LEGACY_TABS;
 
 // CSV helpers
 function toCsv(rows) {
@@ -52,6 +71,9 @@ function downloadCsv(filename, csv) {
 }
 
 function AdminLogin({ onLogin }) {
+  const [email, setEmail] = useState(
+    () => sessionStorage.getItem("ez_admin_last_email") || ""
+  );
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
@@ -61,9 +83,14 @@ function AdminLogin({ onLogin }) {
     setStatus("loading");
     setError("");
     try {
-      const { data } = await axios.post(`${API}/admin/login`, { password });
+      const { data } = await axios.post(`${API}/admin/login`, {
+        email: email.trim().toLowerCase(),
+        password,
+      });
       sessionStorage.setItem(TOKEN_KEY, data.token);
-      onLogin(data.token);
+      sessionStorage.setItem("ez_admin_user", JSON.stringify(data.user));
+      sessionStorage.setItem("ez_admin_last_email", email.trim().toLowerCase());
+      onLogin(data.token, data.user);
     } catch (err) {
       const detail = err?.response?.data?.detail;
       setError(typeof detail === "string" ? detail : "Login failed. Try again.");
@@ -84,17 +111,29 @@ function AdminLogin({ onLogin }) {
           Welcome back.
         </h1>
         <p className="text-sm text-[#5C4E4A] mt-3 leading-relaxed">
-          Enter the admin password to view waitlist signups, inquiries, and newsletter subscribers.
+          Sign in to manage pages, media, journal, decks, and signups.
         </p>
 
         <form onSubmit={submit} className="mt-8 space-y-5" data-testid="admin-login-form">
+          <div className="field">
+            <label htmlFor="admin-email">Email</label>
+            <input
+              id="admin-email"
+              type="email"
+              required
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@notasalami.com"
+              data-testid="admin-email-input"
+            />
+          </div>
           <div className="field">
             <label htmlFor="admin-pw">Password</label>
             <input
               id="admin-pw"
               type="password"
               required
-              autoFocus
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -1034,13 +1073,17 @@ function DecksPanel({ decks, token, onChange, error }) {
   );
 }
 
-function AdminDashboard({ token, onLogout }) {
-  const [active, setActive] = useState("decks");
+function AdminDashboard({ token, onLogout, initialTab }) {
+  const [active, setActive] = useState(initialTab || "decks");
   const [data, setData] = useState({ decks: [], journal: [], waitlist: [], inquiries: [], newsletter: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   // selection state — keyed by tab so switching tabs doesn't lose checkmarks
-  const [selection, setSelection] = useState({ waitlist: new Set(), inquiries: new Set() });
+  const [selection, setSelection] = useState({
+    waitlist: new Set(),
+    inquiries: new Set(),
+    newsletter: new Set(),
+  });
   const [deleting, setDeleting] = useState(false);
 
   const fetchTab = useCallback(
@@ -1054,7 +1097,7 @@ function AdminDashboard({ token, onLogout }) {
         });
         setData((d) => ({ ...d, [key]: rows }));
         // clear selection on refresh
-        if (key === "waitlist" || key === "inquiries") {
+        if (key === "waitlist" || key === "inquiries" || key === "newsletter") {
           setSelection((s) => ({ ...s, [key]: new Set() }));
         }
       } catch (err) {
@@ -1076,7 +1119,7 @@ function AdminDashboard({ token, onLogout }) {
   }, [active, fetchTab]);
 
   const current = data[active] || [];
-  const selectableTab = active === "waitlist" || active === "inquiries";
+  const selectableTab = active === "waitlist" || active === "inquiries" || active === "newsletter";
   const currentSelection = selectableTab ? selection[active] : null;
   const selectedCount = currentSelection?.size ?? 0;
 
@@ -1098,7 +1141,12 @@ function AdminDashboard({ token, onLogout }) {
 
   const deleteSelected = async () => {
     if (!selectedCount) return;
-    const label = active === "waitlist" ? "waitlist signup" : "inquiry";
+    const labels = {
+      waitlist: "waitlist signup",
+      inquiries: "inquiry",
+      newsletter: "newsletter subscriber",
+    };
+    const label = labels[active] || "row";
     if (
       !window.confirm(
         `Delete ${selectedCount} ${label}${selectedCount === 1 ? "" : "s"}? This cannot be undone.`
@@ -1157,61 +1205,19 @@ function AdminDashboard({ token, onLogout }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5EFE2]" data-testid="admin-dashboard">
-      {/* Header */}
-      <header className="border-b border-[#DFD7CA] bg-[#FBF7EE]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-6 flex items-center justify-between gap-6">
-          <div>
-            <p className="overline text-[#C05A3A]">Emporio Zeva · Admin</p>
-            <h1 className="font-serif text-2xl md:text-3xl text-[#2A1F1D] mt-1">
-              Eva's notebook
-            </h1>
-          </div>
-          <button
-            onClick={onLogout}
-            className="inline-flex items-center gap-2 text-sm text-[#5C4E4A] hover:text-[#2A1F1D] transition-colors"
-            data-testid="admin-logout-button"
-          >
-            <LogOut size={14} /> Sign out
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10">
-          <nav className="flex gap-8" data-testid="admin-tabs">
-            {TABS.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setActive(t.key)}
-                className={`relative py-4 text-sm tracking-wide uppercase transition-colors ${
-                  active === t.key
-                    ? "text-[#2A1F1D]"
-                    : "text-[#5C4E4A] hover:text-[#2A1F1D]"
-                }`}
-                data-testid={`admin-tab-${t.key}`}
-              >
-                {t.label}
-                <span className="ml-2 text-xs text-[#C05A3A]">
-                  {(data[t.key] || []).length || ""}
-                </span>
-                {active === t.key && (
-                  <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-[#C05A3A]" />
-                )}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </header>
-
+    <div data-testid="admin-dashboard">
       {/* Toolbar */}
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-6 flex items-center justify-between gap-4 flex-wrap">
-        <p className="text-sm text-[#5C4E4A]" data-testid="admin-count">
-          {loading
-            ? "Loading…"
-            : selectableTab && selectedCount > 0
-            ? `${selectedCount} of ${current.length} ${active} selected`
-            : `${current.length} ${active}`}
-        </p>
+      <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
+        <div>
+          <h2 className="font-serif text-2xl text-[#2A1F1D] capitalize">{active}</h2>
+          <p className="text-sm text-[#5C4E4A] mt-1" data-testid="admin-count">
+            {loading
+              ? "Loading…"
+              : selectableTab && selectedCount > 0
+              ? `${selectedCount} of ${current.length} ${active} selected`
+              : `${current.length} ${active}`}
+          </p>
+        </div>
         <div className="flex items-center gap-3">
           {selectableTab && selectedCount > 0 && (
             <button
@@ -1247,7 +1253,7 @@ function AdminDashboard({ token, onLogout }) {
       </div>
 
       {/* Panel */}
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10 pb-20">
+      <div>
         {error && active !== "decks" && (
           <p className="text-sm text-[#C05A3A] mb-4" data-testid="admin-error">
             {error}
@@ -1285,25 +1291,176 @@ function AdminDashboard({ token, onLogout }) {
 
 export default function Admin() {
   const [token, setToken] = useState(() => sessionStorage.getItem(TOKEN_KEY));
+  const [user, setUser] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem(USER_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
 
-  // Verify token on mount; clear if rejected
+  // Verify token on mount + hydrate the current user from /admin/me
   useEffect(() => {
     if (!token) return;
     axios
       .get(`${API}/admin/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => {
+        setUser(data);
+        sessionStorage.setItem(USER_KEY, JSON.stringify(data));
+      })
       .catch((err) => {
         if (err?.response?.status === 401) {
           sessionStorage.removeItem(TOKEN_KEY);
+          sessionStorage.removeItem(USER_KEY);
           setToken(null);
+          setUser(null);
         }
       });
   }, [token]);
 
   const logout = () => {
     sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(USER_KEY);
     setToken(null);
+    setUser(null);
   };
 
-  if (!token) return <AdminLogin onLogin={setToken} />;
-  return <AdminDashboard token={token} onLogout={logout} />;
+  if (!token)
+    return (
+      <AdminLogin
+        onLogin={(t, u) => {
+          setToken(t);
+          setUser(u);
+        }}
+      />
+    );
+  return <AdminShell token={token} user={user} onLogout={logout} />;
+}
+
+// ----------------------------------------------------------------------------
+// AdminShell — sidebar nav + panel router
+// ----------------------------------------------------------------------------
+const PANELS = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "editor", "viewer"] },
+  { key: "pages", label: "Pages", icon: FileText, roles: ["admin", "editor"] },
+  { key: "media", label: "Media", icon: ImageIcon, roles: ["admin", "editor"] },
+  { key: "journal", label: "Journal", icon: BookOpen, roles: ["admin", "editor"] },
+  { key: "decks", label: "Decks", icon: Presentation, roles: ["admin", "editor"] },
+  { key: "inquiries", label: "Inquiries", icon: MessageSquare, roles: ["admin", "editor", "viewer"] },
+  { key: "waitlist", label: "Waitlist", icon: Layers, roles: ["admin", "editor", "viewer"] },
+  { key: "newsletter", label: "Newsletter", icon: Mail, roles: ["admin", "editor", "viewer"] },
+  { key: "users", label: "Users", icon: UsersIcon, roles: ["admin"] },
+  { key: "settings", label: "Settings", icon: SettingsIcon, roles: ["admin", "editor", "viewer"] },
+];
+
+function AdminShell({ token, user, onLogout }) {
+  const role = user?.role || "viewer";
+  const visiblePanels = PANELS.filter((p) => p.roles.includes(role));
+  const initial = sessionStorage.getItem("ez_admin_active_panel") || "dashboard";
+  const [active, setActive] = useState(
+    visiblePanels.find((p) => p.key === initial) ? initial : "dashboard"
+  );
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const goTo = (key) => {
+    setActive(key);
+    sessionStorage.setItem("ez_admin_active_panel", key);
+    setMobileOpen(false);
+  };
+
+  // Legacy panels (decks/journal/waitlist/inquiries/newsletter) live in
+  // AdminDashboard which has tabs of its own — we just pin its active tab.
+  const showLegacy = ["decks", "journal", "waitlist", "inquiries", "newsletter"].includes(active);
+
+  return (
+    <div className="min-h-screen bg-[#F5EFE2] flex" data-testid="admin-shell">
+      {/* Sidebar */}
+      <aside
+        className={`${
+          mobileOpen ? "fixed inset-y-0 left-0 z-40" : "hidden md:flex"
+        } w-64 bg-[#2A1F1D] text-[#F5EFE2] flex-col`}
+        data-testid="admin-sidebar"
+      >
+        <div className="px-6 py-6 border-b border-white/10">
+          <p className="overline text-[#C05A3A] text-[10px]">Emporio Zeva</p>
+          <p className="font-serif text-lg mt-1">Admin</p>
+          <p className="text-xs text-[#B9935A] mt-2 truncate">{user?.email}</p>
+          <p className="text-[10px] uppercase tracking-wider text-[#B9935A]/80 mt-0.5">
+            {role}
+          </p>
+        </div>
+        <nav className="flex-1 py-4 overflow-y-auto" data-testid="admin-sidebar-nav">
+          {visiblePanels.map((p) => {
+            const Icon = p.icon;
+            const isActive = active === p.key;
+            return (
+              <button
+                key={p.key}
+                onClick={() => goTo(p.key)}
+                className={`w-full px-6 py-2.5 flex items-center gap-3 text-sm transition-colors ${
+                  isActive
+                    ? "bg-[#C05A3A] text-white"
+                    : "text-[#F5EFE2]/80 hover:bg-white/5 hover:text-white"
+                }`}
+                data-testid={`admin-nav-${p.key}`}
+              >
+                <Icon size={16} />
+                <span>{p.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+        <button
+          onClick={onLogout}
+          className="flex items-center gap-2 px-6 py-4 text-sm text-[#F5EFE2]/80 hover:text-white border-t border-white/10"
+          data-testid="admin-logout-button"
+        >
+          <LogOut size={14} /> Sign out
+        </button>
+      </aside>
+
+      {mobileOpen && (
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden fixed inset-0 z-30 bg-black/40"
+          aria-label="Close menu"
+        />
+      )}
+
+      {/* Main */}
+      <main className="flex-1 min-w-0" data-testid="admin-main">
+        <header className="md:hidden bg-[#FBF7EE] border-b border-[#DFD7CA] flex items-center justify-between px-4 py-3">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="text-[#2A1F1D]"
+            aria-label="Open menu"
+            data-testid="admin-mobile-menu-button"
+          >
+            <MenuIcon size={20} />
+          </button>
+          <p className="font-serif text-lg text-[#2A1F1D]">Admin</p>
+          <button onClick={onLogout} aria-label="Sign out" className="text-[#2A1F1D]">
+            <LogOut size={16} />
+          </button>
+        </header>
+
+        <div className="max-w-[1400px] mx-auto px-4 md:px-10 py-6 md:py-10">
+          {active === "dashboard" && <DashboardPanel token={token} user={user} />}
+          {active === "pages" && <PagesPanel token={token} />}
+          {active === "media" && <MediaPanel token={token} />}
+          {active === "users" && <UsersPanel token={token} currentUser={user} />}
+          {active === "settings" && <SettingsPanel token={token} readOnly={role !== "admin"} />}
+          {showLegacy && (
+            <AdminDashboard
+              key={active}
+              initialTab={active}
+              token={token}
+              onLogout={onLogout}
+            />
+          )}
+        </div>
+      </main>
+    </div>
+  );
 }

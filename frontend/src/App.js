@@ -15,6 +15,7 @@ import OneSheet from "./pages/OneSheet";
 import Admin from "./pages/Admin";
 import DeckView from "./pages/DeckView";
 import JournalArticle from "./pages/JournalArticle";
+import PagePublic from "./pages/PagePublic";
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -40,7 +41,9 @@ function Shell() {
   const { pathname } = useLocation();
   const isDeck = pathname === "/blackrock" || pathname === "/corporate" || pathname.startsWith("/deck/");
   const isAdmin = pathname.startsWith("/admin");
-  const isChrome = !isDeck && !isAdmin;
+  const isCmsPage = pathname.startsWith("/p/");
+  // CMS pages render their own Nav+Footer inside the component, so suppress chrome here too.
+  const isChrome = !isDeck && !isAdmin && !isCmsPage;
   return (
     <>
       <ScrollToTop />
@@ -60,6 +63,7 @@ function Shell() {
           <Route path="/ritual" element={<Ritual />} />
           <Route path="/one-sheet" element={<OneSheet />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/p/:slug" element={<PagePublic />} />
         </Routes>
       </main>
       {isChrome && <Footer />}
