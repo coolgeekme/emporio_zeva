@@ -1645,12 +1645,18 @@ async def admin_update_site_content(
         for f in section["fields"]
     }
     cleaned = {k: ("" if v is None else str(v)) for k, v in payload.items() if k in valid_keys}
+    # Use dotted-path $set so partial PATCHes merge per-key instead of replacing
+    # the whole "fields" sub-document.
+    set_ops = {f"fields.{k}": v for k, v in cleaned.items()}
+    set_ops["updated_at"] = datetime.now(timezone.utc).isoformat()
     await db.site_content.update_one(
         {"_id": page},
-        {"$set": {"fields": cleaned, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        {"$set": set_ops},
         upsert=True,
     )
-    return _merged_content(page, cleaned)
+    # Return the freshly merged content (re-read so partial updates surface correctly)
+    overrides = await _load_site_content(page)
+    return _merged_content(page, overrides)
 
 
 
