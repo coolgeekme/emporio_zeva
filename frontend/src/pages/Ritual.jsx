@@ -17,7 +17,7 @@ export default function Ritual() {
         <p className="overline text-[#C05A3A]">{c("hero_overline", "The serving ritual")}</p>
         <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl leading-[1.02] tracking-tight mt-5 text-[#2A1F1D] max-w-3xl">
           {(() => {
-            const h1 = c("hero_h1", "Sliced. Served. Savored. Shared.");
+            const h1 = c("hero_h1", "Sliced. Served. Shared. Savored.");
             const words = h1.split(/\s+/).filter(Boolean);
             return words.map((w, i) => {
               const italic = i === 1 || (i === words.length - 1);

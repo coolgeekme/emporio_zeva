@@ -925,13 +925,16 @@ async def admin_list_decks(_: dict = Depends(require_editor)):
 async def admin_update_deck(
     deck_id: str,
     payload: DeckUpdate,
-    _: dict = Depends(require_editor),
+    current: dict = Depends(require_editor),
 ):
     update = {k: v for k, v in payload.model_dump(exclude_unset=True).items() if v is not None}
     if "template_mode" in update and update["template_mode"] not in ("template", "custom"):
         raise HTTPException(status_code=422, detail="template_mode must be 'template' or 'custom'")
     if not update:
         raise HTTPException(status_code=422, detail="No fields to update")
+    existing = await db.decks.find_one({"id": deck_id}, {"_id": 0})
+    if existing:
+        await write_revision("deck", deck_id, existing, current, label="Edited")
     result = await db.decks.find_one_and_update(
         {"id": deck_id},
         {"$set": update},
@@ -1132,13 +1135,18 @@ async def admin_create_page(payload: PageCreate, current: dict = Depends(require
         created_by=current["id"],
     )
     await db.pages.insert_one(page.model_dump())
+    await write_revision("page", page.id, page.model_dump(), current, label="Created")
     return page
 
 
 @api_router.patch("/admin/pages/{page_id}", response_model=Page)
 async def admin_update_page(
-    page_id: str, payload: PageUpdate, _: dict = Depends(require_editor)
+    page_id: str, payload: PageUpdate, current: dict = Depends(require_editor)
 ):
+    # Capture pre-edit snapshot for history
+    existing = await db.pages.find_one({"id": page_id}, {"_id": 0})
+    if existing:
+        await write_revision("page", page_id, existing, current, label="Edited")
     update: dict = {}
     raw = payload.model_dump(exclude_unset=True)
     if "title" in raw and raw["title"] is not None:
@@ -1371,7 +1379,7 @@ async def admin_list_products(_: dict = Depends(require_editor)):
 
 
 @api_router.post("/admin/products", response_model=Product)
-async def admin_create_product(payload: ProductCreate, _: dict = Depends(require_editor)):
+async def admin_create_product(payload: ProductCreate, current: dict = Depends(require_editor)):
     name = payload.name.strip()
     if not name:
         raise HTTPException(status_code=422, detail="name is required")
@@ -1388,13 +1396,17 @@ async def admin_create_product(payload: ProductCreate, _: dict = Depends(require
     data["name"] = name
     product = Product(**data)
     await db.products.insert_one(product.model_dump())
+    await write_revision("product", product.slug, product.model_dump(), current, label="Created")
     return product
 
 
 @api_router.patch("/admin/products/{slug}", response_model=Product)
 async def admin_update_product(
-    slug: str, payload: ProductUpdate, _: dict = Depends(require_editor)
+    slug: str, payload: ProductUpdate, current: dict = Depends(require_editor)
 ):
+    existing = await db.products.find_one({"slug": slug}, {"_id": 0})
+    if existing:
+        await write_revision("product", slug, existing, current, label="Edited")
     raw = payload.model_dump(exclude_unset=True)
     if not raw:
         raise HTTPException(status_code=422, detail="No fields to update")
@@ -1521,7 +1533,7 @@ SITE_CONTENT_MANIFEST = {
             {"label": "Hero", "fields": [
                 {"key": "hero_overline", "type": "text", "label": "Overline", "default": "The serving ritual"},
                 {"key": "hero_h1", "type": "textarea", "label": "H1 (newlines as line breaks)",
-                 "default": "Sliced. Served. Savored. Shared."},
+                 "default": "Sliced. Served. Shared. Savored."},
                 {"key": "hero_body", "type": "textarea", "label": "Body",
                  "default": "Not A Salami is meant to be sliced, shared, and savored. Four moments — one small ritual, the Italian way."},
             ]},
@@ -1649,12 +1661,17 @@ async def admin_site_content(_: dict = Depends(require_editor)):
 
 @api_router.patch("/admin/site-content/{page}")
 async def admin_update_site_content(
-    page: str, payload: dict, _: dict = Depends(require_editor)
+    page: str, payload: dict, current: dict = Depends(require_editor)
 ):
     if page not in VALID_CONTENT_PAGES:
         raise HTTPException(status_code=404, detail="Unknown page")
     if not isinstance(payload, dict):
         raise HTTPException(status_code=422, detail="Expected an object of {key: value}")
+    # Snapshot existing state before changing
+    existing = await db.site_content.find_one({"_id": page})
+    if existing:
+        snap = {k: v for k, v in existing.items() if k != "_id"}
+        await write_revision("site_content", page, snap, current, label="Edited")
     valid_keys = {
         f["key"]
         for section in SITE_CONTENT_MANIFEST[page]["sections"]
@@ -1673,6 +1690,143 @@ async def admin_update_site_content(
     # Return the freshly merged content (re-read so partial updates surface correctly)
     overrides = await _load_site_content(page)
     return _merged_content(page, overrides)
+
+
+
+
+# ---------- Revision history ----------
+# Snapshot pattern: each save on a versioned doc writes a new revision entry.
+# Bounded to MAX_REVISIONS_PER_DOC per (doc_type, doc_id) — older entries pruned.
+VERSIONED_TYPES = ("page", "product", "site_content", "deck")
+MAX_REVISIONS_PER_DOC = 50
+
+
+async def write_revision(
+    doc_type: str,
+    doc_id: str,
+    snapshot: dict,
+    user: dict,
+    label: str = "",
+) -> None:
+    """Record a snapshot. Best-effort: failures are logged but don't break saves."""
+    if doc_type not in VERSIONED_TYPES:
+        return
+    try:
+        rev = {
+            "id": str(uuid.uuid4()),
+            "doc_type": doc_type,
+            "doc_id": doc_id,
+            "snapshot": snapshot,
+            "author_id": user.get("id"),
+            "author_name": user.get("name") or user.get("email"),
+            "label": label,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.revisions.insert_one(rev)
+        # Prune older revisions beyond cap
+        count = await db.revisions.count_documents({"doc_type": doc_type, "doc_id": doc_id})
+        if count > MAX_REVISIONS_PER_DOC:
+            extra = count - MAX_REVISIONS_PER_DOC
+            cursor = (
+                db.revisions.find({"doc_type": doc_type, "doc_id": doc_id}, {"_id": 0, "id": 1})
+                .sort("created_at", 1)
+                .limit(extra)
+            )
+            old_ids = [r["id"] async for r in cursor]
+            if old_ids:
+                await db.revisions.delete_many({"id": {"$in": old_ids}})
+    except Exception:
+        logging.getLogger(__name__).exception("Failed to write revision")
+
+
+@api_router.get("/admin/revisions/{doc_type}/{doc_id}")
+async def admin_list_revisions(
+    doc_type: str, doc_id: str, _: dict = Depends(require_editor)
+):
+    if doc_type not in VERSIONED_TYPES:
+        raise HTTPException(status_code=422, detail=f"doc_type must be one of {VERSIONED_TYPES}")
+    docs = await (
+        db.revisions.find({"doc_type": doc_type, "doc_id": doc_id}, {"_id": 0})
+        .sort("created_at", -1)
+        .limit(MAX_REVISIONS_PER_DOC)
+        .to_list(MAX_REVISIONS_PER_DOC)
+    )
+    return docs
+
+
+@api_router.get("/admin/revisions/{doc_type}/{doc_id}/{rev_id}")
+async def admin_get_revision(
+    doc_type: str, doc_id: str, rev_id: str, _: dict = Depends(require_editor)
+):
+    if doc_type not in VERSIONED_TYPES:
+        raise HTTPException(status_code=422, detail=f"doc_type must be one of {VERSIONED_TYPES}")
+    rev = await db.revisions.find_one(
+        {"id": rev_id, "doc_type": doc_type, "doc_id": doc_id},
+        {"_id": 0},
+    )
+    if not rev:
+        raise HTTPException(status_code=404, detail="Revision not found")
+    return rev
+
+
+@api_router.post("/admin/revisions/{doc_type}/{doc_id}/{rev_id}/revert")
+async def admin_revert_revision(
+    doc_type: str,
+    doc_id: str,
+    rev_id: str,
+    current: dict = Depends(require_editor),
+):
+    if doc_type not in VERSIONED_TYPES:
+        raise HTTPException(status_code=422, detail=f"doc_type must be one of {VERSIONED_TYPES}")
+    rev = await db.revisions.find_one(
+        {"id": rev_id, "doc_type": doc_type, "doc_id": doc_id},
+        {"_id": 0},
+    )
+    if not rev:
+        raise HTTPException(status_code=404, detail="Revision not found")
+    snapshot = rev["snapshot"]
+    now = datetime.now(timezone.utc).isoformat()
+    # Apply snapshot to the live doc
+    if doc_type == "page":
+        # Save current state first so revert is itself revertible
+        current_doc = await db.pages.find_one({"id": doc_id}, {"_id": 0})
+        if current_doc:
+            await write_revision("page", doc_id, current_doc, current, label="Auto: pre-revert")
+        snapshot["updated_at"] = now
+        await db.pages.update_one({"id": doc_id}, {"$set": snapshot}, upsert=False)
+    elif doc_type == "product":
+        current_doc = await db.products.find_one({"slug": doc_id}, {"_id": 0})
+        if current_doc:
+            await write_revision("product", doc_id, current_doc, current, label="Auto: pre-revert")
+        # Don't change the slug on revert — that would break public URLs
+        snapshot = {k: v for k, v in snapshot.items() if k != "slug"}
+        await db.products.update_one({"slug": doc_id}, {"$set": snapshot}, upsert=False)
+    elif doc_type == "site_content":
+        existing = await db.site_content.find_one({"_id": doc_id})
+        if existing:
+            existing_clean = {k: v for k, v in existing.items() if k != "_id"}
+            await write_revision("site_content", doc_id, existing_clean, current, label="Auto: pre-revert")
+        await db.site_content.update_one(
+            {"_id": doc_id},
+            {"$set": {"fields": snapshot.get("fields", {}), "updated_at": now}},
+            upsert=True,
+        )
+    elif doc_type == "deck":
+        current_doc = await db.decks.find_one({"id": doc_id}, {"_id": 0})
+        if current_doc:
+            await write_revision("deck", doc_id, current_doc, current, label="Auto: pre-revert")
+        # Don't revert slug / id / created_at / view_count
+        snapshot = {k: v for k, v in snapshot.items() if k not in ("slug", "id", "created_at", "view_count", "last_viewed_at")}
+        await db.decks.update_one({"id": doc_id}, {"$set": snapshot}, upsert=False)
+    # Write the revert itself as a revision so it appears in history
+    await write_revision(
+        doc_type,
+        doc_id,
+        snapshot,
+        current,
+        label=f"Reverted to revision from {rev.get('created_at', 'unknown')[:19]}",
+    )
+    return {"reverted": True}
 
 
 

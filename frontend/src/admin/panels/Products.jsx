@@ -2,8 +2,9 @@
 // the Media library (paste URL or browse media). Status: active / future / archived.
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { Plus, Trash2, X, Edit2, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, X, Edit2, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { API, authHeaders, formatApiErrorDetail, formatDate } from "../api";
+import HistoryDrawer, { HistoryButton } from "../HistoryDrawer";
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 const STATUSES = ["active", "future", "archived"];
@@ -191,6 +192,7 @@ function ProductEditor({ product, token, onClose, onSaved }) {
   }));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const upd = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -236,9 +238,23 @@ function ProductEditor({ product, token, onClose, onSaved }) {
           <h3 className="font-serif text-xl text-[#2A1F1D]">
             {isNew ? "New product" : `Edit · ${product.name}`}
           </h3>
-          <button onClick={onClose} aria-label="Close" data-testid="product-editor-close">
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            {!isNew && (
+              <a
+                href={`/products/${product.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-outline text-xs inline-flex items-center gap-1"
+                data-testid="product-view-live-link"
+              >
+                <ExternalLink size={12} /> View live
+              </a>
+            )}
+            {!isNew && <HistoryButton onClick={() => setHistoryOpen(true)} />}
+            <button onClick={onClose} aria-label="Close" data-testid="product-editor-close">
+              <X size={18} />
+            </button>
+          </div>
         </header>
         <form onSubmit={submit} className="p-6 space-y-6" data-testid="product-editor-form">
           <div className="grid md:grid-cols-2 gap-4">
@@ -324,6 +340,26 @@ function ProductEditor({ product, token, onClose, onSaved }) {
             </button>
           </div>
         </form>
+        {!isNew && (
+          <HistoryDrawer
+            open={historyOpen}
+            onClose={() => setHistoryOpen(false)}
+            docType="product"
+            docId={product.slug}
+            token={token}
+            onReverted={() => {
+              setHistoryOpen(false);
+              onSaved();
+            }}
+            renderPreview={(snap) => (
+              <>
+                <p className="font-medium text-[#2A1F1D] mb-1">{snap?.name}</p>
+                <p className="italic mb-1">{snap?.tagline}</p>
+                <p>{snap?.price} · {snap?.weight} · {snap?.status}</p>
+              </>
+            )}
+          />
+        )}
       </div>
     </div>
   );

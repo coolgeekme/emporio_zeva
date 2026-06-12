@@ -3,7 +3,7 @@
 // Body is rendered as markdown: blank-line paragraphs, **bold**, *italic*, [links](url),
 // `- bullets`, headings, and `![alt](url)` images.
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -14,12 +14,33 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function PagePublic() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const previewKey = searchParams.get("preview");
   const [page, setPage] = useState(null);
   const [status, setStatus] = useState("loading");
 
   useEffect(() => {
     let mounted = true;
     setStatus("loading");
+    // Preview path: read working buffer from sessionStorage instead of API.
+    if (previewKey) {
+      try {
+        const raw = sessionStorage.getItem(previewKey);
+        if (raw) {
+          const buf = JSON.parse(raw);
+          if (!buf.ts || Date.now() - buf.ts < 60 * 60 * 1000) {
+            setPage(buf);
+            setStatus("ok");
+            return () => {
+              mounted = false;
+            };
+          }
+          sessionStorage.removeItem(previewKey);
+        }
+      } catch {
+        /* fall through to API fetch */
+      }
+    }
     axios
       .get(`${API}/pages/${slug}`)
       .then(({ data }) => {
@@ -34,7 +55,7 @@ export default function PagePublic() {
     return () => {
       mounted = false;
     };
-  }, [slug]);
+  }, [slug, previewKey]);
 
   if (status === "loading") {
     return (

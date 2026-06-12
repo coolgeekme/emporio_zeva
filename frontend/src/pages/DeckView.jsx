@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import axios from "axios";
 import BlackRock from "./BlackRock";
 
@@ -7,6 +7,8 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function DeckView() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const previewKey = searchParams.get("preview");
   const [deck, setDeck] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | ok | notfound | err
 
@@ -18,7 +20,25 @@ export default function DeckView() {
       .get(`${API}/decks/${slug}`)
       .then((r) => {
         if (!alive) return;
-        setDeck(r.data);
+        let merged = r.data;
+        // If admin opened with ?preview=<sessionKey>, overlay the working buffer.
+        // Buffer auto-clears after 1h.
+        if (previewKey) {
+          try {
+            const raw = sessionStorage.getItem(previewKey);
+            if (raw) {
+              const buf = JSON.parse(raw);
+              if (buf.ts && Date.now() - buf.ts > 60 * 60 * 1000) {
+                sessionStorage.removeItem(previewKey);
+              } else {
+                merged = { ...merged, ...buf };
+              }
+            }
+          } catch {
+            /* noop */
+          }
+        }
+        setDeck(merged);
         setStatus("ok");
       })
       .catch((err) => {
@@ -28,7 +48,7 @@ export default function DeckView() {
     return () => {
       alive = false;
     };
-  }, [slug]);
+  }, [slug, previewKey]);
 
   if (status === "loading") {
     return (

@@ -421,9 +421,9 @@ export default function Home() {
               <br />
               <span className="italic">Served.</span>
               <br />
-              Savored.
+              Shared.
               <br />
-              <span className="italic text-[#C05A3A]">Shared.</span>
+              <span className="italic text-[#C05A3A]">Savored.</span>
             </h2>
             <p className="mt-7 text-[#5C4E4A] leading-relaxed max-w-md">
               {c("ritual_body", "Not A Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way.")}

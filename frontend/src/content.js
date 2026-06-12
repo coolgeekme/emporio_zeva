@@ -53,16 +53,16 @@ export const RITUAL = [
       "For the best flavor and texture, enjoy at room temperature. Remove from the fridge 15–20 minutes before serving.",
   },
   {
-    key: "savor",
-    title: "Savor",
-    body:
-      "Layers of rich cocoa, crunchy biscotti, chocolate chips, and delicate sugar crystals unfold with every bite.",
-  },
-  {
     key: "share",
     title: "Share",
     body:
       "Made to be shared slowly, around good conversation and meaningful company.",
+  },
+  {
+    key: "savor",
+    title: "Savor",
+    body:
+      "Layers of rich cocoa, crunchy biscotti, chocolate chips, and delicate sugar crystals unfold with every bite.",
   },
 ];
 

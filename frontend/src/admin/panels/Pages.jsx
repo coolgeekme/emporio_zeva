@@ -2,8 +2,9 @@
 // and Nav/Footer visibility checkboxes.
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import { Plus, Trash2, X, Edit2, ChevronRight, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, X, Edit2, ChevronRight, Image as ImageIcon, Eye } from "lucide-react";
 import { API, authHeaders, formatApiErrorDetail, formatDate } from "../api";
+import HistoryDrawer, { HistoryButton } from "../HistoryDrawer";
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 
@@ -86,7 +87,35 @@ function PageEditor({ token, page, allPages, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [mediaOpen, setMediaOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const bodyRef = useRef(null);
+
+  // Open the public /p/:slug route with the working buffer applied via sessionStorage.
+  const openPreview = () => {
+    if (!form.title.trim()) {
+      setError("Add a title before previewing.");
+      return;
+    }
+    // We need a slug to construct the URL — fall back to slug from form or page.
+    const previewSlug = (form.slug || page?.slug || form.title)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "preview";
+    const key = `page-preview-${previewSlug}`;
+    const buffer = {
+      slug: previewSlug,
+      title: form.title,
+      excerpt: form.excerpt,
+      body: form.body,
+      ts: Date.now(),
+    };
+    try {
+      sessionStorage.setItem(key, JSON.stringify(buffer));
+      window.open(`/p/${previewSlug}?preview=${encodeURIComponent(key)}`, "_blank", "noopener");
+    } catch {
+      setError("Couldn't open preview.");
+    }
+  };
 
   const insertAtCursor = (snippet) => {
     const el = bodyRef.current;
@@ -171,9 +200,22 @@ function PageEditor({ token, page, allPages, onClose, onSaved }) {
           <h3 className="font-serif text-xl text-[#2A1F1D]">
             {page ? "Edit page" : "New page"}
           </h3>
-          <button onClick={onClose} aria-label="Close" data-testid="page-editor-close">
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={openPreview}
+              className="btn-outline text-xs inline-flex items-center gap-1"
+              data-testid="page-editor-preview-button"
+            >
+              <Eye size={12} /> Preview
+            </button>
+            {page && (
+              <HistoryButton onClick={() => setHistoryOpen(true)} />
+            )}
+            <button onClick={onClose} aria-label="Close" data-testid="page-editor-close">
+              <X size={18} />
+            </button>
+          </div>
         </header>
         <form onSubmit={submit} className="p-6 space-y-4" data-testid="page-editor-form">
           <div className="grid md:grid-cols-2 gap-4">
@@ -325,6 +367,26 @@ function PageEditor({ token, page, allPages, onClose, onSaved }) {
             setMediaOpen(false);
           }}
         />
+        {page && (
+          <HistoryDrawer
+            open={historyOpen}
+            onClose={() => setHistoryOpen(false)}
+            docType="page"
+            docId={page.id}
+            token={token}
+            onReverted={() => {
+              setHistoryOpen(false);
+              onSaved();
+            }}
+            renderPreview={(snap) => (
+              <>
+                <p className="font-medium text-[#2A1F1D] mb-1">{snap?.title || "(untitled)"}</p>
+                {snap?.excerpt && <p className="italic mb-1">{snap.excerpt}</p>}
+                <pre className="whitespace-pre-wrap">{(snap?.body || "").slice(0, 400)}{snap?.body?.length > 400 ? "…" : ""}</pre>
+              </>
+            )}
+          />
+        )}
       </div>
     </div>
   );

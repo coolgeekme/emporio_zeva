@@ -1,0 +1,54 @@
+{
+  "summary": "Iteration 6 — Deck overrides (template/custom mode + slide_overrides), Revision history (page/product/site_content/deck), Ritual swap, /p/<slug> overline change. Backend: 14/14 NEW pytest pass in test_revisions_and_decks.py + 50/50 regression (test_admin_v2_api + test_products_and_content). Frontend: SlideEditor opens with 11 sections (sections count verified == 11), template mode correctly locks slide_2_tradition ('Available only in Custom mode' visible, fields not rendered), custom mode unlocks it. slide_1_cover subtitle has Live preview label visible when typed. Preview + History buttons confirmed on Pages, Site Content, Products editors; History drawer opens on click. New deck dialog shows template/custom mode toggle (new-deck-mode-template + -custom). Public Ritual H1 reads 'Sliced. Served. Shared. Savored.' and card order Slice<Serve<Share<Savor verified in DOM. Home teaser pattern matches 'Sliced. Served. Shared. Savored.' Published /p/<slug> renders 'Not A Salami' overline (verified via temp page + DOM check). Legacy test_decks_api.py (iteration_1 file with {password}-only login) still produces 21 errors — pre-existing, not caused by this iteration.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/site-content/{page}",
+        "issue": "Per-page admin GET returns 405 — only the aggregate GET /api/admin/site-content (all pages) is implemented. Not a regression; SiteContent.jsx uses the aggregate endpoint. Adding a per-page read variant would simplify external clients."
+      },
+      {
+        "endpoint": "/api/admin/decks/*",
+        "issue": "test_decks_api.py from iteration 1 still uses legacy {password}-only login and errors at fixture setup (21 errors). Auth changed to {email,password} long ago. Recommend deleting that file as iteration_4/5 already flagged."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_revisions_and_decks.py",
+    "/app/test_reports/pytest/revisions_results.xml",
+    "/app/test_reports/pytest/iteration_6_full.xml"
+  ],
+  "action_items": [
+    "(Optional) Delete obsolete /app/backend/tests/test_decks_api.py — uses legacy {password}-only login and errors at fixture setup. Flagged in iteration_4 and iteration_5 too.",
+    "(Optional) Add per-page admin read variant GET /api/admin/site-content/{page} (currently 405) — would let third-party clients read one page without pulling all."
+  ],
+  "critical_code_review_comments": [
+    "Backend write_revision is idempotently best-effort (try/except) so revision failures never break the parent save — correct design choice.",
+    "Pruning at MAX_REVISIONS_PER_DOC=50 uses a deterministic sort+delete_many — clean.",
+    "Revert correctly writes 'Auto: pre-revert' before applying snapshot AND writes a labeled revert entry afterwards. Verified by len(revs2) >= count_before + 2 in test_revert_writes_pre_revert_and_restores.",
+    "Product revert strips 'slug' from snapshot before applying — URL stability preserved (verified).",
+    "Deck revert strips 'slug', 'id', 'created_at', 'view_count', 'last_viewed_at' — analytics counters and identity preserved (verified slug+id unchanged after revert).",
+    "DeckCreate/DeckUpdate validate template_mode ∈ {'template','custom'} with 422 on bad value. Pydantic Literal would be cleaner self-documentation but manual check works.",
+    "SlideEditor.jsx — TEMPLATE_SLIDES set used to lock unlocked slides; clicking locked section does not call setExpanded so user sees only the 'Available only in Custom mode' notice (verified). Good UX.",
+    "SiteContent override storage still uses wholesale $set: {fields: cleaned} (carry-over concern from iteration_5). Now that revisions cover undo, this is less critical — a wipe is recoverable via revert.",
+    "/p/<slug> overline literal changed to 'Not A Salami' (line 101) — confirmed."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_revisions_and_decks.py (new — 14 pytest cases for decks template/overrides + revisions + RBAC)"
+  ],
+  "success_rate": {
+    "backend": "100% on new + scoped regression (14/14 new + 50/50 from previous iteration suites). Legacy test_decks_api.py pre-existing 21 errors not counted (auth-format drift from iteration 1).",
+    "frontend": "100% on iteration-6 surfaces: SlideEditor opens with 11 sections, template-mode lock verified, custom-mode unlock verified, slide_1_cover live preview label verified, new-deck mode toggle present, Pages/Products/SiteContent editors all show preview+history buttons, History drawer opens. Public Ritual H1 + card order + Home teaser verified. /p/<slug> overline = 'Not A Salami' verified via temp published page."
+  },
+  "test_credentials": "admin@notasalami.com / zeva-admin-2026 (from /app/memory/test_credentials.md). Pytest fixtures create+teardown TEST-prefixed editor/viewer users.",
+  "seed_data_creation": "All test data is created with TEST/QA prefixes and cleaned up in test teardown / try-finally. test_edit_writes_revision (site_content) restores original 'home' fields after the test. No leakage observed.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run `REACT_APP_BACKEND_URL=https://zeva-refresh.preview.emergentagent.com pytest /app/backend/tests/test_revisions_and_decks.py /app/backend/tests/test_admin_v2_api.py /app/backend/tests/test_products_and_content.py -v` for the iteration-6 regression suite (64 cases total). The legacy /app/backend/tests/test_decks_api.py should be removed — it predates the {email,password} login switch. New testids landed: slide-editor-dialog, slide-editor-mode-{template,custom}, slide-editor-preview-button, slide-editor-save-button, slide-editor-close, slide-section-toggle-{slide_1_cover…slide_11_contact}, slide-field-{key}, new-deck-mode-{template,custom}, deck-edit-{slug}, page-editor-preview-button, page-body-insert-image-button, content-preview-button, product-view-live-link, history-open-button, history-drawer, history-row-{id}, history-snapshot-preview, history-revert-button, history-close, page-public-overline. SessionStorage preview keys follow format: page-preview-<slug>, site-content-<page>, deck-preview-<slug> (auto-clear after 1h). MAX_REVISIONS_PER_DOC=50, pruning verified by reading server.py:1726-1737. Public pages currently list 0 published items — to test /p/<slug> overline create a page via POST /api/admin/pages with status='published'.",
+  "rca of the issue": "No bugs. Two pre-existing nits (legacy test file, wholesale site-content PATCH) carry over from iteration_5 — both flagged as optional."
+}

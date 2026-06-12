@@ -32,6 +32,7 @@ import UsersPanel from "../admin/panels/Users";
 import SettingsPanel from "../admin/panels/Settings";
 import ProductsPanel from "../admin/panels/Products";
 import SiteContentPanel from "../admin/panels/SiteContent";
+import SlideEditor from "../admin/SlideEditor";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const TOKEN_KEY = "ez_admin_token";
@@ -263,6 +264,7 @@ function formatDate(iso) {
 function NewDeckDialog({ open, onClose, onCreated, token }) {
   const [step, setStep] = useState("input"); // input | preview | saving
   const [clientName, setClientName] = useState("");
+  const [templateMode, setTemplateMode] = useState("template"); // template | custom
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -271,6 +273,7 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
     if (open) {
       setStep("input");
       setClientName("");
+      setTemplateMode("template");
       setPreview(null);
       setError("");
       setBusy(false);
@@ -327,6 +330,7 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
           client_name: clientName.trim(),
           intro_text: preview?.intro_text,
           logo_url: preview?.logo_url,
+          template_mode: templateMode,
         },
         { headers }
       );
@@ -395,6 +399,41 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
                   placeholder="e.g. Microsoft, Sequoia Capital, The French Laundry"
                   data-testid="new-deck-client-input"
                 />
+              </div>
+              <div data-testid="new-deck-mode-toggle">
+                <p className="overline text-[#5C4E4A] !text-[10px] mb-3">Presentation mode</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setTemplateMode("template")}
+                    className={`text-left border p-4 transition-colors ${
+                      templateMode === "template"
+                        ? "border-[#C05A3A] bg-[#FBF7EE]"
+                        : "border-[#DFD7CA] hover:border-[#5C4E4A]"
+                    }`}
+                    data-testid="new-deck-mode-template"
+                  >
+                    <p className="font-serif text-lg text-[#2A1F1D]">Template</p>
+                    <p className="text-xs text-[#5C4E4A] mt-1.5 leading-snug">
+                      Customize only the Cover and Offer slides. Best for fast turnaround on similar pitches.
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTemplateMode("custom")}
+                    className={`text-left border p-4 transition-colors ${
+                      templateMode === "custom"
+                        ? "border-[#C05A3A] bg-[#FBF7EE]"
+                        : "border-[#DFD7CA] hover:border-[#5C4E4A]"
+                    }`}
+                    data-testid="new-deck-mode-custom"
+                  >
+                    <p className="font-serif text-lg text-[#2A1F1D]">Custom</p>
+                    <p className="text-xs text-[#5C4E4A] mt-1.5 leading-snug">
+                      Override any text or image on any slide. Switch back to Template anytime — overrides are kept.
+                    </p>
+                  </button>
+                </div>
               </div>
               {error && (
                 <p className="text-sm text-[#C05A3A]" data-testid="new-deck-error">
@@ -1066,7 +1105,7 @@ function DecksPanel({ decks, token, onChange, error }) {
       />
 
       {editing && (
-        <EditDeckDialog
+        <SlideEditor
           deck={editing}
           token={token}
           onClose={() => setEditing(null)}

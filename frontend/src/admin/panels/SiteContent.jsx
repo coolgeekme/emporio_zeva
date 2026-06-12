@@ -3,8 +3,9 @@
 // Renders the manifest returned by /api/admin/site-content as tabbed groups.
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { Image as ImageIcon, RotateCcw, X } from "lucide-react";
+import { Image as ImageIcon, RotateCcw, X, Eye } from "lucide-react";
 import { API, authHeaders, formatApiErrorDetail } from "../api";
+import HistoryDrawer, { HistoryButton } from "../HistoryDrawer";
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 
@@ -154,6 +155,30 @@ export default function SiteContentPanel({ token }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [savedAt, setSavedAt] = useState(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  // Public route per page key (matches public pages routing)
+  const PUBLIC_ROUTE = {
+    home: "/",
+    collection: "/collection",
+    ritual: "/ritual",
+    our_story: "/our-story",
+    journal_index: "/journal",
+    contact: "/contact",
+  };
+
+  const openPreview = () => {
+    if (!activePage) return;
+    const key = `site-content-${active}`;
+    const buffer = { fields: values, ts: Date.now() };
+    try {
+      sessionStorage.setItem(key, JSON.stringify(buffer));
+      const path = PUBLIC_ROUTE[active] || "/";
+      window.open(`${path}?preview=${encodeURIComponent(key)}`, "_blank", "noopener");
+    } catch {
+      setError("Couldn't open preview.");
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -237,21 +262,34 @@ export default function SiteContentPanel({ token }) {
         <p className="text-sm text-[#5C4E4A] py-12 text-center">Loading…</p>
       ) : (
         <>
-          <div className="flex flex-wrap gap-2 border-b border-[#DFD7CA]" data-testid="content-page-tabs">
-            {pages.map((p) => (
+          <div className="flex items-center justify-between gap-3 border-b border-[#DFD7CA]" data-testid="content-page-tabs">
+            <div className="flex flex-wrap gap-2">
+              {pages.map((p) => (
+                <button
+                  key={p.key}
+                  onClick={() => switchPage(p.key)}
+                  className={`px-4 py-2 text-sm uppercase tracking-wide transition-colors ${
+                    active === p.key
+                      ? "text-[#2A1F1D] border-b-2 border-[#C05A3A] -mb-px font-semibold"
+                      : "text-[#5C4E4A] hover:text-[#2A1F1D]"
+                  }`}
+                  data-testid={`content-tab-${p.key}`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 pb-2">
               <button
-                key={p.key}
-                onClick={() => switchPage(p.key)}
-                className={`px-4 py-2 text-sm uppercase tracking-wide transition-colors ${
-                  active === p.key
-                    ? "text-[#2A1F1D] border-b-2 border-[#C05A3A] -mb-px font-semibold"
-                    : "text-[#5C4E4A] hover:text-[#2A1F1D]"
-                }`}
-                data-testid={`content-tab-${p.key}`}
+                type="button"
+                onClick={openPreview}
+                className="btn-outline text-xs inline-flex items-center gap-1"
+                data-testid="content-preview-button"
               >
-                {p.label}
+                <Eye size={12} /> Preview
               </button>
-            ))}
+              {active && <HistoryButton onClick={() => setHistoryOpen(true)} />}
+            </div>
           </div>
 
           {error && <p className="text-sm text-[#C05A3A]" data-testid="content-error">{error}</p>}
@@ -297,6 +335,34 @@ export default function SiteContentPanel({ token }) {
             </div>
           )}
         </>
+      )}
+      {active && (
+        <HistoryDrawer
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          docType="site_content"
+          docId={active}
+          token={token}
+          onReverted={() => {
+            setHistoryOpen(false);
+            load();
+          }}
+          renderPreview={(snap) => {
+            const fields = snap?.fields || {};
+            const entries = Object.entries(fields).slice(0, 6);
+            return (
+              <>
+                {entries.length === 0 ? (
+                  <em>(empty — all defaults)</em>
+                ) : (
+                  entries.map(([k, v]) => (
+                    <p key={k} className="mb-1"><b>{k}</b>: {String(v).slice(0, 80)}{String(v).length > 80 ? "…" : ""}</p>
+                  ))
+                )}
+              </>
+            );
+          }}
+        />
       )}
     </div>
   );

@@ -461,9 +461,9 @@ export default function BlackRock({ deck = null }) {
           <div>
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
               <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] max-w-2xl">
-                Corporate gifting,
+                {ov("slide_5_use_cases", "title_line1", "Corporate gifting,")}
                 <br />
-                <span className="italic text-[#C05A3A]">six considered moments.</span>
+                <span className="italic text-[#C05A3A]">{ov("slide_5_use_cases", "title_italic", "six considered moments.")}</span>
               </h2>
             </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
@@ -486,21 +486,22 @@ export default function BlackRock({ deck = null }) {
         <Slide id="expression" n={6} total={TOTAL} dark testid="deck-slide-expression" isActive={visited.has(5)}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-6">
-              <p className="overline text-[#B9935A]">One product. Pure expression.</p>
+              <p className="overline text-[#B9935A]">{ov("slide_6_expression", "overline", "One product. Pure expression.")}</p>
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-4">
-                A truly Sicilian treat.
+                {ov("slide_6_expression", "title_line1", "A truly Sicilian treat.")}
                 <br />
-                <span className="italic text-[#C05A3A]">For the unexpected.</span>
+                <span className="italic text-[#C05A3A]">{ov("slide_6_expression", "title_italic", "For the unexpected.")}</span>
               </h2>
-              <p className="mt-7 text-base md:text-lg text-[#DFD7CA] leading-relaxed max-w-xl">
-                Every detail, from ingredient to packaging, is intentional. This
-                is an elevated gift with history, a story the recipient can
-                taste, and a sweet moment worth sharing.
-              </p>
+              <div className="mt-7 text-base md:text-lg text-[#DFD7CA] leading-relaxed max-w-xl">
+                <SlideMarkdown dark>
+                  {ov("slide_6_expression", "body",
+                    "Every detail, from ingredient to packaging, is intentional. This is an elevated gift with history, a story the recipient can taste, and a sweet moment worth sharing.")}
+                </SlideMarkdown>
+              </div>
               <p className="overline text-[#B9935A] mt-8">notasalami.com</p>
             </div>
             <div className="md:col-span-6 img-wash aspect-[4/5] max-h-[60vh]">
-              <img src={IMAGES.gift} alt="Not A Salami gift presentation" />
+              <img src={ov("slide_6_expression", "image", IMAGES.gift)} alt="Not A Salami gift presentation" />
             </div>
           </div>
         </Slide>
@@ -509,16 +510,18 @@ export default function BlackRock({ deck = null }) {
         <Slide id="customization" n={7} total={TOTAL} testid="deck-slide-customization" isActive={visited.has(6)}>
           <div>
             <div className="mb-8">
-              <p className="overline text-[#C05A3A]">Elevated experience</p>
+              <p className="overline text-[#C05A3A]">{ov("slide_7_customization", "overline", "Elevated experience")}</p>
               <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] mt-3 text-[#2A1F1D] max-w-3xl">
-                Tailored — without
+                {ov("slide_7_customization", "title_line1", "Tailored — without")}
                 <br />
-                <span className="italic text-[#C05A3A]">losing the gift.</span>
+                <span className="italic text-[#C05A3A]">{ov("slide_7_customization", "title_italic", "losing the gift.")}</span>
               </h2>
-              <p className="text-sm text-[#5C4E4A] max-w-xl mt-3">
-                Selected elements of the gift can be tailored to reflect your
-                company. Additional branded details can be discussed as needed.
-              </p>
+              <div className="text-sm text-[#5C4E4A] max-w-xl mt-3">
+                <SlideMarkdown>
+                  {ov("slide_7_customization", "body",
+                    "Selected elements of the gift can be tailored to reflect your company. Additional branded details can be discussed as needed.")}
+                </SlideMarkdown>
+              </div>
             </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5">
               {CUSTOMIZATION.map((c, i) => (
@@ -631,14 +634,16 @@ export default function BlackRock({ deck = null }) {
         {/* -------- 09 FULFILLMENT -------- */}
         <Slide id="fulfillment" n={9} total={TOTAL} testid="deck-slide-fulfillment" isActive={visited.has(8)}>
           <div>
-            <p className="overline text-[#C05A3A] mb-4">Fulfillment</p>
+            <p className="overline text-[#C05A3A] mb-4">{ov("slide_9_fulfillment", "overline", "Fulfillment")}</p>
             <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] max-w-3xl">
-              {TAGLINES.logistics}
+              {ov("slide_9_fulfillment", "title", TAGLINES.logistics)}
             </h2>
-            <p className="text-sm text-[#5C4E4A] mt-4 max-w-2xl">
-              All orders ship on the same day — every recipient receives their
-              gift within the same delivery window regardless of address.
-            </p>
+            <div className="text-sm text-[#5C4E4A] mt-4 max-w-2xl">
+              <SlideMarkdown>
+                {ov("slide_9_fulfillment", "subtitle",
+                  "All orders ship on the same day — every recipient receives their gift within the same delivery window regardless of address.")}
+              </SlideMarkdown>
+            </div>
 
             <div className="mt-10 grid sm:grid-cols-2 md:grid-cols-4 gap-5">
               {FULFILLMENT.map((f, i) => (
@@ -659,15 +664,17 @@ export default function BlackRock({ deck = null }) {
         {/* -------- 10 HOW IT WORKS — 4-step process -------- */}
         <Slide id="process" n={10} total={TOTAL} dark testid="deck-slide-process" isActive={visited.has(9)}>
           <div>
-            <p className="overline text-[#B9935A] mb-4">How it works</p>
+            <p className="overline text-[#B9935A] mb-4">{ov("slide_10_process", "overline", "How it works")}</p>
             <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] max-w-3xl">
-              From first conversation to delivery —
+              {ov("slide_10_process", "title_line1", "From first conversation to delivery —")}
               <br />
-              <span className="italic text-[#C05A3A]">we make it easy.</span>
+              <span className="italic text-[#C05A3A]">{ov("slide_10_process", "title_italic", "we make it easy.")}</span>
             </h2>
-            <p className="text-sm text-[#DFD7CA] mt-4 max-w-2xl">
-              You send us your list, we take care of everything else.
-            </p>
+            <div className="text-sm text-[#DFD7CA] mt-4 max-w-2xl">
+              <SlideMarkdown dark>
+                {ov("slide_10_process", "subtitle", "You send us your list, we take care of everything else.")}
+              </SlideMarkdown>
+            </div>
 
             <div className="mt-10 grid sm:grid-cols-2 md:grid-cols-4 gap-5">
               {PROCESS.map((step, i) => (
@@ -692,14 +699,16 @@ export default function BlackRock({ deck = null }) {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12">
             <div className="md:col-span-5">
               <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] fx fx-left fx-d2">
-                Let's create a memorable
+                {ov("slide_11_contact", "title_line1", "Let's create a memorable")}
                 <br />
-                <span className="italic text-[#C05A3A]">gifting experience together.</span>
+                <span className="italic text-[#C05A3A]">{ov("slide_11_contact", "title_italic", "gifting experience together.")}</span>
               </h2>
-              <p className="mt-6 text-[#5C4E4A] leading-relaxed max-w-md fx fx-up fx-d3">
-                Ready to chat. Together we will design a gifting experience
-                tailored to your team and clients.
-              </p>
+              <div className="mt-6 text-[#5C4E4A] leading-relaxed max-w-md fx fx-up fx-d3">
+                <SlideMarkdown>
+                  {ov("slide_11_contact", "body",
+                    "Ready to chat. Together we will design a gifting experience tailored to your team and clients.")}
+                </SlideMarkdown>
+              </div>
 
               <ul className="mt-10 space-y-4 max-w-md fx fx-up fx-d4">
                 <li className="flex gap-3 items-center" data-testid="pitch-contact-email">
@@ -731,9 +740,9 @@ export default function BlackRock({ deck = null }) {
 
             <div className="md:col-span-6 md:col-start-7">
               <div className="border border-[#DFD7CA] bg-[#F9F6F0] p-6 md:p-8 fx fx-right fx-d3">
-                <p className="overline text-[#C05A3A]">Request a tasting</p>
+                <p className="overline text-[#C05A3A]">{ov("slide_11_contact", "form_overline", "Request a tasting")}</p>
                 <h3 className="font-serif text-2xl md:text-3xl mt-2 text-[#2A1F1D] leading-tight">
-                  One reply gets it started.
+                  {ov("slide_11_contact", "form_title", "One reply gets it started.")}
                 </h3>
 
                 {submitted ? (
