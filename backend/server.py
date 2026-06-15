@@ -1255,7 +1255,38 @@ _MEDIA_DIR = Path(__file__).parent / "static" / "media"
 _MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
 _ALLOWED_MIME_PREFIXES = ("image/", "video/", "application/pdf", "audio/")
+# HEIC/HEIF (iPhone format) — accepted on upload, transparently converted to
+# JPEG below so the resulting image renders in every browser.
+_HEIC_MIME_TYPES = {"image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"}
+_HEIC_EXTENSIONS = {".heic", ".heif"}
 _MAX_MEDIA_BYTES = 25 * 1024 * 1024  # 25MB
+
+
+def _is_heic(mime: str, filename: str) -> bool:
+    """Detect HEIC/HEIF — some browsers send `application/octet-stream`, so
+    fall back to the file extension."""
+    if (mime or "").lower() in _HEIC_MIME_TYPES:
+        return True
+    return Path(filename or "").suffix.lower() in _HEIC_EXTENSIONS
+
+
+def _convert_heic_to_jpeg(raw: bytes) -> bytes:
+    """Decode a HEIC byte payload and return a JPEG byte payload.
+    Preserves EXIF orientation so iPhone photos don't appear sideways."""
+    # Local imports keep top-of-file lean and let the server boot even if
+    # pillow_heif isn't installed — but it should be in requirements.txt.
+    import io as _io
+    from PIL import Image, ImageOps
+    import pillow_heif
+
+    pillow_heif.register_heif_opener()
+    src = Image.open(_io.BytesIO(raw))
+    src = ImageOps.exif_transpose(src)  # honour iPhone EXIF rotation
+    if src.mode not in ("RGB", "L"):
+        src = src.convert("RGB")
+    out = _io.BytesIO()
+    src.save(out, format="JPEG", quality=88, optimize=True, progressive=True)
+    return out.getvalue()
 
 
 def _safe_filename(original: str) -> str:
@@ -1278,39 +1309,62 @@ async def admin_upload_media(
     caption: str = Form(""),
     current: dict = Depends(require_editor),
 ):
-    mime = file.content_type or "application/octet-stream"
-    if not any(mime == p or mime.startswith(p) for p in _ALLOWED_MIME_PREFIXES):
-        raise HTTPException(status_code=415, detail=f"Unsupported file type: {mime}")
-    safe_name = _safe_filename(file.filename or "upload")
+    raw_mime = (file.content_type or "application/octet-stream").lower()
+    raw_name = file.filename or "upload"
+    heic = _is_heic(raw_mime, raw_name)
 
-    # Stream the upload into GridFS in chunks; abort if it exceeds the cap.
+    # Allow HEIC even if browser tagged it as octet-stream; otherwise the
+    # MIME must be in the allowed prefix list.
+    if not heic and not any(
+        raw_mime == p or raw_mime.startswith(p) for p in _ALLOWED_MIME_PREFIXES
+    ):
+        raise HTTPException(status_code=415, detail=f"Unsupported file type: {raw_mime}")
+
+    # Buffer the upload, abort if it blows the cap.
+    buffer = bytearray()
+    while True:
+        chunk = await file.read(1024 * 1024)
+        if not chunk:
+            break
+        buffer.extend(chunk)
+        if len(buffer) > _MAX_MEDIA_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File exceeds {_MAX_MEDIA_BYTES // (1024 * 1024)}MB limit",
+            )
+
+    if heic:
+        # Convert HEIC → JPEG so the image renders in Chrome/Firefox/Edge.
+        try:
+            payload = _convert_heic_to_jpeg(bytes(buffer))
+        except Exception as exc:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Couldn't read HEIC file. It may be corrupt: {exc}",
+            )
+        store_mime = "image/jpeg"
+        # Keep the original stem, swap the extension to .jpg.
+        store_name = _safe_filename(Path(raw_name).with_suffix(".jpg").name)
+    else:
+        payload = bytes(buffer)
+        store_mime = raw_mime
+        store_name = _safe_filename(raw_name)
+
+    # Stream the (possibly converted) payload into GridFS.
     grid_in = media_bucket.open_upload_stream(
-        safe_name,
+        store_name,
         metadata={
-            "content_type": mime,
-            "original_filename": file.filename or safe_name,
+            "content_type": store_mime,
+            "original_filename": raw_name,
             "uploaded_by": current["id"],
+            "converted_from_heic": heic,
         },
     )
-    size_bytes = 0
     try:
-        while True:
-            chunk = await file.read(1024 * 1024)
-            if not chunk:
-                break
-            size_bytes += len(chunk)
-            if size_bytes > _MAX_MEDIA_BYTES:
-                await grid_in.abort()
-                raise HTTPException(
-                    status_code=413,
-                    detail=f"File exceeds {_MAX_MEDIA_BYTES // (1024 * 1024)}MB limit",
-                )
-            await grid_in.write(chunk)
+        # Single write is fine; GridFS chunks internally at 255 KB.
+        await grid_in.write(payload)
         await grid_in.close()
-    except HTTPException:
-        raise
     except Exception as exc:
-        # Best-effort cleanup if mid-stream write fails for non-quota reasons.
         try:
             await grid_in.abort()
         except Exception:
@@ -1320,10 +1374,10 @@ async def admin_upload_media(
     media_id = str(uuid.uuid4())
     item = MediaItem(
         id=media_id,
-        filename=safe_name,
-        original_filename=file.filename or safe_name,
-        mime_type=mime,
-        size_bytes=size_bytes,
+        filename=store_name,
+        original_filename=raw_name,
+        mime_type=store_mime,
+        size_bytes=len(payload),
         # Public URL points at the GridFS-backed streaming endpoint.
         url=f"/api/media/{media_id}",
         alt_text=alt_text,

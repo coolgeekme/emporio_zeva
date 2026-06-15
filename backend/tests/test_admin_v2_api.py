@@ -376,6 +376,63 @@ class TestMedia:
         r = session.post(f"{API}/admin/media", headers=admin_headers, files=files)
         assert r.status_code in (400, 415), f"expected reject, got {r.status_code}: {r.text}"
 
+    def test_upload_heic_converts_to_jpeg(self, session, admin_headers):
+        """iPhone HEIC photos get transparently converted to JPEG on upload so
+        they render in every browser (Chrome/Firefox/Edge can't decode HEIC)."""
+        try:
+            import pillow_heif  # noqa: F401
+            from PIL import Image
+        except ImportError:
+            import pytest
+            pytest.skip("pillow_heif not available")
+
+        pillow_heif.register_heif_opener()
+        # Build a tiny but valid HEIC payload from a real RGB image.
+        src = Image.new("RGB", (8, 8), (192, 90, 58))
+        buf = io.BytesIO()
+        src.save(buf, format="HEIF", quality=80)
+        heic_bytes = buf.getvalue()
+
+        files = {"file": (f"shot_{uuid.uuid4().hex[:6]}.heic", io.BytesIO(heic_bytes), "image/heic")}
+        r = session.post(f"{API}/admin/media", headers=admin_headers, files=files)
+        assert r.status_code in (200, 201), f"heic upload failed: {r.status_code} {r.text}"
+        body = r.json()
+        # The stored record should report JPEG, not HEIC.
+        assert body["mime_type"] == "image/jpeg", f"expected JPEG, got {body['mime_type']}"
+        assert body["filename"].endswith(".jpg"), f"expected .jpg filename, got {body['filename']}"
+        assert body["original_filename"].endswith(".heic"), "original filename should be preserved"
+
+        # Fetch and confirm the served bytes are a real JPEG.
+        r2 = session.get(f"{BASE_URL}{body['url']}")
+        assert r2.status_code == 200
+        assert r2.headers.get("content-type", "").startswith("image/jpeg")
+        out = Image.open(io.BytesIO(r2.content))
+        assert out.format == "JPEG", f"served bytes aren't JPEG: {out.format}"
+
+        # Cleanup
+        session.delete(f"{API}/admin/media/{body['id']}", headers=admin_headers)
+
+    def test_upload_heic_via_octet_stream_extension_fallback(self, session, admin_headers):
+        """Some browsers send HEIC as application/octet-stream — we should still
+        detect via the .heic extension and convert."""
+        try:
+            import pillow_heif
+            from PIL import Image
+        except ImportError:
+            import pytest
+            pytest.skip("pillow_heif not available")
+
+        pillow_heif.register_heif_opener()
+        src = Image.new("RGB", (8, 8), (42, 31, 29))
+        buf = io.BytesIO()
+        src.save(buf, format="HEIF", quality=80)
+        files = {"file": (f"iphone_{uuid.uuid4().hex[:6]}.heic", io.BytesIO(buf.getvalue()), "application/octet-stream")}
+        r = session.post(f"{API}/admin/media", headers=admin_headers, files=files)
+        assert r.status_code in (200, 201), f"upload failed: {r.status_code} {r.text}"
+        body = r.json()
+        assert body["mime_type"] == "image/jpeg", f"extension fallback failed: {body['mime_type']}"
+        session.delete(f"{API}/admin/media/{body['id']}", headers=admin_headers)
+
 
 # =============== USERS + RBAC ===============
 class TestUsersAndRBAC:

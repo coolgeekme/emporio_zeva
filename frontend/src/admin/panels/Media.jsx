@@ -272,7 +272,7 @@ export default function MediaPanel({ token }) {
         <div>
           <h2 className="font-serif text-2xl text-[#2A1F1D]">Media</h2>
           <p className="text-xs text-[#5C4E4A] mt-1">
-            Images, video, audio, PDFs. Max 25MB per file.
+            Images (incl. iPhone HEIC), video, audio, PDFs. Max 25MB per file.
           </p>
         </div>
         <button
@@ -287,7 +287,7 @@ export default function MediaPanel({ token }) {
           ref={inputRef}
           type="file"
           multiple
-          accept="image/*,video/*,audio/*,application/pdf"
+          accept="image/*,.heic,.heif,video/*,audio/*,application/pdf"
           className="hidden"
           onChange={(e) => upload(e.target.files)}
           data-testid="media-file-input"
