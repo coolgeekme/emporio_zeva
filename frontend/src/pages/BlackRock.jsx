@@ -383,7 +383,7 @@ export default function BlackRock({ deck = null }) {
               </p>
             </div>
             <div className="md:col-span-6 img-wash aspect-[4/5] max-h-[65vh] fx fx-right fx-d2">
-              <img src={ov("slide_2_tradition", "image", IMAGES.founder)} alt="View of Modica, Sicily from a rooftop terrace" />
+              <img src={ov("slide_2_tradition", "image", IMAGES.deck_slide2_tradition)} alt="View of Modica, Sicily from a rooftop terrace" />
             </div>
           </div>
         </Slide>

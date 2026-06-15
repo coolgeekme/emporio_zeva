@@ -263,6 +263,9 @@ export const IMAGES = {
   italian_moment: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
   // Branded "NOT A SALAMI" board (image1.jpeg from Emergent assets)
   gift: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
+  // Slide 2 of the corporate deck — Eva's own photo, shipped from the backend
+  // static folder so it ships with every deploy.
+  deck_slide2_tradition: "/api/static/decks/slide-2-tradition.jpg",
   split_blog: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
   journal_1: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
   nostalgia: "https://images.unsplash.com/photo-1481833761820-0509d3217039?auto=format&fit=crop&w=1600&q=80",
