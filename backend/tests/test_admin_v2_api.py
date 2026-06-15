@@ -519,6 +519,165 @@ class TestUsersAndRBAC:
             assert r.status_code in (400, 403, 409)
 
 
+# =============== INVITE + SELF-SERVICE PROFILE ===============
+class TestInviteAndProfile:
+    """Covers the invite-with-temp-password flow, force-change-on-first-login,
+    self-service profile updates (name/email/password), and resend-invite."""
+
+    def test_invite_without_password_generates_temp(self, session, admin_headers):
+        email = f"INVITE_{uuid.uuid4().hex[:6]}@example.com"
+        r = session.post(
+            f"{API}/admin/users",
+            headers=admin_headers,
+            json={"email": email, "name": "Invitee", "role": "editor"},
+        )
+        assert r.status_code in (200, 201), f"invite failed: {r.status_code} {r.text}"
+        body = r.json()
+        assert body["must_change_password"] is True
+        assert body["email"] == email.lower()
+        # cleanup
+        session.delete(f"{API}/admin/users/{body['id']}", headers=admin_headers)
+
+    def test_explicit_password_still_forces_change(self, session, admin_headers):
+        # Tests/automation may pass an explicit password; the invitee should
+        # still be required to rotate it on first login.
+        email = f"INVITE_PW_{uuid.uuid4().hex[:6]}@example.com"
+        pw = "InitialPass-99"
+        r = session.post(
+            f"{API}/admin/users",
+            headers=admin_headers,
+            json={"email": email, "name": "X", "role": "viewer", "password": pw},
+        )
+        assert r.status_code in (200, 201)
+        user_id = r.json()["id"]
+
+        # Login response should also surface the flag.
+        login = _login(session, email, pw)
+        assert login.status_code == 200
+        assert login.json()["user"]["must_change_password"] is True
+
+        # cleanup
+        session.delete(f"{API}/admin/users/{user_id}", headers=admin_headers)
+
+    def test_me_update_self_password_clears_flag(self, session, admin_headers):
+        u = _create_user(session, admin_headers, "editor", prefix="ME_PW")
+        login = _login(session, u["email"], u["password"]).json()
+        token = login["token"]
+        assert login["user"]["must_change_password"] is True
+
+        h = {"Authorization": f"Bearer {token}"}
+        # Missing current_password is rejected
+        r = session.patch(f"{API}/admin/me", headers=h, json={"new_password": "NewSecure-1234"})
+        assert r.status_code == 422
+
+        # Wrong current_password is rejected
+        r = session.patch(
+            f"{API}/admin/me",
+            headers=h,
+            json={"current_password": "wrong", "new_password": "NewSecure-1234"},
+        )
+        assert r.status_code == 401
+
+        # Correct flow clears the flag
+        r = session.patch(
+            f"{API}/admin/me",
+            headers=h,
+            json={"current_password": u["password"], "new_password": "NewSecure-1234"},
+        )
+        assert r.status_code == 200, r.text
+        assert r.json()["must_change_password"] is False
+
+        # Old password no longer works
+        bad = _login(session, u["email"], u["password"])
+        assert bad.status_code == 401
+        # New one does
+        good = _login(session, u["email"], "NewSecure-1234")
+        assert good.status_code == 200
+        assert good.json()["user"]["must_change_password"] is False
+
+        session.delete(f"{API}/admin/users/{u['id']}", headers=admin_headers)
+
+    def test_admin_reset_password_reinstates_force_change(self, session, admin_headers):
+        u = _create_user(session, admin_headers, "viewer", prefix="ADM_RESET")
+        # Invitee clears their flag first
+        h = {"Authorization": f"Bearer {_login(session, u['email'], u['password']).json()['token']}"}
+        session.patch(
+            f"{API}/admin/me",
+            headers=h,
+            json={"current_password": u["password"], "new_password": "OwnPass-7777"},
+        )
+        # Admin pushes a new password
+        r = session.patch(
+            f"{API}/admin/users/{u['id']}",
+            headers=admin_headers,
+            json={"password": "AdminPushed-1"},
+        )
+        assert r.status_code == 200
+        assert r.json()["must_change_password"] is True
+        session.delete(f"{API}/admin/users/{u['id']}", headers=admin_headers)
+
+    def test_me_update_email_requires_current_password_and_is_unique(
+        self, session, admin_headers
+    ):
+        u = _create_user(session, admin_headers, "editor", prefix="ME_EM")
+        h = {"Authorization": f"Bearer {_login(session, u['email'], u['password']).json()['token']}"}
+        # Missing current_password
+        r = session.patch(f"{API}/admin/me", headers=h, json={"email": f"new+{uuid.uuid4().hex[:4]}@example.com"})
+        assert r.status_code == 422
+        # Email collision (try to claim the bootstrap admin's address)
+        r2 = session.patch(
+            f"{API}/admin/me",
+            headers=h,
+            json={"email": ADMIN_EMAIL, "current_password": u["password"]},
+        )
+        assert r2.status_code == 409
+        # Happy path
+        new_email = f"renamed_{uuid.uuid4().hex[:6]}@example.com"
+        r3 = session.patch(
+            f"{API}/admin/me",
+            headers=h,
+            json={"email": new_email, "current_password": u["password"]},
+        )
+        assert r3.status_code == 200, r3.text
+        assert r3.json()["email"] == new_email.lower()
+        # Sign in with new email works
+        login = _login(session, new_email, u["password"])
+        assert login.status_code == 200
+
+        session.delete(f"{API}/admin/users/{u['id']}", headers=admin_headers)
+
+    def test_me_update_name_alone_does_not_require_current_password(
+        self, session, admin_headers
+    ):
+        u = _create_user(session, admin_headers, "viewer", prefix="ME_N")
+        h = {"Authorization": f"Bearer {_login(session, u['email'], u['password']).json()['token']}"}
+        r = session.patch(f"{API}/admin/me", headers=h, json={"name": "Renamed Self"})
+        assert r.status_code == 200, r.text
+        assert r.json()["name"] == "Renamed Self"
+        session.delete(f"{API}/admin/users/{u['id']}", headers=admin_headers)
+
+    def test_resend_invite_issues_new_password(self, session, admin_headers):
+        u = _create_user(session, admin_headers, "editor", prefix="RESEND")
+        # Old temp password should no longer work after resend.
+        r = session.post(
+            f"{API}/admin/users/{u['id']}/resend-invite", headers=admin_headers
+        )
+        assert r.status_code == 200, r.text
+        assert r.json()["must_change_password"] is True
+
+        bad = _login(session, u["email"], u["password"])
+        assert bad.status_code == 401
+        session.delete(f"{API}/admin/users/{u['id']}", headers=admin_headers)
+
+    def test_resend_invite_admin_only(self, session, admin_headers):
+        # An editor token cannot trigger a resend.
+        editor = _create_user(session, admin_headers, "editor", prefix="NO_RESEND")
+        h = {"Authorization": f"Bearer {_login(session, editor['email'], editor['password']).json()['token']}"}
+        r = session.post(f"{API}/admin/users/{editor['id']}/resend-invite", headers=h)
+        assert r.status_code in (401, 403)
+        session.delete(f"{API}/admin/users/{editor['id']}", headers=admin_headers)
+
+
 # =============== SETTINGS ===============
 class TestSettings:
     def test_get_defaults_and_patch_roundtrip(self, session, admin_headers):

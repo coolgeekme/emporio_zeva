@@ -32,6 +32,7 @@ import UsersPanel from "../admin/panels/Users";
 import SettingsPanel from "../admin/panels/Settings";
 import ProductsPanel from "../admin/panels/Products";
 import SiteContentPanel from "../admin/panels/SiteContent";
+import ProfileSection from "../admin/panels/ProfileSection";
 import SlideEditor from "../admin/SlideEditor";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -1369,6 +1370,11 @@ export default function Admin() {
     setUser(null);
   };
 
+  const updateUser = (u) => {
+    setUser(u);
+    sessionStorage.setItem(USER_KEY, JSON.stringify(u));
+  };
+
   if (!token)
     return (
       <AdminLogin
@@ -1378,7 +1384,57 @@ export default function Admin() {
         }}
       />
     );
-  return <AdminShell token={token} user={user} onLogout={logout} />;
+
+  // First sign-in flow: invitees land here until they set their own password.
+  if (user?.must_change_password) {
+    return (
+      <ForcePasswordChange
+        token={token}
+        user={user}
+        onDone={updateUser}
+        onLogout={logout}
+      />
+    );
+  }
+
+  return <AdminShell token={token} user={user} onUserUpdated={updateUser} onLogout={logout} />;
+}
+
+function ForcePasswordChange({ token, user, onDone, onLogout }) {
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center bg-[#F5EFE2] px-6 py-12"
+      data-testid="force-password-change"
+    >
+      <div className="w-full max-w-xl space-y-6">
+        <div className="bg-[#FBF7EE] border border-[#DFD7CA] p-8">
+          <p className="overline text-[#C05A3A]">Welcome to the Admin</p>
+          <h1 className="font-serif text-3xl text-[#2A1F1D] mt-2 leading-tight">
+            One more step, {user.name?.split(" ")[0] || "friend"}.
+          </h1>
+          <p className="text-sm text-[#5C4E4A] mt-3 leading-relaxed">
+            We sent you a temporary password by email. Set your own below to continue
+            into the dashboard. You can change it again any time under <em>Settings</em>.
+          </p>
+        </div>
+        <ProfileSection
+          token={token}
+          currentUser={user}
+          forceChange
+          onUpdated={onDone}
+        />
+        <div className="text-right">
+          <button
+            onClick={onLogout}
+            className="text-xs text-[#5C4E4A] hover:text-[#2A1F1D] underline"
+            data-testid="force-password-cancel"
+          >
+            Sign out instead
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ----------------------------------------------------------------------------
@@ -1399,7 +1455,7 @@ const PANELS = [
   { key: "settings", label: "Settings", icon: SettingsIcon, roles: ["admin", "editor", "viewer"] },
 ];
 
-function AdminShell({ token, user, onLogout }) {
+function AdminShell({ token, user, onLogout, onUserUpdated }) {
   const role = user?.role || "viewer";
   const visiblePanels = PANELS.filter((p) => p.roles.includes(role));
   const initial = sessionStorage.getItem("ez_admin_active_panel") || "dashboard";
@@ -1497,7 +1553,14 @@ function AdminShell({ token, user, onLogout }) {
           {active === "products" && <ProductsPanel token={token} />}
           {active === "media" && <MediaPanel token={token} />}
           {active === "users" && <UsersPanel token={token} currentUser={user} />}
-          {active === "settings" && <SettingsPanel token={token} readOnly={role !== "admin"} />}
+          {active === "settings" && (
+            <SettingsPanel
+              token={token}
+              readOnly={role !== "admin"}
+              currentUser={user}
+              onUserUpdated={onUserUpdated}
+            />
+          )}
           {showLegacy && (
             <AdminDashboard
               key={active}

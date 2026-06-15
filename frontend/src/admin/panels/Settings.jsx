@@ -1,9 +1,10 @@
-// Settings panel — general (brand identity) + reading (content visibility).
+// Settings panel — profile (self-service) + general (brand) + reading (content visibility).
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API, authHeaders, formatApiErrorDetail } from "../api";
+import ProfileSection from "./ProfileSection";
 
-export default function SettingsPanel({ token, readOnly }) {
+export default function SettingsPanel({ token, readOnly, currentUser, onUserUpdated }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -70,6 +71,14 @@ export default function SettingsPanel({ token, readOnly }) {
       </header>
 
       {error && <p className="text-sm text-[#C05A3A]">{error}</p>}
+
+      {currentUser && (
+        <ProfileSection
+          token={token}
+          currentUser={currentUser}
+          onUpdated={onUserUpdated}
+        />
+      )}
 
       <section className="bg-white border border-[#DFD7CA] p-6 space-y-4" data-testid="settings-general-section">
         <p className="overline text-[#C05A3A]">General</p>

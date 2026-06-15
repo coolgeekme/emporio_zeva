@@ -7,6 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorGridFSBucket
 import os
 import re
 import logging
+import asyncio
 import secrets
 import shutil
 import jwt
@@ -20,6 +21,8 @@ from datetime import datetime, timezone, timedelta
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+import emailer  # noqa: E402  -- relies on env loaded above
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -174,12 +177,15 @@ class PublicUser(BaseModel):
     name: str
     role: str
     created_at: str
+    must_change_password: bool = False
 
 
 class UserCreate(BaseModel):
     email: EmailStr
     name: str
-    password: str
+    # Optional. When omitted, the server generates a temporary password and
+    # emails it to the user via Resend, forcing a change on first login.
+    password: Optional[str] = None
     role: str = "viewer"
 
 
@@ -187,6 +193,15 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     role: Optional[str] = None
     password: Optional[str] = None
+
+
+class MeUpdate(BaseModel):
+    """Self-service profile update. Email/password changes require the user's
+    current password as a basic re-authentication step."""
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    current_password: Optional[str] = None
+    new_password: Optional[str] = None
 
 
 # ---------- Page (CMS) models ----------
@@ -384,6 +399,7 @@ def _create_admin_token(user: dict) -> AdminToken:
             name=user["name"],
             role=user["role"],
             created_at=user["created_at"],
+            must_change_password=bool(user.get("must_change_password", False)),
         ),
     )
 
@@ -726,6 +742,8 @@ async def get_journal(slug: str):
 async def create_inquiry(payload: InquiryCreate):
     obj = Inquiry(**payload.model_dump())
     await db.inquiries.insert_one(obj.model_dump())
+    # Fire-and-forget so a slow Resend response can't block the form submit.
+    asyncio.create_task(emailer.notify_inquiry(obj.model_dump()))
     return obj
 
 
@@ -736,6 +754,7 @@ async def subscribe(payload: NewsletterCreate):
         return existing
     entry = NewsletterEntry(email=payload.email)
     await db.newsletter.insert_one(entry.model_dump())
+    asyncio.create_task(emailer.notify_newsletter(entry.model_dump()))
     return entry
 
 
@@ -750,6 +769,7 @@ async def join_waitlist(payload: WaitlistCreate):
         return existing
     entry = WaitlistEntry(**payload.model_dump())
     await db.waitlist.insert_one(entry.model_dump())
+    asyncio.create_task(emailer.notify_waitlist(entry.model_dump()))
     return entry
 
 
@@ -783,7 +803,7 @@ async def admin_login(payload: AdminLogin, request: Request):
         )
         raise HTTPException(status_code=401, detail="Invalid email or password")
     await db.admin_login_attempts.delete_one({"_id": lockout_key})
-    user_doc = {k: user[k] for k in ("id", "email", "name", "role", "created_at")}
+    user_doc = {k: user.get(k) for k in ("id", "email", "name", "role", "created_at", "must_change_password")}
     return _create_admin_token(user_doc)
 
 
@@ -795,6 +815,78 @@ async def admin_me(user: dict = Depends(require_viewer)):
         name=user["name"],
         role=user["role"],
         created_at=user["created_at"],
+        must_change_password=bool(user.get("must_change_password", False)),
+    )
+
+
+@api_router.patch("/admin/me", response_model=PublicUser)
+async def admin_update_me(payload: MeUpdate, current: dict = Depends(require_viewer)):
+    """Self-service profile update. Any signed-in user can edit their own name;
+    email and password changes require re-authentication via current_password.
+    Used both for normal profile edits and for the force-change-password flow
+    on first login."""
+    update: dict = {}
+    needs_reauth = payload.email is not None or payload.new_password is not None
+
+    if needs_reauth:
+        if not payload.current_password:
+            raise HTTPException(
+                status_code=422,
+                detail="current_password is required to change email or password",
+            )
+        fresh = await db.users.find_one({"id": current["id"]})
+        if not fresh or not _verify_password(
+            payload.current_password, fresh.get("password_hash", "")
+        ):
+            raise HTTPException(status_code=401, detail="Current password is incorrect")
+
+    if payload.name is not None:
+        name = payload.name.strip()
+        if not name:
+            raise HTTPException(status_code=422, detail="Name cannot be empty")
+        update["name"] = name
+
+    if payload.email is not None:
+        new_email = payload.email.lower().strip()
+        if new_email != current["email"]:
+            clash = await db.users.find_one({"email": new_email, "id": {"$ne": current["id"]}})
+            if clash:
+                raise HTTPException(
+                    status_code=409, detail="That email is already in use"
+                )
+            update["email"] = new_email
+
+    if payload.new_password is not None:
+        if len(payload.new_password) < 8:
+            raise HTTPException(
+                status_code=422, detail="New password must be at least 8 characters"
+            )
+        if payload.current_password and payload.current_password == payload.new_password:
+            raise HTTPException(
+                status_code=422, detail="New password must differ from the current one"
+            )
+        update["password_hash"] = _hash_password(payload.new_password)
+        # Clear the forced-change flag whenever the user themselves changes
+        # their password — covers both first-login flow and routine rotation.
+        update["must_change_password"] = False
+
+    if not update:
+        raise HTTPException(status_code=422, detail="No fields to update")
+
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.users.find_one_and_update(
+        {"id": current["id"]},
+        {"$set": update},
+        return_document=True,
+        projection={"_id": 0, "password_hash": 0},
+    )
+    return PublicUser(
+        id=result["id"],
+        email=result["email"],
+        name=result["name"],
+        role=result["role"],
+        created_at=result["created_at"],
+        must_change_password=bool(result.get("must_change_password", False)),
     )
 
 
@@ -982,30 +1074,120 @@ async def get_deck(slug: str):
 @api_router.get("/admin/users", response_model=List[PublicUser])
 async def admin_list_users(_: dict = Depends(require_admin)):
     docs = await db.users.find({}, {"_id": 0, "password_hash": 0}).sort("created_at", -1).to_list(500)
-    return [PublicUser(**d) for d in docs]
+    return [
+        PublicUser(
+            id=d["id"],
+            email=d["email"],
+            name=d.get("name") or d["email"],
+            role=d.get("role", "viewer"),
+            created_at=d["created_at"],
+            must_change_password=bool(d.get("must_change_password", False)),
+        )
+        for d in docs
+    ]
+
+
+def _generate_temp_password() -> str:
+    """Generate a friendly-but-strong 12-char temporary password.
+
+    Uses ``secrets.token_urlsafe`` then strips ambiguous characters so the
+    user has an easy time typing it from email into the login form.
+    """
+    raw = secrets.token_urlsafe(16)
+    # Drop chars that look alike on screen / in some serif fonts.
+    cleaned = re.sub(r"[Il10oO/_=+\-]", "", raw)
+    return (cleaned + secrets.token_urlsafe(8))[:12]
 
 
 @api_router.post("/admin/users", response_model=PublicUser)
 async def admin_create_user(payload: UserCreate, current: dict = Depends(require_admin)):
     if payload.role not in ROLES:
         raise HTTPException(status_code=422, detail=f"role must be one of {ROLES}")
-    if len(payload.password) < 8:
-        raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
     email = payload.email.lower().strip()
     existing = await db.users.find_one({"email": email})
     if existing:
         raise HTTPException(status_code=409, detail="A user with that email already exists")
+
+    # If the inviting admin passes an explicit password we honour it (e.g.
+    # automated tests), otherwise we mint a temp one and email it to the
+    # invitee. Either way the invitee MUST change it on first login.
+    if payload.password:
+        if len(payload.password) < 8:
+            raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
+        temp_password = payload.password
+    else:
+        temp_password = _generate_temp_password()
+
     user = {
         "id": str(uuid.uuid4()),
         "email": email,
         "name": payload.name.strip() or email.split("@")[0],
         "role": payload.role,
-        "password_hash": _hash_password(payload.password),
+        "password_hash": _hash_password(temp_password),
+        "must_change_password": True,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
+        "invited_by": current.get("id"),
     }
     await db.users.insert_one(user)
-    return PublicUser(**{k: user[k] for k in ("id", "email", "name", "role", "created_at")})
+
+    # Fire the invite email in the background so the response stays snappy.
+    asyncio.create_task(
+        emailer.notify_invite(
+            {
+                "name": user["name"],
+                "email": user["email"],
+                "role": user["role"],
+                "inviter_name": current.get("name") or current.get("email") or "the team",
+            },
+            temp_password,
+        )
+    )
+    return PublicUser(
+        id=user["id"],
+        email=user["email"],
+        name=user["name"],
+        role=user["role"],
+        created_at=user["created_at"],
+        must_change_password=True,
+    )
+
+
+@api_router.post("/admin/users/{user_id}/resend-invite", response_model=PublicUser)
+async def admin_resend_invite(user_id: str, current: dict = Depends(require_admin)):
+    """Mint a fresh temporary password and email it. Useful when the original
+    invite email was lost or the temp password expired in the user's memory."""
+    target = await db.users.find_one({"id": user_id})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    temp_password = _generate_temp_password()
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "password_hash": _hash_password(temp_password),
+            "must_change_password": True,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }},
+    )
+    asyncio.create_task(
+        emailer.notify_invite(
+            {
+                "name": target.get("name") or target["email"],
+                "email": target["email"],
+                "role": target.get("role", "viewer"),
+                "inviter_name": current.get("name") or current.get("email") or "the team",
+            },
+            temp_password,
+        )
+    )
+    return PublicUser(
+        id=target["id"],
+        email=target["email"],
+        name=target.get("name") or target["email"],
+        role=target.get("role", "viewer"),
+        created_at=target["created_at"],
+        must_change_password=True,
+    )
 
 
 @api_router.patch("/admin/users/{user_id}", response_model=PublicUser)
@@ -1023,6 +1205,10 @@ async def admin_update_user(
         if len(payload.password) < 8:
             raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
         update["password_hash"] = _hash_password(payload.password)
+        # When an admin sets another user's password, force them to rotate it
+        # on next login so the admin never knows the user's standing password.
+        if user_id != current["id"]:
+            update["must_change_password"] = True
     if not update:
         raise HTTPException(status_code=422, detail="No fields to update")
     update["updated_at"] = datetime.now(timezone.utc).isoformat()
@@ -1041,7 +1227,14 @@ async def admin_update_user(
     )
     if not result:
         raise HTTPException(status_code=404, detail="User not found")
-    return PublicUser(**result)
+    return PublicUser(
+        id=result["id"],
+        email=result["email"],
+        name=result["name"],
+        role=result["role"],
+        created_at=result["created_at"],
+        must_change_password=bool(result.get("must_change_password", False)),
+    )
 
 
 @api_router.delete("/admin/users/{user_id}")
