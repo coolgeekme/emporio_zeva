@@ -1,8 +1,9 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorGridFSBucket
 import os
 import re
 import logging
@@ -23,6 +24,9 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+# GridFS bucket for persistent media storage (uploaded images, video, audio, PDFs).
+# Files in the local filesystem don't survive container redeploys; GridFS does.
+media_bucket = AsyncIOMotorGridFSBucket(db, bucket_name="media_files")
 
 app = FastAPI(title="Emporio Zeva API")
 api_router = APIRouter(prefix="/api")
@@ -243,6 +247,9 @@ class MediaItem(BaseModel):
     caption: str = ""
     uploaded_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     uploaded_by: Optional[str] = None
+    # ObjectId (as str) of the file stored in GridFS bucket "media_files".
+    # Optional only for legacy rows; new uploads always set this.
+    gridfs_id: Optional[str] = None
 
 
 class MediaUpdate(BaseModel):
@@ -1241,6 +1248,9 @@ async def public_get_page(slug: str):
 
 
 # ---------- Admin: Media ----------
+# Media binaries live in MongoDB GridFS (bucket: "media_files") so they persist
+# across container redeploys. The legacy filesystem path below is kept only as a
+# fallback for any older rows that haven't been cleaned up yet.
 _MEDIA_DIR = Path(__file__).parent / "static" / "media"
 _MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -1272,32 +1282,54 @@ async def admin_upload_media(
     if not any(mime == p or mime.startswith(p) for p in _ALLOWED_MIME_PREFIXES):
         raise HTTPException(status_code=415, detail=f"Unsupported file type: {mime}")
     safe_name = _safe_filename(file.filename or "upload")
-    target = _MEDIA_DIR / safe_name
+
+    # Stream the upload into GridFS in chunks; abort if it exceeds the cap.
+    grid_in = media_bucket.open_upload_stream(
+        safe_name,
+        metadata={
+            "content_type": mime,
+            "original_filename": file.filename or safe_name,
+            "uploaded_by": current["id"],
+        },
+    )
     size_bytes = 0
-    # Stream to disk in chunks; abort if over the cap
-    with target.open("wb") as out:
+    try:
         while True:
             chunk = await file.read(1024 * 1024)
             if not chunk:
                 break
             size_bytes += len(chunk)
             if size_bytes > _MAX_MEDIA_BYTES:
-                out.close()
-                target.unlink(missing_ok=True)
+                await grid_in.abort()
                 raise HTTPException(
                     status_code=413,
                     detail=f"File exceeds {_MAX_MEDIA_BYTES // (1024 * 1024)}MB limit",
                 )
-            out.write(chunk)
+            await grid_in.write(chunk)
+        await grid_in.close()
+    except HTTPException:
+        raise
+    except Exception as exc:
+        # Best-effort cleanup if mid-stream write fails for non-quota reasons.
+        try:
+            await grid_in.abort()
+        except Exception:
+            pass
+        raise HTTPException(status_code=500, detail=f"Upload failed: {exc}")
+
+    media_id = str(uuid.uuid4())
     item = MediaItem(
+        id=media_id,
         filename=safe_name,
         original_filename=file.filename or safe_name,
         mime_type=mime,
         size_bytes=size_bytes,
-        url=f"/api/static/media/{safe_name}",
+        # Public URL points at the GridFS-backed streaming endpoint.
+        url=f"/api/media/{media_id}",
         alt_text=alt_text,
         caption=caption,
         uploaded_by=current["id"],
+        gridfs_id=str(grid_in._id),
     )
     await db.media.insert_one(item.model_dump())
     return item
@@ -1326,7 +1358,18 @@ async def admin_delete_media(media_id: str, _: dict = Depends(require_editor)):
     item = await db.media.find_one({"id": media_id}, {"_id": 0})
     if not item:
         raise HTTPException(status_code=404, detail="Media not found")
-    fpath = _MEDIA_DIR / item["filename"]
+    # Remove the binary from GridFS if we have a reference.
+    grid_id = item.get("gridfs_id")
+    if grid_id:
+        try:
+            from bson import ObjectId  # local import keeps top-of-file lean
+            await media_bucket.delete(ObjectId(grid_id))
+        except Exception:
+            # Either the file was already gone or the id was malformed; either
+            # way the record itself should still be removed.
+            pass
+    # Legacy filesystem cleanup for any pre-GridFS rows still floating around.
+    fpath = _MEDIA_DIR / item.get("filename", "")
     if fpath.exists():
         try:
             fpath.unlink()
@@ -1334,6 +1377,42 @@ async def admin_delete_media(media_id: str, _: dict = Depends(require_editor)):
             pass
     await db.media.delete_one({"id": media_id})
     return {"deleted": True}
+
+
+@api_router.get("/media/{media_id}")
+async def public_get_media(media_id: str):
+    """Stream a media file from GridFS by its media doc id. Public read."""
+    item = await db.media.find_one({"id": media_id}, {"_id": 0})
+    if not item or not item.get("gridfs_id"):
+        raise HTTPException(status_code=404, detail="Media not found")
+    from bson import ObjectId
+    try:
+        grid_out = await media_bucket.open_download_stream(ObjectId(item["gridfs_id"]))
+    except Exception:
+        raise HTTPException(status_code=404, detail="Media file missing")
+
+    async def iter_file():
+        try:
+            while True:
+                chunk = await grid_out.readchunk()
+                if not chunk:
+                    break
+                yield chunk
+        finally:
+            grid_out.close()
+
+    headers = {
+        # 30-day cache; filenames already include a hex suffix so they're unique.
+        "Cache-Control": "public, max-age=2592000, immutable",
+        "Content-Disposition": f'inline; filename="{item.get("original_filename", item.get("filename", "file"))}"',
+    }
+    if item.get("size_bytes"):
+        headers["Content-Length"] = str(item["size_bytes"])
+    return StreamingResponse(
+        iter_file(),
+        media_type=item.get("mime_type") or "application/octet-stream",
+        headers=headers,
+    )
 
 
 # ---------- Settings (general + reading) ----------
@@ -1885,6 +1964,37 @@ async def seed_admin_user():
             logging.getLogger(__name__).info("Rotated bootstrap admin password")
 
 
+async def cleanup_orphaned_media():
+    """Remove media records whose binary content is no longer available.
+
+    Old media docs stored files on the container's local filesystem at
+    `/api/static/media/<name>`. Those files are wiped on every redeploy, leaving
+    broken links in the admin gallery. We drop the orphaned records on boot so
+    the gallery stays clean. New uploads use GridFS and persist correctly.
+    """
+    legacy_cursor = db.media.find(
+        {"$or": [
+            {"gridfs_id": {"$exists": False}},
+            {"gridfs_id": None},
+            {"gridfs_id": ""},
+        ]},
+        {"id": 1, "filename": 1, "url": 1},
+    )
+    to_delete: list[str] = []
+    async for doc in legacy_cursor:
+        # If the legacy file happens to still exist on disk (dev only), keep it.
+        fname = doc.get("filename") or ""
+        if fname and (_MEDIA_DIR / fname).exists():
+            continue
+        to_delete.append(doc["id"])
+    if to_delete:
+        await db.media.delete_many({"id": {"$in": to_delete}})
+        logging.getLogger(__name__).info(
+            "Cleaned %d orphaned media records (files lost from ephemeral storage)",
+            len(to_delete),
+        )
+
+
 async def ensure_indexes():
     await db.users.create_index("email", unique=True)
     await db.users.create_index("id", unique=True)
@@ -1899,6 +2009,7 @@ async def on_startup():
     await seed_journal()
     await ensure_indexes()
     await seed_admin_user()
+    await cleanup_orphaned_media()
 
 
 @app.on_event("shutdown")

@@ -342,12 +342,15 @@ class TestMedia:
         assert r.status_code in (200, 201), f"upload failed: {r.status_code} {r.text}"
         body = r.json()
         assert "id" in body and "url" in body
-        assert body["url"].startswith("/api/static/media/"), f"unexpected url: {body['url']}"
+        assert body["url"].startswith("/api/media/"), f"unexpected url: {body['url']}"
+        assert body.get("gridfs_id"), "media should be persisted to GridFS"
         mid = body["id"]
 
-        # Static asset retrievable
+        # GridFS-backed asset retrievable
         r2 = session.get(f"{BASE_URL}{body['url']}")
-        assert r2.status_code == 200, f"static asset not served: {r2.status_code}"
+        assert r2.status_code == 200, f"media not served: {r2.status_code}"
+        assert r2.headers.get("content-type", "").startswith("image/"), r2.headers
+        assert r2.content == png, "served bytes don't match uploaded bytes"
 
         # PATCH
         r3 = session.patch(
@@ -364,7 +367,7 @@ class TestMedia:
         r4 = session.delete(f"{API}/admin/media/{mid}", headers=admin_headers)
         assert r4.status_code in (200, 204)
 
-        # Static no longer served
+        # File no longer served
         r5 = session.get(f"{BASE_URL}{body['url']}")
         assert r5.status_code in (404, 403), f"file still served after delete: {r5.status_code}"
 
