@@ -451,7 +451,7 @@ export default function BlackRock({ deck = null }) {
               </dl>
             </div>
             <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[60vh]">
-              <img src={ov("slide_4_product", "image", "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG")} alt="Not A Salami on a wooden board" />
+              <img src={ov("slide_4_product", "image", IMAGES.deck_slide4_product)} alt="Sliced Not A Salami showing cookie texture" />
             </div>
           </div>
         </Slide>
@@ -501,7 +501,7 @@ export default function BlackRock({ deck = null }) {
               <p className="overline text-[#B9935A] mt-8">notasalami.com</p>
             </div>
             <div className="md:col-span-6 img-wash aspect-[4/5] max-h-[60vh]">
-              <img src={ov("slide_6_expression", "image", IMAGES.gift)} alt="Not A Salami gift presentation" />
+              <img src={ov("slide_6_expression", "image", IMAGES.deck_slide6_expression)} alt="Not A Salami gift presentation" />
             </div>
           </div>
         </Slide>
