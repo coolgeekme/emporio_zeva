@@ -467,9 +467,9 @@ export default function BlackRock({ deck = null }) {
               </h2>
             </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {CORPORATE_USE_CASES.map((u, i) => (
+              {(ov("slide_5_use_cases", "items", null) || CORPORATE_USE_CASES).map((u, i) => (
                 <div
-                  key={u.title}
+                  key={`${u.title}-${i}`}
                   data-testid={`pitch-usecase-${i}`}
                   className="border border-[#DFD7CA] bg-[#F9F6F0] p-6"
                 >
@@ -524,9 +524,9 @@ export default function BlackRock({ deck = null }) {
               </div>
             </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5">
-              {CUSTOMIZATION.map((c, i) => (
+              {(ov("slide_7_customization", "items", null) || CUSTOMIZATION).map((c, i) => (
                 <div
-                  key={c.title}
+                  key={`${c.title}-${i}`}
                   data-testid={`pitch-customization-${i}`}
                   className="border border-[#DFD7CA] bg-[#F9F6F0] p-6 flex flex-col"
                 >

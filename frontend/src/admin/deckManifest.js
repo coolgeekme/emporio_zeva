@@ -8,6 +8,13 @@
 //   markdown — multi-line, rendered with react-markdown (paragraphs, **bold**,
 //              *italic*, - bullets, [links](url))
 //   image    — URL, with Browse media-library button
+//   list     — repeatable array of items. Each item is a small object whose
+//              shape is described by the field's `itemFields` (text/textarea
+//              only). The editor renders Add/Delete/Move/Reset controls and
+//              the deck render falls back to `defaults` from content.js when
+//              no override is present.
+
+import { CORPORATE_USE_CASES, CUSTOMIZATION } from "../content";
 //
 // The TEMPLATE_SLIDES set marks which slides are editable in Template mode.
 
@@ -73,6 +80,17 @@ export const SLIDE_MANIFEST = [
     fields: [
       { key: "title_line1", type: "text", label: "H2 line 1" },
       { key: "title_italic", type: "text", label: "H2 italic line" },
+      {
+        key: "items",
+        type: "list",
+        label: "Use case boxes",
+        addLabel: "Add use case",
+        defaults: CORPORATE_USE_CASES,
+        itemFields: [
+          { key: "title", type: "text", label: "Title" },
+          { key: "body", type: "textarea", label: "Body" },
+        ],
+      },
     ],
   },
   {
@@ -94,6 +112,17 @@ export const SLIDE_MANIFEST = [
       { key: "title_line1", type: "text", label: "H2 line 1" },
       { key: "title_italic", type: "text", label: "H2 italic line" },
       { key: "body", type: "markdown", label: "Body" },
+      {
+        key: "items",
+        type: "list",
+        label: "Customization boxes",
+        addLabel: "Add customization option",
+        defaults: CUSTOMIZATION,
+        itemFields: [
+          { key: "title", type: "text", label: "Title" },
+          { key: "body", type: "textarea", label: "Body" },
+        ],
+      },
     ],
   },
   {

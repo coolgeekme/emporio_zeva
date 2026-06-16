@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { X, Image as ImageIcon, RotateCcw, ChevronDown, ChevronUp, Eye } from "lucide-react";
+import { X, Image as ImageIcon, RotateCcw, ChevronDown, ChevronUp, Eye, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { API, authHeaders, formatApiErrorDetail } from "./api";
 import { SLIDE_MANIFEST, TEMPLATE_SLIDES } from "./deckManifest";
 import HistoryDrawer, { HistoryButton } from "./HistoryDrawer";
@@ -53,8 +53,163 @@ function MediaPicker({ open, onPick, onClose, token }) {
   );
 }
 
+function ListField({ field, value, onChange }) {
+  // Treat undefined/null as "no override yet" -> the deck still renders
+  // defaults. The admin can click "Customize" to materialise the defaults
+  // into the override buffer for editing.
+  const hasOverride = Array.isArray(value);
+  const items = hasOverride ? value : field.defaults || [];
+  const shape = field.itemFields || [];
+
+  const updateItem = (idx, patch) => {
+    const next = items.map((it, i) => (i === idx ? { ...it, ...patch } : it));
+    onChange(next);
+  };
+  const addItem = () => {
+    const empty = Object.fromEntries(shape.map((s) => [s.key, ""]));
+    onChange([...items, empty]);
+  };
+  const deleteItem = (idx) => {
+    onChange(items.filter((_, i) => i !== idx));
+  };
+  const move = (idx, dir) => {
+    const target = idx + dir;
+    if (target < 0 || target >= items.length) return;
+    const next = items.slice();
+    [next[idx], next[target]] = [next[target], next[idx]];
+    onChange(next);
+  };
+  const resetToDefaults = () => {
+    if (!field.defaults) return;
+    if (
+      !window.confirm(
+        "Reset this list to the published defaults? Your edits to this list will be lost."
+      )
+    )
+      return;
+    // Empty array means "explicit override of nothing" — we want to fully
+    // un-override so the deck snaps back to defaults. Passing undefined.
+    onChange(undefined);
+  };
+
+  return (
+    <div className="field" data-testid={`slide-field-${field.key}`}>
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <label className="!mb-0">{field.label}</label>
+        <div className="flex items-center gap-3 text-[10px]">
+          {hasOverride ? (
+            <span className="text-[#C05A3A] uppercase tracking-wider">Custom · {items.length}</span>
+          ) : (
+            <span className="text-[#5C4E4A] uppercase tracking-wider">
+              Defaults · {items.length}
+            </span>
+          )}
+          {hasOverride && field.defaults && (
+            <button
+              type="button"
+              onClick={resetToDefaults}
+              className="text-[#5C4E4A] hover:text-[#C05A3A] inline-flex items-center gap-1"
+              data-testid={`slide-list-reset-${field.key}`}
+            >
+              <RotateCcw size={10} /> Reset
+            </button>
+          )}
+        </div>
+      </div>
+
+      {!hasOverride && (
+        <p className="text-[11px] text-[#5C4E4A] mb-2 italic">
+          Currently showing the published defaults. Click any item below to customize, or use
+          Add / Delete / arrows to restructure.
+        </p>
+      )}
+
+      <div className="space-y-3">
+        {items.map((item, idx) => (
+          <div
+            key={idx}
+            className="border border-[#DFD7CA] bg-[#FBF7EE] p-3 space-y-2"
+            data-testid={`slide-list-item-${field.key}-${idx}`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="overline text-[#5C4E4A] !text-[9px]">
+                No 0{idx + 1}
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => move(idx, -1)}
+                  disabled={idx === 0}
+                  className="p-1 text-[#5C4E4A] hover:text-[#2A1F1D] disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Move up"
+                  data-testid={`slide-list-up-${field.key}-${idx}`}
+                >
+                  <ArrowUp size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => move(idx, +1)}
+                  disabled={idx === items.length - 1}
+                  className="p-1 text-[#5C4E4A] hover:text-[#2A1F1D] disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Move down"
+                  data-testid={`slide-list-down-${field.key}-${idx}`}
+                >
+                  <ArrowDown size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteItem(idx)}
+                  className="p-1 text-[#C05A3A] hover:text-[#7A2A18]"
+                  title="Delete"
+                  data-testid={`slide-list-delete-${field.key}-${idx}`}
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            </div>
+            {shape.map((s) =>
+              s.type === "textarea" ? (
+                <div key={s.key} className="field !mb-0">
+                  <label className="!text-[10px]">{s.label}</label>
+                  <textarea
+                    rows={2}
+                    value={item?.[s.key] || ""}
+                    onChange={(e) => updateItem(idx, { [s.key]: e.target.value })}
+                    data-testid={`slide-list-input-${field.key}-${idx}-${s.key}`}
+                  />
+                </div>
+              ) : (
+                <div key={s.key} className="field !mb-0">
+                  <label className="!text-[10px]">{s.label}</label>
+                  <input
+                    value={item?.[s.key] || ""}
+                    onChange={(e) => updateItem(idx, { [s.key]: e.target.value })}
+                    data-testid={`slide-list-input-${field.key}-${idx}-${s.key}`}
+                  />
+                </div>
+              )
+            )}
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={addItem}
+        className="btn-outline text-xs mt-3 inline-flex items-center gap-1"
+        data-testid={`slide-list-add-${field.key}`}
+      >
+        <Plus size={12} /> {field.addLabel || "Add item"}
+      </button>
+    </div>
+  );
+}
+
 function FieldInput({ field, value, onChange, token }) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  if (field.type === "list") {
+    return <ListField field={field} value={value} onChange={onChange} />;
+  }
   if (field.type === "image") {
     return (
       <div className="field">
