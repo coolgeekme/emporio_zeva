@@ -559,75 +559,78 @@ export default function BlackRock({ deck = null }) {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-              {[0, 1].map((i) => {
-                const idx = i + 1; // 1 or 2 — matches manifest keys
-                const def = CORPORATE_PACKAGES[i] || CORPORATE_PACKAGES[0];
-                const pkg = {
-                  badge: ov("slide_8_pricing", `package_${idx}_badge`, def.badge),
-                  name: ov("slide_8_pricing", `package_${idx}_name`, def.name),
-                  box: ov("slide_8_pricing", `package_${idx}_box`, def.box),
-                  price: ov("slide_8_pricing", `package_${idx}_price`, def.price),
-                  unit: ov("slide_8_pricing", `package_${idx}_unit`, def.unit),
-                  blurb: ov("slide_8_pricing", `package_${idx}_blurb`, def.blurb),
-                  // includes can be overridden as a newline-separated string;
-                  // each line becomes a bullet
-                  includes_raw: ov("slide_8_pricing", `package_${idx}_includes`, null),
-                  min: ov("slide_8_pricing", `package_${idx}_min`, def.min),
-                };
-                const includesList = pkg.includes_raw
-                  ? pkg.includes_raw
-                      .split("\n")
-                      .map((s) => s.replace(/^\s*[-*]\s*/, "").trim())
-                      .filter(Boolean)
-                  : def.includes;
-                return (
-                  <article
-                    key={idx}
-                    data-testid={`pitch-package-${i}`}
-                    className={`fx ${i === 0 ? "fx-left" : "fx-right"} ${i === 0 ? "fx-d2" : "fx-d4"} border p-7 md:p-9 flex flex-col ${
-                      i === 1
-                        ? "bg-[#2A1F1D] text-[#F9F6F0] border-[#2A1F1D]"
-                        : "border-[#DFD7CA] bg-[#F9F6F0]"
-                    }`}
-                  >
-                    {pkg.badge && (
-                      <p className="overline text-[#C05A3A] mb-3 text-[10px]">{pkg.badge}</p>
-                    )}
-                    <p className={`overline text-[10px] ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
-                      {(pkg.name || "").toUpperCase()}
-                    </p>
-                    <h3
-                      className={`font-serif text-3xl md:text-4xl mt-2 leading-tight ${
-                        i === 1 ? "text-[#F9F6F0]" : "text-[#2A1F1D]"
-                      }`}
-                    >
-                      1 salami · {pkg.box}
-                    </h3>
-                    <p className="mt-4 font-serif text-5xl text-[#C05A3A]">
-                      {pkg.price}
-                      <span className={`text-base font-sans tracking-wide ml-2 ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
-                        {pkg.unit}
-                      </span>
-                    </p>
-                    <div className={`mt-4 text-sm md:text-base leading-relaxed ${i === 1 ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}`}>
-                      <SlideMarkdown dark={i === 1}>{pkg.blurb}</SlideMarkdown>
-                    </div>
-                    <ul className="mt-5 space-y-2 text-sm">
-                      {includesList.map((inc, k) => (
-                        <li key={k} className="flex gap-2 items-start">
-                          <span className="text-[#C05A3A]">·</span>
-                          <span className={i === 1 ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}>{inc}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <p className={`overline text-[10px] mt-6 pt-4 border-t ${i === 1 ? "border-[#5C4E4A] text-[#DFD7CA]" : "border-[#DFD7CA] text-[#5C4E4A]"}`}>
-                      {pkg.min}
-                    </p>
-                  </article>
-                );
-              })}
-            </div>
+            {(() => {
+              const tiers = ov("slide_8_pricing", "items", null) || CORPORATE_PACKAGES;
+              const cols =
+                tiers.length === 1
+                  ? "md:grid-cols-1 max-w-2xl mx-auto"
+                  : tiers.length === 2
+                  ? "md:grid-cols-2"
+                  : "md:grid-cols-3";
+              return (
+                <div className={`grid ${cols} gap-6 md:gap-8`}>
+                  {tiers.map((pkg, i) => {
+                    // Includes can ship as an array (defaults from content.js)
+                    // or a newline-separated string (in-editor list field).
+                    const includesList = Array.isArray(pkg.includes)
+                      ? pkg.includes
+                      : (pkg.includes || "")
+                          .split("\n")
+                          .map((s) => s.replace(/^\s*[-*]\s*/, "").trim())
+                          .filter(Boolean);
+                    // Presence of a badge marks the hero tier (dark card).
+                    const hero = !!(pkg.badge && pkg.badge.trim());
+                    return (
+                      <article
+                        key={`${pkg.name}-${i}`}
+                        data-testid={`pitch-package-${i}`}
+                        className={`fx ${i % 2 === 0 ? "fx-left" : "fx-right"} fx-d${2 + (i % 3) * 2} border p-7 md:p-9 flex flex-col ${
+                          hero
+                            ? "bg-[#2A1F1D] text-[#F9F6F0] border-[#2A1F1D]"
+                            : "border-[#DFD7CA] bg-[#F9F6F0]"
+                        }`}
+                      >
+                        {pkg.badge && (
+                          <p className="overline text-[#C05A3A] mb-3 text-[10px]">{pkg.badge}</p>
+                        )}
+                        <p className={`overline text-[10px] ${hero ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
+                          {(pkg.name || "").toUpperCase()}
+                        </p>
+                        <h3
+                          className={`font-serif text-3xl md:text-4xl mt-2 leading-tight ${
+                            hero ? "text-[#F9F6F0]" : "text-[#2A1F1D]"
+                          }`}
+                        >
+                          1 salami · {pkg.box}
+                        </h3>
+                        <p className="mt-4 font-serif text-5xl text-[#C05A3A]">
+                          {pkg.price}
+                          <span className={`text-base font-sans tracking-wide ml-2 ${hero ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
+                            {pkg.unit}
+                          </span>
+                        </p>
+                        <div className={`mt-4 text-sm md:text-base leading-relaxed ${hero ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}`}>
+                          <SlideMarkdown dark={hero}>{pkg.blurb}</SlideMarkdown>
+                        </div>
+                        <ul className="mt-5 space-y-2 text-sm">
+                          {includesList.map((inc, k) => (
+                            <li key={k} className="flex gap-2 items-start">
+                              <span className="text-[#C05A3A]">·</span>
+                              <span className={hero ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}>{inc}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        {pkg.min && (
+                          <p className={`mt-auto pt-5 text-xs italic ${hero ? "text-[#B9935A]" : "text-[#5C4E4A]"}`}>
+                            {pkg.min}
+                          </p>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         </Slide>
 

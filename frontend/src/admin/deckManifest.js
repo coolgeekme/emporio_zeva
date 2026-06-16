@@ -14,7 +14,21 @@
 //              the deck render falls back to `defaults` from content.js when
 //              no override is present.
 
-import { CORPORATE_USE_CASES, CUSTOMIZATION } from "../content";
+import { CORPORATE_USE_CASES, CUSTOMIZATION, CORPORATE_PACKAGES } from "../content";
+
+// Pricing tiers ship with `includes` as string arrays for the render layer,
+// but the in-editor list field uses a multi-line string (one bullet per line)
+// to keep the UI simple. Transform once here.
+const PRICING_LIST_DEFAULTS = CORPORATE_PACKAGES.map((p) => ({
+  badge: p.badge || "",
+  name: p.name || "",
+  box: p.box || "",
+  price: p.price || "",
+  unit: p.unit || "",
+  blurb: p.blurb || "",
+  includes: Array.isArray(p.includes) ? p.includes.join("\n") : p.includes || "",
+  min: p.min || "",
+}));
 //
 // The TEMPLATE_SLIDES set marks which slides are editable in Template mode.
 
@@ -132,22 +146,23 @@ export const SLIDE_MANIFEST = [
       { key: "title_line1", type: "text", label: "H2 line 1" },
       { key: "title_italic", type: "text", label: "H2 italic line" },
       { key: "subtitle", type: "markdown", label: "Subtitle paragraph" },
-      { key: "package_1_badge", type: "text", label: "Package 1 — badge (optional)" },
-      { key: "package_1_name", type: "text", label: "Package 1 — name" },
-      { key: "package_1_box", type: "text", label: "Package 1 — box description (e.g. 'curated gift box')" },
-      { key: "package_1_price", type: "text", label: "Package 1 — price (e.g. '$58')" },
-      { key: "package_1_unit", type: "text", label: "Package 1 — unit suffix (e.g. 'per gift')" },
-      { key: "package_1_blurb", type: "markdown", label: "Package 1 — blurb" },
-      { key: "package_1_includes", type: "markdown", label: "Package 1 — includes (one bullet per line, no `- ` prefix needed)" },
-      { key: "package_1_min", type: "text", label: "Package 1 — minimum / footnote" },
-      { key: "package_2_badge", type: "text", label: "Package 2 — badge (optional)" },
-      { key: "package_2_name", type: "text", label: "Package 2 — name" },
-      { key: "package_2_box", type: "text", label: "Package 2 — box description" },
-      { key: "package_2_price", type: "text", label: "Package 2 — price" },
-      { key: "package_2_unit", type: "text", label: "Package 2 — unit suffix" },
-      { key: "package_2_blurb", type: "markdown", label: "Package 2 — blurb" },
-      { key: "package_2_includes", type: "markdown", label: "Package 2 — includes (one bullet per line)" },
-      { key: "package_2_min", type: "text", label: "Package 2 — minimum / footnote" },
+      {
+        key: "items",
+        type: "list",
+        label: "Pricing tiers",
+        addLabel: "Add pricing tier",
+        defaults: PRICING_LIST_DEFAULTS,
+        itemFields: [
+          { key: "badge", type: "text", label: "Badge (optional — when set, this tier is shown as the dark hero card)" },
+          { key: "name", type: "text", label: "Name (e.g. 'Curated')" },
+          { key: "box", type: "text", label: "Box description (e.g. 'White Box')" },
+          { key: "price", type: "text", label: "Price (e.g. '$58')" },
+          { key: "unit", type: "text", label: "Unit suffix (e.g. 'per unit')" },
+          { key: "blurb", type: "textarea", label: "Short blurb" },
+          { key: "includes", type: "textarea", label: "Includes — one bullet per line" },
+          { key: "min", type: "text", label: "Minimum / footnote" },
+        ],
+      },
     ],
   },
   {
