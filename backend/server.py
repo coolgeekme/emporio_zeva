@@ -640,7 +640,7 @@ SEED_JOURNAL = [
         "slug": "a-sweet-journey-through-sicily",
         "title": "Not A Salami: A Sweet Journey Through Sicily and Beyond",
         "excerpt": "Not A Salami may seem like a modern culinary trend, but its roots run deep in the traditions of Sicilian holiday tables, where cocoa salami was made from what the pantry offered.",
-        "image": "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
+        "image": "/api/static/journal/sweet-journey-through-sicily.jpg",
         "date": "Summer 2024",
         "read": "6 min read",
         "order": 1,
@@ -2211,6 +2211,25 @@ async def seed_admin_user():
             logging.getLogger(__name__).info("Rotated bootstrap admin password")
 
 
+async def heal_journal_images():
+    """Replace legacy hotlinked Unsplash placeholders on seeded journal entries
+    with the bundled local image. Idempotent — only writes when the legacy URL
+    is still in place. Lets us ship a real photograph without forcing the user
+    to edit each entry through the admin panel."""
+    legacy_map = {
+        "a-sweet-journey-through-sicily": (
+            "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9",
+            "/api/static/journal/sweet-journey-through-sicily.jpg",
+        ),
+    }
+    for slug, (legacy_prefix, local_path) in legacy_map.items():
+        await db.journal.update_one(
+            {"slug": slug, "image": {"$regex": f"^{re.escape(legacy_prefix)}"}},
+            {"$set": {"image": local_path}},
+        )
+
+
+
 async def cleanup_orphaned_media():
     """Remove media records whose binary content is no longer available.
 
@@ -2257,6 +2276,7 @@ async def on_startup():
     await ensure_indexes()
     await seed_admin_user()
     await cleanup_orphaned_media()
+    await heal_journal_images()
 
 
 @app.on_event("shutdown")

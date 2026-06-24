@@ -177,7 +177,7 @@ export const JOURNAL = [
     title: "Not A Salami: A Sweet Journey Through Sicily and Beyond",
     excerpt:
       "Not A Salami may seem like a modern culinary trend, but its roots run deep in the traditions of Sicilian holiday tables, where cocoa salami was made from what the pantry offered.",
-    image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
+    image: "/api/static/journal/sweet-journey-through-sicily.jpg",
     date: "Summer 2024",
     read: "6 min read",
     body: [
