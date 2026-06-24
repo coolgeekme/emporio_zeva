@@ -257,8 +257,9 @@ export const IMAGES = {
   hero: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
   // Real product hero — Salami_board.JPG from Emergent assets
   product: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG",
-  // Curated editorial stock (Unsplash, royalty-free) — placeholders for true founder/landscape shots
-  founder: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1400&q=80",
+  // Eva's founder portrait for the Our Story page, shipped from the backend
+  // static folder so it survives every deploy.
+  founder: "/api/static/our-story/founder.jpg",
   sicily: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1800&q=80",
   italian_moment: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
   // Branded "NOT A SALAMI" board (image1.jpeg from Emergent assets)
