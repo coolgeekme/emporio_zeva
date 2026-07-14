@@ -29,6 +29,12 @@ def _notify_to() -> str:
     return os.environ.get("RESEND_NOTIFY_TO", "")
 
 
+def _legacy_notify_list() -> list[str]:
+    """Fallback used only when a caller doesn't pass explicit recipients."""
+    raw = _notify_to()
+    return [e.strip() for e in raw.split(",") if e.strip()]
+
+
 def _enabled() -> bool:
     return os.environ.get("RESEND_ENABLED", "true").lower() == "true"
 
@@ -105,7 +111,7 @@ async def send(
 
 
 # ---------- Flow: Corporate Inquiry ----------
-async def notify_inquiry(inquiry: dict) -> None:
+async def notify_inquiry(inquiry: dict, notify_emails: Optional[list[str]] = None) -> None:
     name = escape(inquiry.get("name") or "Friend")
     email = inquiry.get("email") or ""
     phone = escape(inquiry.get("phone") or "—")
@@ -126,10 +132,10 @@ async def notify_inquiry(inquiry: dict) -> None:
         {message}
       </div>"""
 
-    notify_to = _notify_to()
-    if notify_to:
+    notify_list = notify_emails if notify_emails is not None else _legacy_notify_list()
+    if notify_list:
         await send(
-            notify_to,
+            notify_list,
             f"New inquiry · {name}",
             _wrap(internal_body),
             reply_to=email or None,
@@ -155,12 +161,12 @@ async def notify_inquiry(inquiry: dict) -> None:
             email,
             "Your note reached Eva",
             _wrap(customer_body),
-            reply_to=notify_to or None,
+            reply_to=(notify_list[0] if notify_list else None),
         )
 
 
 # ---------- Flow: Waitlist ----------
-async def notify_waitlist(entry: dict) -> None:
+async def notify_waitlist(entry: dict, notify_emails: Optional[list[str]] = None) -> None:
     name = escape(entry.get("name") or "Friend")
     email = entry.get("email") or ""
     product = escape(entry.get("product_slug") or "—")
@@ -174,10 +180,10 @@ async def notify_waitlist(entry: dict) -> None:
         <tr><td style="padding:6px 0;color:#5C4E4A;">Product</td><td style="padding:6px 0;">{product}</td></tr>
       </table>
       {f'<div style="font-family:Georgia,serif;font-size:14px;color:#2A1F1D;margin-top:20px;line-height:1.7;border-left:2px solid #C05A3A;padding:4px 0 4px 14px;">{note}</div>' if note else ''}"""
-    notify_to = _notify_to()
-    if notify_to:
+    notify_list = notify_emails if notify_emails is not None else _legacy_notify_list()
+    if notify_list:
         await send(
-            notify_to,
+            notify_list,
             f"New waitlist · {name} · {product}",
             _wrap(internal_body),
             reply_to=email or None,
@@ -196,12 +202,12 @@ async def notify_waitlist(entry: dict) -> None:
             email,
             "Your spot is held",
             _wrap(customer_body),
-            reply_to=notify_to or None,
+            reply_to=(notify_list[0] if notify_list else None),
         )
 
 
 # ---------- Flow: Newsletter ----------
-async def notify_newsletter(entry: dict) -> None:
+async def notify_newsletter(entry: dict, notify_emails: Optional[list[str]] = None) -> None:
     email = entry.get("email") or ""
 
     internal_body = f"""
@@ -209,9 +215,9 @@ async def notify_newsletter(entry: dict) -> None:
       <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;color:#2A1F1D;margin:0;">
         <a href="mailto:{escape(email)}" style="color:#C05A3A;">{escape(email)}</a>
       </p>"""
-    notify_to = _notify_to()
-    if notify_to:
-        await send(notify_to, "New newsletter subscriber", _wrap(internal_body))
+    notify_list = notify_emails if notify_emails is not None else _legacy_notify_list()
+    if notify_list:
+        await send(notify_list, "New newsletter subscriber", _wrap(internal_body))
 
     if email:
         customer_body = """
@@ -226,7 +232,7 @@ async def notify_newsletter(entry: dict) -> None:
             email,
             "Welcome to the table",
             _wrap(customer_body),
-            reply_to=notify_to or None,
+            reply_to=(notify_list[0] if notify_list else None),
         )
 
 

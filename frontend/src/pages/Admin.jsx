@@ -8,6 +8,7 @@ import {
   Plus,
   Copy,
   Trash2,
+  Edit2,
   ExternalLink,
   Sparkles,
   X,
@@ -257,6 +258,137 @@ function formatDate(iso) {
   } catch {
     return iso;
   }
+}
+
+// ============================================================================
+// Inquiry detail dialog — view full message, edit follow-up notes, delete
+// ============================================================================
+function InquiryDetailDialog({ inquiry, token, canEdit, onClose, onSaved, onDeleted }) {
+  const [notes, setNotes] = useState(inquiry.notes || "");
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+  const [savedAt, setSavedAt] = useState(false);
+
+  const headers = { Authorization: `Bearer ${token}` };
+
+  const saveNotes = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const { data } = await axios.patch(
+        `${API}/admin/inquiries/${inquiry.id}`,
+        { notes },
+        { headers }
+      );
+      onSaved(data);
+      setSavedAt(true);
+      setTimeout(() => setSavedAt(false), 2000);
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Couldn't save notes. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const remove = async () => {
+    if (!window.confirm(`Delete this inquiry from ${inquiry.name}? This cannot be undone.`)) return;
+    setDeleting(true);
+    setError("");
+    try {
+      await axios.delete(`${API}/admin/inquiries/${inquiry.id}`, { headers });
+      onDeleted(inquiry.id);
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Couldn't delete. Try again.");
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center p-4 md:p-10 overflow-y-auto">
+      <div
+        className="bg-white border border-[#DFD7CA] w-full max-w-2xl shadow-xl"
+        data-testid="inquiry-detail-dialog"
+      >
+        <header className="flex items-center justify-between px-6 py-4 border-b border-[#DFD7CA]">
+          <h3 className="font-serif text-xl text-[#2A1F1D]">Inquiry from {inquiry.name}</h3>
+          <button onClick={onClose} aria-label="Close" data-testid="inquiry-detail-close">
+            <X size={18} />
+          </button>
+        </header>
+        <div className="p-6 space-y-5">
+          <div className="grid sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="overline text-[#5C4E4A] text-[10px]">Email</p>
+              <p className="text-[#2A1F1D]">{inquiry.email}</p>
+            </div>
+            <div>
+              <p className="overline text-[#5C4E4A] text-[10px]">Phone</p>
+              <p className="text-[#2A1F1D]">{inquiry.phone || "—"}</p>
+            </div>
+            <div>
+              <p className="overline text-[#5C4E4A] text-[10px]">Subject</p>
+              <p className="text-[#2A1F1D]">{inquiry.subject || "General Inquiry"}</p>
+            </div>
+            <div>
+              <p className="overline text-[#5C4E4A] text-[10px]">Product</p>
+              <p className="text-[#2A1F1D]">{inquiry.product_slug || "—"}</p>
+            </div>
+            <div className="sm:col-span-2">
+              <p className="overline text-[#5C4E4A] text-[10px]">Received</p>
+              <p className="text-[#2A1F1D]">{formatDate(inquiry.created_at)}</p>
+            </div>
+          </div>
+          <div>
+            <p className="overline text-[#5C4E4A] text-[10px] mb-1">Message</p>
+            <p className="text-sm text-[#2A1F1D] whitespace-pre-wrap bg-[#F5EFE2] p-4 border border-[#DFD7CA]">
+              {inquiry.message}
+            </p>
+          </div>
+          <div className="field">
+            <label htmlFor="inq-notes">Follow-up notes</label>
+            <textarea
+              id="inq-notes"
+              rows={4}
+              disabled={!canEdit}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Called 6/2 — discussed wholesale order for 50 units, following up next week."
+              data-testid="inquiry-notes-input"
+            />
+          </div>
+          {error && <p className="text-sm text-[#C05A3A]">{error}</p>}
+          {canEdit && (
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={remove}
+                disabled={deleting}
+                className="inline-flex items-center gap-2 text-sm text-[#C05A3A] hover:text-[#2A1F1D] disabled:opacity-50"
+                data-testid="inquiry-delete-button"
+              >
+                <Trash2 size={14} /> {deleting ? "Deleting…" : "Delete inquiry"}
+              </button>
+              <div className="flex items-center gap-3">
+                {savedAt && (
+                  <span className="text-xs text-[#2D5C32]" data-testid="inquiry-notes-saved">
+                    Saved.
+                  </span>
+                )}
+                <button
+                  onClick={saveNotes}
+                  disabled={saving}
+                  className="btn-primary text-sm"
+                  data-testid="inquiry-notes-save-button"
+                >
+                  {saving ? "Saving…" : "Save notes"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ============================================================================
@@ -1117,7 +1249,7 @@ function DecksPanel({ decks, token, onChange, error }) {
   );
 }
 
-function AdminDashboard({ token, onLogout, initialTab }) {
+function AdminDashboard({ token, onLogout, initialTab, role }) {
   const [active, setActive] = useState(initialTab || "decks");
   const [data, setData] = useState({ decks: [], journal: [], waitlist: [], inquiries: [], newsletter: [] });
   const [loading, setLoading] = useState(false);
@@ -1129,6 +1261,8 @@ function AdminDashboard({ token, onLogout, initialTab }) {
     newsletter: new Set(),
   });
   const [deleting, setDeleting] = useState(false);
+  const [viewingInquiry, setViewingInquiry] = useState(null);
+  const canEditInquiries = role === "admin" || role === "editor";
 
   const fetchTab = useCallback(
     async (key) => {
@@ -1229,6 +1363,27 @@ function AdminDashboard({ token, onLogout, initialTab }) {
       { key: "subject", label: "Subject" },
       { key: "product_slug", label: "Product", render: (r) => r.product_slug || "—" },
       { key: "message", label: "Message" },
+      {
+        key: "notes",
+        label: "Notes",
+        render: (r) =>
+          r.notes ? (r.notes.length > 60 ? `${r.notes.slice(0, 60)}…` : r.notes) : "—",
+      },
+      {
+        key: "actions",
+        label: "",
+        skipExport: true,
+        render: (r) => (
+          <button
+            type="button"
+            onClick={() => setViewingInquiry(r)}
+            className="inline-flex items-center gap-1 text-[#5C4E4A] hover:text-[#2A1F1D] text-xs whitespace-nowrap"
+            data-testid={`inquiry-view-${r.id}`}
+          >
+            <Edit2 size={12} /> {canEditInquiries ? "Notes" : "View"}
+          </button>
+        ),
+      },
     ],
     newsletter: [
       { key: "created_at", label: "Subscribed", render: (r) => formatDate(r.created_at) },
@@ -1240,6 +1395,7 @@ function AdminDashboard({ token, onLogout, initialTab }) {
     const rows = current.map((r) => {
       const out = {};
       columns[active].forEach((c) => {
+        if (c.skipExport) return;
         out[c.key] = r[c.key] ?? "";
       });
       return out;
@@ -1329,6 +1485,26 @@ function AdminDashboard({ token, onLogout, initialTab }) {
           />
         )}
       </div>
+
+      {viewingInquiry && (
+        <InquiryDetailDialog
+          inquiry={viewingInquiry}
+          token={token}
+          canEdit={canEditInquiries}
+          onClose={() => setViewingInquiry(null)}
+          onSaved={(updated) => {
+            setData((d) => ({
+              ...d,
+              inquiries: d.inquiries.map((x) => (x.id === updated.id ? updated : x)),
+            }));
+            setViewingInquiry(updated);
+          }}
+          onDeleted={(id) => {
+            setData((d) => ({ ...d, inquiries: d.inquiries.filter((x) => x.id !== id) }));
+            setViewingInquiry(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -1567,6 +1743,7 @@ function AdminShell({ token, user, onLogout, onUserUpdated }) {
               initialTab={active}
               token={token}
               onLogout={onLogout}
+              role={role}
             />
           )}
         </div>
