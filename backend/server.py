@@ -128,6 +128,12 @@ class InquiryCreate(BaseModel):
 class Inquiry(InquiryCreate):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    # Admin-only follow-up notes — e.g. "called 6/2, discussed wholesale order for..."
+    notes: str = ""
+
+
+class InquiryNotesUpdate(BaseModel):
+    notes: str
 
 
 class NewsletterCreate(BaseModel):
@@ -154,6 +160,26 @@ class WaitlistEntry(WaitlistCreate):
 
 class BulkDelete(BaseModel):
     ids: List[str]
+
+
+# ---------- Notification recipients ----------
+# Who gets the internal "New inquiry / waitlist / newsletter" emails. Replaces
+# the old single RESEND_NOTIFY_TO env var so admins can manage this in-app.
+class NotificationRecipientCreate(BaseModel):
+    name: Optional[str] = ""
+    email: EmailStr
+    active: bool = True
+
+
+class NotificationRecipientUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    active: Optional[bool] = None
+
+
+class NotificationRecipient(NotificationRecipientCreate):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 class AdminLogin(BaseModel):
@@ -738,12 +764,28 @@ async def get_journal(slug: str):
     return doc
 
 
+async def _notification_emails() -> List[str]:
+    """Active recipient emails for internal form-submission notifications.
+
+    Falls back to the legacy RESEND_NOTIFY_TO env var (comma-separated) when
+    no recipients have been configured in the admin yet, so existing deploys
+    keep working until someone adds recipients via the Settings UI.
+    """
+    docs = await db.notification_recipients.find(
+        {"active": True}, {"_id": 0, "email": 1}
+    ).sort("created_at", 1).to_list(200)
+    if docs:
+        return [d["email"] for d in docs]
+    env_fallback = os.environ.get("RESEND_NOTIFY_TO", "")
+    return [e.strip() for e in env_fallback.split(",") if e.strip()]
+
+
 @api_router.post("/inquiries", response_model=Inquiry)
 async def create_inquiry(payload: InquiryCreate):
     obj = Inquiry(**payload.model_dump())
     await db.inquiries.insert_one(obj.model_dump())
     # Fire-and-forget so a slow Resend response can't block the form submit.
-    asyncio.create_task(emailer.notify_inquiry(obj.model_dump()))
+    asyncio.create_task(emailer.notify_inquiry(obj.model_dump(), await _notification_emails()))
     return obj
 
 
@@ -754,7 +796,7 @@ async def subscribe(payload: NewsletterCreate):
         return existing
     entry = NewsletterEntry(email=payload.email)
     await db.newsletter.insert_one(entry.model_dump())
-    asyncio.create_task(emailer.notify_newsletter(entry.model_dump()))
+    asyncio.create_task(emailer.notify_newsletter(entry.model_dump(), await _notification_emails()))
     return entry
 
 
@@ -769,7 +811,7 @@ async def join_waitlist(payload: WaitlistCreate):
         return existing
     entry = WaitlistEntry(**payload.model_dump())
     await db.waitlist.insert_one(entry.model_dump())
-    asyncio.create_task(emailer.notify_waitlist(entry.model_dump()))
+    asyncio.create_task(emailer.notify_waitlist(entry.model_dump(), await _notification_emails()))
     return entry
 
 
@@ -958,6 +1000,89 @@ async def admin_delete_inquiries(payload: BulkDelete, _: dict = Depends(require_
         raise HTTPException(status_code=422, detail="No ids supplied")
     result = await db.inquiries.delete_many({"id": {"$in": payload.ids}})
     return {"deleted_count": result.deleted_count}
+
+
+@api_router.delete("/admin/inquiries/{inquiry_id}")
+async def admin_delete_inquiry(inquiry_id: str, _: dict = Depends(require_editor)):
+    result = await db.inquiries.delete_one({"id": inquiry_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Inquiry not found")
+    return {"deleted": True}
+
+
+@api_router.patch("/admin/inquiries/{inquiry_id}", response_model=Inquiry)
+async def admin_update_inquiry_notes(
+    inquiry_id: str, payload: InquiryNotesUpdate, _: dict = Depends(require_editor)
+):
+    result = await db.inquiries.find_one_and_update(
+        {"id": inquiry_id},
+        {"$set": {"notes": payload.notes}},
+        return_document=True,
+        projection={"_id": 0},
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Inquiry not found")
+    return result
+
+
+# ---------- Admin: Notification recipients CRUD ----------
+@api_router.get("/admin/notification-recipients", response_model=List[NotificationRecipient])
+async def admin_list_notification_recipients(_: dict = Depends(require_admin)):
+    docs = await db.notification_recipients.find({}, {"_id": 0}).sort("created_at", 1).to_list(200)
+    return docs
+
+
+@api_router.post("/admin/notification-recipients", response_model=NotificationRecipient)
+async def admin_create_notification_recipient(
+    payload: NotificationRecipientCreate, _: dict = Depends(require_admin)
+):
+    email = payload.email.lower().strip()
+    existing = await db.notification_recipients.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=409, detail="That email is already on the list")
+    recipient = NotificationRecipient(
+        name=(payload.name or "").strip(), email=email, active=payload.active
+    )
+    await db.notification_recipients.insert_one(recipient.model_dump())
+    return recipient
+
+
+@api_router.patch("/admin/notification-recipients/{recipient_id}", response_model=NotificationRecipient)
+async def admin_update_notification_recipient(
+    recipient_id: str, payload: NotificationRecipientUpdate, _: dict = Depends(require_admin)
+):
+    update: dict = {}
+    if payload.name is not None:
+        update["name"] = payload.name.strip()
+    if payload.email is not None:
+        email = payload.email.lower().strip()
+        existing = await db.notification_recipients.find_one(
+            {"email": email, "id": {"$ne": recipient_id}}
+        )
+        if existing:
+            raise HTTPException(status_code=409, detail="That email is already on the list")
+        update["email"] = email
+    if payload.active is not None:
+        update["active"] = payload.active
+    if not update:
+        raise HTTPException(status_code=422, detail="No fields to update")
+    result = await db.notification_recipients.find_one_and_update(
+        {"id": recipient_id},
+        {"$set": update},
+        return_document=True,
+        projection={"_id": 0},
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Recipient not found")
+    return result
+
+
+@api_router.delete("/admin/notification-recipients/{recipient_id}")
+async def admin_delete_notification_recipient(recipient_id: str, _: dict = Depends(require_admin)):
+    result = await db.notification_recipients.delete_one({"id": recipient_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Recipient not found")
+    return {"deleted": True}
 
 
 # ---------- Deck routes ----------
