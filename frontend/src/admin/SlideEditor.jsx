@@ -53,7 +53,52 @@ function MediaPicker({ open, onPick, onClose, token }) {
   );
 }
 
-function ListField({ field, value, onChange }) {
+function ListItemImage({ value, onChange, token }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  return (
+    <div>
+      <div className="flex gap-2 items-start">
+        <input
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://… or /api/static/…"
+        />
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="btn-outline text-xs whitespace-nowrap inline-flex items-center gap-1"
+        >
+          <ImageIcon size={12} /> Browse
+        </button>
+      </div>
+      {value && (
+        <div className="mt-2 flex items-center gap-2">
+          <div className="inline-block bg-[#F5EFE2] border border-[#DFD7CA] p-1">
+            <img src={value} alt="" className="h-16 w-16 object-cover" />
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="text-xs text-[#5C4E4A] hover:text-[#C05A3A] inline-flex items-center gap-1"
+          >
+            <RotateCcw size={10} /> Clear
+          </button>
+        </div>
+      )}
+      <MediaPicker
+        open={pickerOpen}
+        token={token}
+        onPick={(u) => {
+          onChange(u);
+          setPickerOpen(false);
+        }}
+        onClose={() => setPickerOpen(false)}
+      />
+    </div>
+  );
+}
+
+function ListField({ field, value, onChange, token }) {
   // Treat undefined/null as "no override yet" -> the deck still renders
   // defaults. The admin can click "Customize" to materialise the defaults
   // into the override buffer for editing.
@@ -167,18 +212,57 @@ function ListField({ field, value, onChange }) {
                 </button>
               </div>
             </div>
-            {shape.map((s) =>
-              s.type === "textarea" ? (
-                <div key={s.key} className="field !mb-0">
-                  <label className="!text-[10px]">{s.label}</label>
-                  <textarea
-                    rows={2}
-                    value={item?.[s.key] || ""}
-                    onChange={(e) => updateItem(idx, { [s.key]: e.target.value })}
-                    data-testid={`slide-list-input-${field.key}-${idx}-${s.key}`}
-                  />
-                </div>
-              ) : (
+            {shape.map((s) => {
+              if (s.type === "textarea") {
+                return (
+                  <div key={s.key} className="field !mb-0">
+                    <label className="!text-[10px]">{s.label}</label>
+                    <textarea
+                      rows={2}
+                      value={item?.[s.key] || ""}
+                      onChange={(e) => updateItem(idx, { [s.key]: e.target.value })}
+                      data-testid={`slide-list-input-${field.key}-${idx}-${s.key}`}
+                    />
+                  </div>
+                );
+              }
+              if (s.type === "select") {
+                const options = Array.isArray(s.options) ? s.options : [];
+                return (
+                  <div key={s.key} className="field !mb-0">
+                    <label className="!text-[10px]">{s.label}</label>
+                    <select
+                      value={item?.[s.key] || ""}
+                      onChange={(e) => updateItem(idx, { [s.key]: e.target.value })}
+                      data-testid={`slide-list-input-${field.key}-${idx}-${s.key}`}
+                      className="w-full bg-white border border-[#DFD7CA] px-3 py-2 text-sm text-[#2A1F1D] focus:border-[#C05A3A] focus:outline-none"
+                    >
+                      {options.map((o) => {
+                        const val = typeof o === "string" ? o : o.value;
+                        const label = typeof o === "string" ? o : o.label;
+                        return (
+                          <option key={val} value={val}>
+                            {label}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                );
+              }
+              if (s.type === "image") {
+                return (
+                  <div key={s.key} className="field !mb-0">
+                    <label className="!text-[10px]">{s.label}</label>
+                    <ListItemImage
+                      value={item?.[s.key] || ""}
+                      onChange={(v) => updateItem(idx, { [s.key]: v })}
+                      token={token}
+                    />
+                  </div>
+                );
+              }
+              return (
                 <div key={s.key} className="field !mb-0">
                   <label className="!text-[10px]">{s.label}</label>
                   <input
@@ -187,8 +271,8 @@ function ListField({ field, value, onChange }) {
                     data-testid={`slide-list-input-${field.key}-${idx}-${s.key}`}
                   />
                 </div>
-              )
-            )}
+              );
+            })}
           </div>
         ))}
       </div>
@@ -208,7 +292,7 @@ function ListField({ field, value, onChange }) {
 function FieldInput({ field, value, onChange, token }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   if (field.type === "list") {
-    return <ListField field={field} value={value} onChange={onChange} />;
+    return <ListField field={field} value={value} onChange={onChange} token={token} />;
   }
   if (field.type === "image") {
     return (

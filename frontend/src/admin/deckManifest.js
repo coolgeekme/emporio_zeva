@@ -8,6 +8,8 @@
 //   markdown — multi-line, rendered with react-markdown (paragraphs, **bold**,
 //              *italic*, - bullets, [links](url))
 //   image    — URL, with Browse media-library button
+//   select   — dropdown; options come from `field.options` (array of
+//              {value,label} or plain strings)
 //   list     — repeatable array of items. Each item is a small object whose
 //              shape is described by the field's `itemFields` (text/textarea
 //              only). The editor renders Add/Delete/Move/Reset controls and
@@ -27,6 +29,8 @@ const PRICING_LIST_DEFAULTS = CORPORATE_PACKAGES.map((p) => ({
   unit: p.unit || "",
   blurb: p.blurb || "",
   includes: Array.isArray(p.includes) ? p.includes.join("\n") : p.includes || "",
+  tone: p.tone || "",
+  image: p.image || "",
   min: p.min || "",
 }));
 //
@@ -153,13 +157,25 @@ export const SLIDE_MANIFEST = [
         addLabel: "Add pricing tier",
         defaults: PRICING_LIST_DEFAULTS,
         itemFields: [
-          { key: "badge", type: "text", label: "Badge (optional — when set, this tier is shown as the dark hero card)" },
+          { key: "image", type: "image", label: "Box photo (optional)" },
           { key: "name", type: "text", label: "Name (e.g. 'Curated')" },
           { key: "box", type: "text", label: "Box description (e.g. 'White Box')" },
           { key: "price", type: "text", label: "Price (e.g. '$58')" },
           { key: "unit", type: "text", label: "Unit suffix (e.g. 'per unit')" },
           { key: "blurb", type: "textarea", label: "Short blurb" },
           { key: "includes", type: "textarea", label: "Includes — one bullet per line" },
+          { key: "badge", type: "text", label: "Badge (optional — label above the card)" },
+          {
+            key: "tone",
+            type: "select",
+            label: "Card color",
+            options: [
+              { value: "", label: "Auto (badge = dark, else light)" },
+              { value: "light", label: "Light (parchment)" },
+              { value: "dark", label: "Dark (cocoa)" },
+              { value: "ember", label: "Ember (terracotta)" },
+            ],
+          },
           { key: "min", type: "text", label: "Minimum / footnote" },
         ],
       },

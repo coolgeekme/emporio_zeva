@@ -7,6 +7,8 @@ import {
   CORPORATE_PACKAGES,
   IMAGES,
   NOT_A_SALAMI_SEAL,
+  TIER_TONES,
+  toneFor,
 } from "../content";
 import MonogramDivider from "../components/MonogramDivider";
 
@@ -56,46 +58,49 @@ export default function OneSheet() {
             <img src={IMAGES.hero} alt="Sliced Not A Salami" />
           </div>
 
-          {/* Packages — real Curated / Executive */}
-          <section className="grid md:grid-cols-2 gap-6 md:gap-8" data-testid="one-sheet-packages">
-            {CORPORATE_PACKAGES.map((pkg, i) => (
-              <div
-                key={pkg.name}
-                className={`p-7 border ${
-                  i === 1
-                    ? "bg-[#2A1F1D] text-[#F9F6F0] border-[#2A1F1D]"
-                    : "bg-[#F9F6F0] border-[#DFD7CA]"
-                }`}
-              >
-                <p className={`overline text-[10px] ${i === 1 ? "text-[#B9935A]" : "text-[#C05A3A]"}`}>
-                  {pkg.name}
-                </p>
-                <h2
-                  className={`font-serif text-3xl mt-2 ${
-                    i === 1 ? "text-[#F9F6F0]" : "text-[#2A1F1D]"
-                  }`}
-                >
-                  1 salami · {pkg.box}
-                </h2>
-                <p className="mt-3 font-serif text-3xl text-[#C05A3A]">
-                  {pkg.price}
-                  <span className={`text-sm tracking-wide ml-1 ${i === 1 ? "text-[#B9935A]" : "text-[#5C4E4A]"}`}>
-                    {pkg.unit}
-                  </span>
-                </p>
-                <ul className={`mt-5 space-y-2 text-sm ${i === 1 ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
-                  {pkg.includes.map((it) => (
-                    <li key={it} className="flex gap-2">
-                      <span className="text-[#C05A3A]">·</span>
-                      <span>{it}</span>
-                    </li>
-                  ))}
-                </ul>
-                <p className={`overline text-[10px] mt-5 pt-4 border-t ${i === 1 ? "border-[#5C4E4A] text-[#B9935A]" : "border-[#DFD7CA] text-[#5C4E4A]"}`}>
-                  {pkg.min}
-                </p>
-              </div>
-            ))}
+          {/* Packages — Curated / Executive / Il Mini */}
+          <section
+            className={`grid gap-6 md:gap-8 ${
+              CORPORATE_PACKAGES.length === 1
+                ? "md:grid-cols-1"
+                : CORPORATE_PACKAGES.length === 2
+                ? "md:grid-cols-2"
+                : "md:grid-cols-3"
+            }`}
+            data-testid="one-sheet-packages"
+          >
+            {CORPORATE_PACKAGES.map((pkg, i) => {
+              const t = TIER_TONES[toneFor(pkg)] || TIER_TONES.light;
+              return (
+                <div key={pkg.name} className={`p-7 border flex flex-col ${t.card}`}>
+                  {pkg.image && (
+                    <div className="mb-4 aspect-[4/3] w-full overflow-hidden rounded-sm bg-[#F5EFE2]">
+                      <img
+                        src={pkg.image}
+                        alt={pkg.name}
+                        className="h-full w-full object-cover"
+                        draggable="false"
+                      />
+                    </div>
+                  )}
+                  <p className={`overline text-[10px] ${t.badge}`}>{pkg.name}</p>
+                  <h2 className={`font-serif text-3xl mt-2 ${t.title}`}>1 salami · {pkg.box}</h2>
+                  <p className={`mt-3 font-serif text-3xl ${t.price}`}>
+                    {pkg.price}
+                    <span className={`text-sm tracking-wide ml-1 ${t.unit}`}>{pkg.unit}</span>
+                  </p>
+                  <ul className={`mt-5 space-y-2 text-sm ${t.inc}`}>
+                    {pkg.includes.map((it) => (
+                      <li key={it} className="flex gap-2">
+                        <span className={t.bullet}>·</span>
+                        <span>{it}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className={`overline text-[10px] mt-5 pt-4 border-t ${t.min}`}>{pkg.min}</p>
+                </div>
+              );
+            })}
           </section>
 
           <MonogramDivider className="my-12" />

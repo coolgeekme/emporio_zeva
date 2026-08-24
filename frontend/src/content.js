@@ -92,7 +92,61 @@ export const CUSTOMIZATION = [
   { title: "NS Monogram Tissue Paper", body: "Subtle branded presentation designed to elevate the unboxing experience." },
 ];
 
+// Card color treatments for pricing tiers. Shared by the corporate deck
+// (slide 08) and the one-sheet so offers read as visually distinct. A tier
+// can set an explicit `tone`; otherwise a badge marks the dark hero card.
+export const TIER_TONES = {
+  light: {
+    card: "border-[#DFD7CA] bg-[#F9F6F0]",
+    name: "text-[#5C4E4A]",
+    title: "text-[#2A1F1D]",
+    price: "text-[#C05A3A]",
+    unit: "text-[#5C4E4A]",
+    body: "text-[#5C4E4A]",
+    inc: "text-[#5C4E4A]",
+    bullet: "text-[#C05A3A]",
+    min: "text-[#5C4E4A]",
+    badge: "text-[#C05A3A]",
+    dark: false,
+  },
+  dark: {
+    card: "bg-[#2A1F1D] text-[#F9F6F0] border-[#2A1F1D]",
+    name: "text-[#DFD7CA]",
+    title: "text-[#F9F6F0]",
+    price: "text-[#C05A3A]",
+    unit: "text-[#DFD7CA]",
+    body: "text-[#F9F6F0]",
+    inc: "text-[#F9F6F0]",
+    bullet: "text-[#C05A3A]",
+    min: "text-[#B9935A]",
+    badge: "text-[#C05A3A]",
+    dark: true,
+  },
+  ember: {
+    card: "bg-[#C05A3A] text-[#F9F6F0] border-[#C05A3A]",
+    name: "text-[#F5EFE2]",
+    title: "text-[#F9F6F0]",
+    price: "text-[#F9F6F0]",
+    unit: "text-[#F5EFE2]",
+    body: "text-[#F9F6F0]",
+    inc: "text-[#F9F6F0]",
+    bullet: "text-[#F9F6F0]",
+    min: "text-[#F5EFE2]",
+    badge: "text-[#F5EFE2]",
+    dark: true,
+  },
+};
+
+// Resolve a tier's tone: explicit `tone` wins, then badge → dark, else light.
+export function toneFor(pkg) {
+  if (pkg?.tone) return pkg.tone;
+  return pkg?.badge && String(pkg.badge).trim() ? "dark" : "light";
+}
+
 // Pricing tiers (slide 08) — REAL pricing, 24-unit case minimum
+// Each tier carries a `tone` (light | dark | ember) that drives its card
+// treatment so multiple offers stay visually distinct. `image` is an
+// optional box photograph (filled from the Media library in admin).
 export const CORPORATE_PACKAGES = [
   {
     name: "Curated",
@@ -106,6 +160,7 @@ export const CORPORATE_PACKAGES = [
       "Custom gift message",
       "NS monogram tissue paper",
     ],
+    tone: "light",
     min: "Program begins at one case (24 units)",
   },
   {
@@ -123,6 +178,23 @@ export const CORPORATE_PACKAGES = [
       "NS monogram tissue paper",
     ],
     badge: "Most chosen for institutional gifting",
+    tone: "dark",
+    min: "Program begins at one case (24 units)",
+  },
+  {
+    name: "Il Mini",
+    price: "TBD",
+    unit: "per unit",
+    box: "Mini Box",
+    blurb:
+      "A pocket-sized Not A Salami — half the size, all the ritual. Ideal for tasting flights and smaller gifting moments.",
+    includes: [
+      "1× Il Mini (Not A Salami)",
+      "Signature Postcard",
+      "Custom gift message",
+      "NS monogram tissue paper",
+    ],
+    tone: "ember",
     min: "Program begins at one case (24 units)",
   },
 ];

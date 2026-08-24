@@ -18,6 +18,8 @@ import {
   FULFILLMENT,
   PROCESS,
   FOUNDER_LETTER,
+  TIER_TONES,
+  toneFor,
 } from "../content";
 import MonogramDivider from "../components/MonogramDivider";
 import { getSlideField, TEMPLATE_SLIDES } from "../admin/deckManifest";
@@ -567,6 +569,8 @@ export default function BlackRock({ deck = null }) {
                   : tiers.length === 2
                   ? "md:grid-cols-2"
                   : "md:grid-cols-3";
+
+              // Distinct card treatments from the shared tone map.
               return (
                 <div className={`grid ${cols} gap-6 md:gap-8`}>
                   {tiers.map((pkg, i) => {
@@ -578,50 +582,55 @@ export default function BlackRock({ deck = null }) {
                           .split("\n")
                           .map((s) => s.replace(/^\s*[-*]\s*/, "").trim())
                           .filter(Boolean);
-                    // Presence of a badge marks the hero tier (dark card).
-                    const hero = !!(pkg.badge && pkg.badge.trim());
+                    // Explicit tone wins; otherwise a badge marks the dark hero card.
+                    const tone = toneFor(pkg);
+                    const t = TIER_TONES[tone] || TIER_TONES.light;
                     return (
                       <article
                         key={`${pkg.name}-${i}`}
                         data-testid={`pitch-package-${i}`}
-                        className={`fx ${i % 2 === 0 ? "fx-left" : "fx-right"} fx-d${2 + (i % 3) * 2} border p-7 md:p-9 flex flex-col ${
-                          hero
-                            ? "bg-[#2A1F1D] text-[#F9F6F0] border-[#2A1F1D]"
-                            : "border-[#DFD7CA] bg-[#F9F6F0]"
-                        }`}
+                        className={`fx ${i % 2 === 0 ? "fx-left" : "fx-right"} fx-d${2 + (i % 3) * 2} border p-7 md:p-9 flex flex-col ${t.card}`}
                       >
-                        {pkg.badge && (
-                          <p className="overline text-[#C05A3A] mb-3 text-[10px]">{pkg.badge}</p>
+                        {pkg.image && (
+                          <div className="mb-4 aspect-[4/3] w-full overflow-hidden rounded-sm bg-[#F5EFE2]">
+                            <img
+                              src={pkg.image}
+                              alt={pkg.name}
+                              className="h-full w-full object-cover"
+                              draggable="false"
+                            />
+                          </div>
                         )}
-                        <p className={`overline text-[10px] ${hero ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
+                        {pkg.badge && (
+                          <p className={`overline mb-3 text-[10px] ${t.badge}`}>{pkg.badge}</p>
+                        )}
+                        <p className={`overline text-[10px] ${t.name}`}>
                           {(pkg.name || "").toUpperCase()}
                         </p>
                         <h3
-                          className={`font-serif text-3xl md:text-4xl mt-2 leading-tight ${
-                            hero ? "text-[#F9F6F0]" : "text-[#2A1F1D]"
-                          }`}
+                          className={`font-serif text-3xl md:text-4xl mt-2 leading-tight ${t.title}`}
                         >
                           1 salami · {pkg.box}
                         </h3>
-                        <p className="mt-4 font-serif text-5xl text-[#C05A3A]">
+                        <p className={`mt-4 font-serif text-5xl ${t.price}`}>
                           {pkg.price}
-                          <span className={`text-base font-sans tracking-wide ml-2 ${hero ? "text-[#DFD7CA]" : "text-[#5C4E4A]"}`}>
+                          <span className={`text-base font-sans tracking-wide ml-2 ${t.unit}`}>
                             {pkg.unit}
                           </span>
                         </p>
-                        <div className={`mt-4 text-sm md:text-base leading-relaxed ${hero ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}`}>
-                          <SlideMarkdown dark={hero}>{pkg.blurb}</SlideMarkdown>
+                        <div className={`mt-4 text-sm md:text-base leading-relaxed ${t.body}`}>
+                          <SlideMarkdown dark={t.dark}>{pkg.blurb}</SlideMarkdown>
                         </div>
                         <ul className="mt-5 space-y-2 text-sm">
                           {includesList.map((inc, k) => (
                             <li key={k} className="flex gap-2 items-start">
-                              <span className="text-[#C05A3A]">·</span>
-                              <span className={hero ? "text-[#F9F6F0]" : "text-[#5C4E4A]"}>{inc}</span>
+                              <span className={t.bullet}>·</span>
+                              <span className={t.inc}>{inc}</span>
                             </li>
                           ))}
                         </ul>
                         {pkg.min && (
-                          <p className={`mt-auto pt-5 text-xs italic ${hero ? "text-[#B9935A]" : "text-[#5C4E4A]"}`}>
+                          <p className={`mt-auto pt-5 text-xs italic ${t.min}`}>
                             {pkg.min}
                           </p>
                         )}
