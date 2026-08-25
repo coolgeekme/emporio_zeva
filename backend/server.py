@@ -2386,6 +2386,64 @@ async def cleanup_orphaned_media():
         )
 
 
+# One-time data migration: decks that saved a custom 2-tier slide-8 pricing
+# override before the Il Mini tier shipped would keep shadowing the updated
+# 3-tier default. This appends Il Mini and adds the light/dark/ember tone
+# keys so those decks match the updated offer. Idempotent: skips any deck
+# that already has an Il Mini tier or isn't a 2-tier override.
+_MINI_TIER = {
+    "name": "Il Mini",
+    "box": "Mini Box",
+    "price": "TBD",
+    "unit": "per unit",
+    "blurb": (
+        "A pocket-sized Not A Salami — half the size, all the ritual. "
+        "Ideal for tasting flights and smaller gifting moments."
+    ),
+    # Newline-joined string to match the in-editor list format (content.js
+    # defaults use arrays; decks saved through the editor use strings).
+    "includes": (
+        "1× Il Mini (Not A Salami)\nSignature Postcard\n"
+        "Custom gift message\nNS monogram tissue paper"
+    ),
+    "badge": "",
+    "tone": "ember",
+    "min": "Program begins at one case (24 units)",
+}
+_TIER_TONES = {"Curated": "light", "Executive": "dark"}
+
+
+async def migrate_decks_mini_tier():
+    migrated = 0
+    cursor = db.decks.find(
+        {"slide_overrides.slide_8_pricing.items": {"$exists": True}}
+    )
+    async for deck in cursor:
+        items = (
+            deck.get("slide_overrides", {})
+            .get("slide_8_pricing", {})
+            .get("items")
+        )
+        if not isinstance(items, list) or len(items) != 2:
+            continue
+        if any((it or {}).get("name") == "Il Mini" for it in items):
+            continue
+        for it in items:
+            name = (it or {}).get("name")
+            if name in _TIER_TONES and not it.get("tone"):
+                it["tone"] = _TIER_TONES[name]
+        new_items = items + [dict(_MINI_TIER)]
+        await db.decks.update_one(
+            {"_id": deck["_id"]},
+            {"$set": {"slide_overrides.slide_8_pricing.items": new_items}},
+        )
+        migrated += 1
+    if migrated:
+        logging.getLogger(__name__).info(
+            "Migrated %d deck(s) to 3-tier pricing", migrated
+        )
+
+
 async def ensure_indexes():
     await db.users.create_index("email", unique=True)
     await db.users.create_index("id", unique=True)
@@ -2402,6 +2460,7 @@ async def on_startup():
     await seed_admin_user()
     await cleanup_orphaned_media()
     await heal_journal_images()
+    await migrate_decks_mini_tier()
 
 
 @app.on_event("shutdown")
