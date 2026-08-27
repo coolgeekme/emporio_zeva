@@ -7,6 +7,7 @@ import {
   Lock,
   Plus,
   Copy,
+  CopyPlus,
   Trash2,
   Edit2,
   ExternalLink,
@@ -1080,6 +1081,7 @@ function DecksPanel({ decks, token, onChange, error }) {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState(null);
   const [copiedSlug, setCopiedSlug] = useState(null);
+  const [duplicatingId, setDuplicatingId] = useState(null);
   const headers = { Authorization: `Bearer ${token}` };
 
   const deckUrl = (slug) => `${window.location.origin}/deck/${slug}`;
@@ -1091,6 +1093,18 @@ function DecksPanel({ decks, token, onChange, error }) {
       setTimeout(() => setCopiedSlug(null), 1500);
     } catch {
       /* clipboard blocked — silently no-op */
+    }
+  };
+
+  const duplicate = async (deck) => {
+    setDuplicatingId(deck.id);
+    try {
+      await axios.post(`${API}/admin/decks/${deck.id}/copy`, {}, { headers });
+      onChange();
+    } catch {
+      /* surfaced via parent error state on next fetch */
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -1198,6 +1212,16 @@ function DecksPanel({ decks, token, onChange, error }) {
                   data-testid={`deck-edit-${d.slug}`}
                 >
                   Edit intro
+                </button>
+                <button
+                  onClick={() => duplicate(d)}
+                  disabled={duplicatingId === d.id}
+                  className="btn-outline inline-flex items-center gap-2 text-xs px-3 py-2 disabled:opacity-50"
+                  title="Duplicate this deck as the starting point for a new presentation"
+                  data-testid={`deck-duplicate-${d.slug}`}
+                >
+                  <CopyPlus size={12} />
+                  {duplicatingId === d.id ? "Duplicating…" : "Duplicate"}
                 </button>
                 <button
                   onClick={() => copyLink(d.slug)}

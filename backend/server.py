@@ -1178,6 +1178,34 @@ async def admin_delete_deck(deck_id: str, _: dict = Depends(require_editor)):
     return {"deleted": True}
 
 
+@api_router.post("/admin/decks/{deck_id}/copy", response_model=Deck)
+async def admin_copy_deck(deck_id: str, _: dict = Depends(require_editor)):
+    """Duplicate a deck, preserving all slide overrides + template mode, so an
+    admin can pivot an existing presentation into a new one without rebuilding
+    from scratch. The copy gets a fresh id/slug, a "Copy of …" client name,
+    zeroed view stats, and a new created_at."""
+    source = await db.decks.find_one({"id": deck_id}, {"_id": 0})
+    if not source:
+        raise HTTPException(status_code=404, detail="Deck not found")
+    new_name = f"Copy of {source['client_name']}"
+    # Slug must stay unique — append a fresh 6-char random suffix so multiple
+    # copies of the same deck don't collide.
+    new_slug = f"{make_slug(new_name)}-{uuid.uuid4().hex[:6]}"
+    copy_doc = Deck(
+        slug=new_slug,
+        client_name=new_name,
+        domain=source.get("domain"),
+        logo_url=source.get("logo_url"),
+        intro_text=source.get("intro_text", ""),
+        template_mode=source.get("template_mode", "template"),
+        # Deep-ish clone — slide_overrides is a JSON-safe dict of dicts so
+        # model_dump()-then-copy through Deck() gives us an independent tree.
+        slide_overrides=source.get("slide_overrides") or {},
+    )
+    await db.decks.insert_one(copy_doc.model_dump())
+    return copy_doc
+
+
 @api_router.get("/decks/{slug}", response_model=Deck)
 async def get_deck(slug: str):
     """Public — fetch a deck by slug and increment view count."""

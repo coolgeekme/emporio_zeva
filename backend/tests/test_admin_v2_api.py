@@ -678,6 +678,97 @@ class TestInviteAndProfile:
         session.delete(f"{API}/admin/users/{editor['id']}", headers=admin_headers)
 
 
+# =============== DECK COPY ===============
+class TestDeckCopy:
+    """Duplicate-deck endpoint: independent id + slug, preserved overrides."""
+
+    def _make_deck(self, session, admin_headers, **extra):
+        payload = {
+            "client_name": f"CopyTest {uuid.uuid4().hex[:6]}",
+            "intro_text": "Hand-signed intro line.",
+            "logo_url": "https://example.com/logo.png",
+            "template_mode": "custom",
+            "slide_overrides": {
+                "slide_2_tradition": {"title_line1": "Bespoke title"},
+                "slide_5_use_cases": {
+                    "items": [
+                        {"title": "Custom 1", "body": "Body 1"},
+                        {"title": "Custom 2", "body": "Body 2"},
+                    ]
+                },
+            },
+            **extra,
+        }
+        r = session.post(f"{API}/admin/decks", headers=admin_headers, json=payload)
+        assert r.status_code in (200, 201), f"deck create failed: {r.status_code} {r.text}"
+        return r.json()
+
+    def test_copy_deck_produces_independent_copy(self, session, admin_headers):
+        src = self._make_deck(session, admin_headers)
+        try:
+            r = session.post(
+                f"{API}/admin/decks/{src['id']}/copy",
+                headers=admin_headers,
+            )
+            assert r.status_code in (200, 201), r.text
+            copy = r.json()
+            # Fresh id + fresh slug
+            assert copy["id"] != src["id"]
+            assert copy["slug"] != src["slug"]
+            # Client name prefixed with "Copy of"
+            assert copy["client_name"] == f"Copy of {src['client_name']}"
+            # Overrides deep-copied verbatim
+            assert copy["slide_overrides"] == src["slide_overrides"]
+            assert copy["template_mode"] == src["template_mode"]
+            assert copy["intro_text"] == src["intro_text"]
+            assert copy["logo_url"] == src["logo_url"]
+            # View stats reset on the copy
+            assert copy.get("view_count", 0) == 0
+
+            # Mutating the copy must not affect the source
+            session.patch(
+                f"{API}/admin/decks/{copy['id']}",
+                headers=admin_headers,
+                json={"intro_text": "Different intro on the copy"},
+            )
+            src_reread = session.get(f"{API}/decks/{src['slug']}").json()
+            assert src_reread["intro_text"] == src["intro_text"]
+
+            session.delete(f"{API}/admin/decks/{copy['id']}", headers=admin_headers)
+        finally:
+            session.delete(f"{API}/admin/decks/{src['id']}", headers=admin_headers)
+
+    def test_copy_deck_twice_produces_unique_slugs(self, session, admin_headers):
+        src = self._make_deck(session, admin_headers)
+        c1 = session.post(f"{API}/admin/decks/{src['id']}/copy", headers=admin_headers).json()
+        c2 = session.post(f"{API}/admin/decks/{src['id']}/copy", headers=admin_headers).json()
+        try:
+            assert c1["slug"] != c2["slug"]
+            assert c1["id"] != c2["id"]
+        finally:
+            for d in (c1, c2, src):
+                session.delete(f"{API}/admin/decks/{d['id']}", headers=admin_headers)
+
+    def test_copy_missing_deck_404s(self, session, admin_headers):
+        r = session.post(f"{API}/admin/decks/does-not-exist/copy", headers=admin_headers)
+        assert r.status_code == 404
+
+    def test_copy_requires_editor_role(self, session, admin_headers):
+        # Viewer cannot copy
+        viewer = _create_user(session, admin_headers, "viewer", prefix="COPY_RBAC")
+        v_token = _login(session, viewer["email"], viewer["password"]).json()["token"]
+        src = self._make_deck(session, admin_headers)
+        try:
+            r = session.post(
+                f"{API}/admin/decks/{src['id']}/copy",
+                headers={"Authorization": f"Bearer {v_token}"},
+            )
+            assert r.status_code in (401, 403)
+        finally:
+            session.delete(f"{API}/admin/decks/{src['id']}", headers=admin_headers)
+            session.delete(f"{API}/admin/users/{viewer['id']}", headers=admin_headers)
+
+
 # =============== SETTINGS ===============
 class TestSettings:
     def test_get_defaults_and_patch_roundtrip(self, session, admin_headers):
