@@ -753,6 +753,38 @@ class TestDeckCopy:
         r = session.post(f"{API}/admin/decks/does-not-exist/copy", headers=admin_headers)
         assert r.status_code == 404
 
+    def test_copy_deck_accepts_custom_client_name(self, session, admin_headers):
+        src = self._make_deck(session, admin_headers)
+        try:
+            r = session.post(
+                f"{API}/admin/decks/{src['id']}/copy",
+                headers=admin_headers,
+                json={"client_name": "Renamed Client Inc"},
+            )
+            assert r.status_code in (200, 201), r.text
+            copy = r.json()
+            assert copy["client_name"] == "Renamed Client Inc"
+            assert copy["slug"] != src["slug"]
+            assert copy["slug"].startswith("renamed-client-inc-")
+            session.delete(f"{API}/admin/decks/{copy['id']}", headers=admin_headers)
+        finally:
+            session.delete(f"{API}/admin/decks/{src['id']}", headers=admin_headers)
+
+    def test_copy_deck_blank_client_name_falls_back_to_copy_of(self, session, admin_headers):
+        src = self._make_deck(session, admin_headers)
+        try:
+            r = session.post(
+                f"{API}/admin/decks/{src['id']}/copy",
+                headers=admin_headers,
+                json={"client_name": "   "},
+            )
+            assert r.status_code in (200, 201), r.text
+            copy = r.json()
+            assert copy["client_name"] == f"Copy of {src['client_name']}"
+            session.delete(f"{API}/admin/decks/{copy['id']}", headers=admin_headers)
+        finally:
+            session.delete(f"{API}/admin/decks/{src['id']}", headers=admin_headers)
+
     def test_copy_requires_editor_role(self, session, admin_headers):
         # Viewer cannot copy
         viewer = _create_user(session, admin_headers, "viewer", prefix="COPY_RBAC")

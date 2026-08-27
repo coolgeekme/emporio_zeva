@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, UploadFile, File, Form
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, UploadFile, File, Form, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
@@ -1178,16 +1178,26 @@ async def admin_delete_deck(deck_id: str, _: dict = Depends(require_editor)):
     return {"deleted": True}
 
 
+class DeckCopyRequest(BaseModel):
+    client_name: Optional[str] = None
+
+
 @api_router.post("/admin/decks/{deck_id}/copy", response_model=Deck)
-async def admin_copy_deck(deck_id: str, _: dict = Depends(require_editor)):
+async def admin_copy_deck(
+    deck_id: str,
+    payload: DeckCopyRequest = Body(default_factory=DeckCopyRequest),
+    _: dict = Depends(require_editor),
+):
     """Duplicate a deck, preserving all slide overrides + template mode, so an
     admin can pivot an existing presentation into a new one without rebuilding
-    from scratch. The copy gets a fresh id/slug, a "Copy of …" client name,
-    zeroed view stats, and a new created_at."""
+    from scratch. The copy gets a fresh id/slug, a client name (either the one
+    provided in the request or a "Copy of …" fallback), zeroed view stats, and
+    a new created_at."""
     source = await db.decks.find_one({"id": deck_id}, {"_id": 0})
     if not source:
         raise HTTPException(status_code=404, detail="Deck not found")
-    new_name = f"Copy of {source['client_name']}"
+    requested = (payload.client_name or "").strip()
+    new_name = requested or f"Copy of {source['client_name']}"
     # Slug must stay unique — append a fresh 6-char random suffix so multiple
     # copies of the same deck don't collide.
     new_slug = f"{make_slug(new_name)}-{uuid.uuid4().hex[:6]}"

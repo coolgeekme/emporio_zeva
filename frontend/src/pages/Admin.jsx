@@ -1097,9 +1097,20 @@ function DecksPanel({ decks, token, onChange, error }) {
   };
 
   const duplicate = async (deck) => {
+    const suggested = `Copy of ${deck.client_name}`;
+    const input = window.prompt(
+      `Create a copy of "${deck.client_name}". What client name should the new deck use?`,
+      suggested
+    );
+    if (input === null) return; // user cancelled
+    const trimmed = input.trim();
     setDuplicatingId(deck.id);
     try {
-      await axios.post(`${API}/admin/decks/${deck.id}/copy`, {}, { headers });
+      await axios.post(
+        `${API}/admin/decks/${deck.id}/copy`,
+        trimmed ? { client_name: trimmed } : {},
+        { headers }
+      );
       onChange();
     } catch {
       /* surfaced via parent error state on next fetch */
@@ -1217,11 +1228,11 @@ function DecksPanel({ decks, token, onChange, error }) {
                   onClick={() => duplicate(d)}
                   disabled={duplicatingId === d.id}
                   className="btn-outline inline-flex items-center gap-2 text-xs px-3 py-2 disabled:opacity-50"
-                  title="Duplicate this deck as the starting point for a new presentation"
+                  title="Copy this deck as the starting point for a new presentation"
                   data-testid={`deck-duplicate-${d.slug}`}
                 >
                   <CopyPlus size={12} />
-                  {duplicatingId === d.id ? "Duplicating…" : "Duplicate"}
+                  {duplicatingId === d.id ? "Copying…" : "Copy deck"}
                 </button>
                 <button
                   onClick={() => copyLink(d.slug)}
