@@ -118,6 +118,27 @@ async def notify_inquiry(inquiry: dict, notify_emails: Optional[list[str]] = Non
     subject_line = escape(inquiry.get("subject") or "General Inquiry")
     message = escape(inquiry.get("message") or "").replace("\n", "<br/>")
     product_slug = escape(inquiry.get("product_slug") or "—")
+    kind = inquiry.get("kind") or "general"
+    company = escape(inquiry.get("company") or "")
+    preferred_date = escape(inquiry.get("preferred_date") or "")
+    location = escape(inquiry.get("location") or "")
+    num_guests = escape(inquiry.get("num_guests") or "")
+    occasion = escape(inquiry.get("occasion") or "")
+    special = escape(inquiry.get("special_requirements") or "").replace("\n", "<br/>")
+
+    extra_rows = ""
+    if kind != "general":
+        extra_rows += f'<tr><td style="padding:6px 0;color:#5C4E4A;">Request</td><td style="padding:6px 0;">{kind.replace("_", " ").title()}</td></tr>'
+    if company:
+        extra_rows += f'<tr><td style="padding:6px 0;color:#5C4E4A;">Company</td><td style="padding:6px 0;">{company}</td></tr>'
+    if preferred_date:
+        extra_rows += f'<tr><td style="padding:6px 0;color:#5C4E4A;">Preferred date</td><td style="padding:6px 0;">{preferred_date}</td></tr>'
+    if location:
+        extra_rows += f'<tr><td style="padding:6px 0;color:#5C4E4A;">Location</td><td style="padding:6px 0;">{location}</td></tr>'
+    if num_guests:
+        extra_rows += f'<tr><td style="padding:6px 0;color:#5C4E4A;">Guests</td><td style="padding:6px 0;">{num_guests}</td></tr>'
+    if occasion:
+        extra_rows += f'<tr><td style="padding:6px 0;color:#5C4E4A;">Occasion</td><td style="padding:6px 0;">{occasion}</td></tr>'
 
     # Internal notification
     internal_body = f"""
@@ -127,10 +148,10 @@ async def notify_inquiry(inquiry: dict, notify_emails: Optional[list[str]] = Non
         <tr><td style="padding:6px 0;color:#5C4E4A;">Phone</td><td style="padding:6px 0;">{phone}</td></tr>
         <tr><td style="padding:6px 0;color:#5C4E4A;">Subject</td><td style="padding:6px 0;">{subject_line}</td></tr>
         <tr><td style="padding:6px 0;color:#5C4E4A;">Product</td><td style="padding:6px 0;">{product_slug}</td></tr>
+        {extra_rows}
       </table>
-      <div style="font-family:Georgia,serif;font-size:14px;color:#2A1F1D;margin-top:20px;line-height:1.7;border-left:2px solid #C05A3A;padding:4px 0 4px 14px;">
-        {message}
-      </div>"""
+      {f'<div style="font-family:Georgia,serif;font-size:14px;color:#2A1F1D;margin-top:20px;line-height:1.7;border-left:2px solid #C05A3A;padding:4px 0 4px 14px;">{message}</div>' if message else ""}
+      {f'<div style="font-family:Georgia,serif;font-size:13px;font-style:italic;color:#5C4E4A;margin-top:14px;line-height:1.6;border-left:2px solid #B9935A;padding:4px 0 4px 14px;">Special requirements: {special}</div>' if special else ""}"""
 
     notify_list = notify_emails if notify_emails is not None else _legacy_notify_list()
     if notify_list:

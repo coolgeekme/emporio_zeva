@@ -123,6 +123,14 @@ class InquiryCreate(BaseModel):
     subject: Optional[str] = "General Inquiry"
     message: str
     product_slug: Optional[str] = None
+    # Corporate-experience fields (optional; used by the corporate inquiry form).
+    kind: Optional[str] = "general"  # general | corporate_tasting | corporate_proposal
+    company: Optional[str] = ""
+    preferred_date: Optional[str] = ""
+    location: Optional[str] = ""
+    num_guests: Optional[str] = ""
+    occasion: Optional[str] = ""
+    special_requirements: Optional[str] = ""
 
 
 class Inquiry(InquiryCreate):

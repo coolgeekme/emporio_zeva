@@ -372,7 +372,13 @@ export default function SettingsPanel({ token, readOnly, currentUser, onUserUpda
               value={data.general.instagram_handle}
               onChange={(e) => updateGeneral("instagram_handle", e.target.value)}
               data-testid="settings-instagram-input"
+              placeholder="Leave blank to hide Instagram until your account is live"
             />
+            <p className="text-xs text-[#5C4E4A] mt-1">
+              Leave empty and the Instagram link stays hidden on the site. When
+              your account is ready, add the handle (e.g. @notasalami) and the
+              link appears everywhere automatically.
+            </p>
           </div>
           <div className="field md:col-span-2">
             <label htmlFor="s-addr">Address</label>

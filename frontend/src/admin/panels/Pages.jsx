@@ -2,7 +2,7 @@
 // and Nav/Footer visibility checkboxes.
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import { Plus, Trash2, X, Edit2, ChevronRight, Image as ImageIcon, Eye } from "lucide-react";
+import { Plus, Trash2, X, Edit2, ChevronRight, Copy, Image as ImageIcon, Eye } from "lucide-react";
 import { API, authHeaders, formatApiErrorDetail, formatDate } from "../api";
 import HistoryDrawer, { HistoryButton } from "../HistoryDrawer";
 
@@ -488,6 +488,38 @@ export default function PagesPanel({ token }) {
     }
   };
 
+  // One-click duplicate — copies title/excerpt/body + parent as a new DRAFT
+  // (never auto-publishes, never inherits nav/footer visibility).
+  const duplicate = async (p) => {
+    const base = (p.slug || "page").replace(/-copy(-\d+)?$/, "");
+    let slug = `${base}-copy`;
+    let n = 2;
+    const existing = new Set(rows.map((r) => r.slug));
+    while (existing.has(slug)) {
+      slug = `${base}-copy-${n++}`;
+    }
+    try {
+      await axios.post(
+        `${API}/admin/pages`,
+        {
+          title: `${p.title} (copy)`,
+          slug,
+          excerpt: p.excerpt || "",
+          body: p.body || "",
+          parent_id: p.parent_id,
+          menu_order: p.menu_order || 0,
+          status: "draft",
+          show_in_nav: false,
+          show_in_footer: false,
+        },
+        { headers: authHeaders(token) }
+      );
+      await load();
+    } catch (err) {
+      setError(formatApiErrorDetail(err?.response?.data?.detail, "Couldn't duplicate page."));
+    }
+  };
+
   return (
     <div className="space-y-5" data-testid="admin-pages-panel">
       <header className="flex items-center justify-between gap-4 flex-wrap">
@@ -627,6 +659,14 @@ export default function PagesPanel({ token }) {
                         data-testid={`pages-edit-${p.id}`}
                       >
                         <Edit2 size={12} /> Edit
+                      </button>
+                      <button
+                        onClick={() => duplicate(p)}
+                        className="text-[#5C4E4A] hover:underline inline-flex items-center gap-1"
+                        data-testid={`pages-duplicate-${p.id}`}
+                        title="Duplicate as a draft"
+                      >
+                        <Copy size={12} /> Copy
                       </button>
                       <button
                         onClick={() => remove(p.id)}

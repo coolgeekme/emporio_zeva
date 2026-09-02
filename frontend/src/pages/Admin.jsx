@@ -340,6 +340,48 @@ function InquiryDetailDialog({ inquiry, token, canEdit, onClose, onSaved, onDele
               <p className="text-[#2A1F1D]">{formatDate(inquiry.created_at)}</p>
             </div>
           </div>
+          {(inquiry.kind?.startsWith("corporate") || inquiry.company) && (
+            <div className="border border-[#DFD7CA] bg-[#FBF7EE] p-4">
+              <p className="overline text-[#C05A3A] text-[10px] mb-3">Request details</p>
+              <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                <div>
+                  <p className="overline text-[#5C4E4A] text-[10px]">Request type</p>
+                  <p className="text-[#2A1F1D]">
+                    {{
+                      corporate_tasting: "Book a Corporate Tasting",
+                      corporate_proposal: "Request a Corporate Proposal",
+                    }[inquiry.kind] || inquiry.subject || "General"}
+                  </p>
+                </div>
+                <div>
+                  <p className="overline text-[#5C4E4A] text-[10px]">Company</p>
+                  <p className="text-[#2A1F1D]">{inquiry.company || "—"}</p>
+                </div>
+                <div>
+                  <p className="overline text-[#5C4E4A] text-[10px]">Preferred date</p>
+                  <p className="text-[#2A1F1D]">{inquiry.preferred_date || "Flexible"}</p>
+                </div>
+                <div>
+                  <p className="overline text-[#5C4E4A] text-[10px]">Location</p>
+                  <p className="text-[#2A1F1D]">{inquiry.location || "—"}</p>
+                </div>
+                <div>
+                  <p className="overline text-[#5C4E4A] text-[10px]">Guests</p>
+                  <p className="text-[#2A1F1D]">{inquiry.num_guests || "—"}</p>
+                </div>
+                <div>
+                  <p className="overline text-[#5C4E4A] text-[10px]">Occasion</p>
+                  <p className="text-[#2A1F1D]">{inquiry.occasion || "—"}</p>
+                </div>
+                {inquiry.special_requirements && (
+                  <div className="sm:col-span-2">
+                    <p className="overline text-[#5C4E4A] text-[10px]">Special requirements</p>
+                    <p className="text-[#2A1F1D] whitespace-pre-wrap">{inquiry.special_requirements}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           <div>
             <p className="overline text-[#5C4E4A] text-[10px] mb-1">Message</p>
             <p className="text-sm text-[#2A1F1D] whitespace-pre-wrap bg-[#F5EFE2] p-4 border border-[#DFD7CA]">
@@ -1297,6 +1339,7 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
   });
   const [deleting, setDeleting] = useState(false);
   const [viewingInquiry, setViewingInquiry] = useState(null);
+  const [query, setQuery] = useState("");
   const canEditInquiries = role === "admin" || role === "editor";
 
   const fetchTab = useCallback(
@@ -1331,7 +1374,16 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
     fetchTab(active);
   }, [active, fetchTab]);
 
-  const current = data[active] || [];
+  const allRows = data[active] || [];
+  // Live search across every field of the current tab's rows.
+  const q = query.trim().toLowerCase();
+  const current = q
+    ? allRows.filter((r) =>
+        Object.values(r || {})
+          .filter((v) => v != null)
+          .some((v) => String(v).toLowerCase().includes(q))
+      )
+    : allRows;
   const selectableTab = active === "waitlist" || active === "inquiries" || active === "newsletter";
   const currentSelection = selectableTab ? selection[active] : null;
   const selectedCount = currentSelection?.size ?? 0;
@@ -1392,12 +1444,30 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
     ],
     inquiries: [
       { key: "created_at", label: "Date", render: (r) => formatDate(r.created_at) },
+      { key: "company", label: "Company", render: (r) => r.company || "—" },
       { key: "name", label: "Name" },
       { key: "email", label: "Email" },
       { key: "phone", label: "Phone", render: (r) => r.phone || "—" },
-      { key: "subject", label: "Subject" },
+      {
+        key: "subject",
+        label: "Request",
+        render: (r) => {
+          const kindLabel = {
+            corporate_tasting: "Corporate tasting",
+            corporate_proposal: "Corporate proposal",
+          }[r.kind];
+          return kindLabel || r.subject || "General inquiry";
+        },
+      },
       { key: "product_slug", label: "Product", render: (r) => r.product_slug || "—" },
-      { key: "message", label: "Message" },
+      {
+        key: "message",
+        label: "Message",
+        render: (r) =>
+          r.message && r.message.length > 48
+            ? `${r.message.slice(0, 48)}…`
+            : r.message || "—",
+      },
       {
         key: "notes",
         label: "Notes",
@@ -1448,6 +1518,8 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
           <p className="text-sm text-[#5C4E4A] mt-1" data-testid="admin-count">
             {loading
               ? "Loading…"
+              : q
+              ? `${current.length} of ${allRows.length} ${active} match`
               : selectableTab && selectedCount > 0
               ? `${selectedCount} of ${current.length} ${active} selected`
               : `${current.length} ${active}`}
@@ -1486,6 +1558,20 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
           )}
         </div>
       </div>
+
+      {/* Search — only for the list tabs (waitlist / inquiries / newsletter) */}
+      {selectableTab && (
+        <div className="mb-4">
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Search ${active} — name, email, company, subject, message…`}
+            className="w-full max-w-md border border-[#DFD7CA] bg-white px-4 py-2 text-sm focus:outline-none focus:border-[#B9935A]"
+            data-testid="admin-search-input"
+          />
+        </div>
+      )}
 
       {/* Panel */}
       <div>

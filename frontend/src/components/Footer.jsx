@@ -36,7 +36,8 @@ export default function Footer() {
   }, []);
 
   const email = settings?.general?.contact_email || CONTACT.email_primary;
-  const instagram = settings?.general?.instagram_handle || CONTACT.instagram;
+  const igRaw = settings?.general?.instagram_handle || CONTACT.instagram;
+  const instagram = igRaw ? igRaw.trim().replace(/^@/, "") : "";
   const address = settings?.general?.address || CONTACT.city;
   return (
     <footer
@@ -102,6 +103,7 @@ export default function Footer() {
               <li><Link to="/our-story" data-testid="footer-link-story" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Our Story</Link></li>
               <li><Link to="/ritual" data-testid="footer-link-ritual" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">The Ritual</Link></li>
               <li><Link to="/journal" data-testid="footer-link-journal" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Journal</Link></li>
+              <li><Link to="/corporate-experiences" data-testid="footer-link-corporate" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Corporate Experiences</Link></li>
               <li><Link to="/contact" data-testid="footer-link-contact" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Contact</Link></li>
               {cmsLinks.map((l) => (
                 <li key={l.to}>
@@ -125,10 +127,20 @@ export default function Footer() {
                 <Mail size={14} className="text-[#C05A3A]" />
                 <a href={`mailto:${email}`} data-testid="footer-email" className="hover:text-[#C05A3A] transition-colors">{email}</a>
               </li>
-              <li className="flex items-center gap-2">
-                <Instagram size={14} className="text-[#C05A3A]" />
-                <a href="#" data-testid="footer-instagram" className="hover:text-[#C05A3A] transition-colors">{instagram}</a>
-              </li>
+              {instagram && (
+                <li className="flex items-center gap-2">
+                  <Instagram size={14} className="text-[#C05A3A]" />
+                  <a
+                    href={`https://instagram.com/${instagram}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-testid="footer-instagram"
+                    className="hover:text-[#C05A3A] transition-colors"
+                  >
+                    @{instagram}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>

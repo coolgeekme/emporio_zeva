@@ -9,6 +9,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const links = [
   { to: "/", label: "Home" },
   { to: "/collection", label: "Collection" },
+  { to: "/corporate-experiences", label: "Corporate" },
   { to: "/ritual", label: "Ritual" },
   { to: "/our-story", label: "Our Story" },
   { to: "/journal", label: "Journal" },

@@ -19,7 +19,9 @@ export const CONTACT = {
   phone: "+1 415-640-3005",
   phone_display: "415 · 640 · 3005",
   city: "San Francisco, CA",
-  instagram: "@notasalami",
+  // Instagram is intentionally blank until the account is activated — the
+  // footer/contact rows only render when a handle is set (via admin Settings).
+  instagram: "",
 };
 
 export const TAGLINES = {

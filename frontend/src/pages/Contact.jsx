@@ -48,12 +48,20 @@ export default function Contact() {
                   {CONTACT.email_primary}
                 </a>
               </li>
-              <li className="flex gap-3 items-center">
-                <Instagram size={18} className="text-[#C05A3A]" />
-                <a href="#" className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors" data-testid="contact-instagram">
-                  {CONTACT.instagram}
-                </a>
-              </li>
+              {CONTACT.instagram && (
+                <li className="flex gap-3 items-center">
+                  <Instagram size={18} className="text-[#C05A3A]" />
+                  <a
+                    href={`https://instagram.com/${CONTACT.instagram.replace(/^@/, "")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors"
+                    data-testid="contact-instagram"
+                  >
+                    {CONTACT.instagram}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
           <div className="border-t border-[#DFD7CA] pt-10">
