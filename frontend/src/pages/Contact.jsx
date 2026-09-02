@@ -1,13 +1,35 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Mail, MapPin, Instagram, Phone } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import InquiryForm from "../components/InquiryForm";
 import { CONTACT } from "../content";
 import { useSiteContent } from "../hooks/useSiteContent";
 
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
 export default function Contact() {
   const [searchParams] = useSearchParams();
   const productSlug = searchParams.get("product");
   const c = useSiteContent("contact");
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    axios
+      .get(`${API}/settings`)
+      .then(({ data }) => {
+        if (!cancelled) setSettings(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Instagram shows only when a handle is set (admin Settings → General).
+  const igRaw = settings?.general?.instagram_handle || CONTACT.instagram;
+  const igHandle = igRaw ? igRaw.trim().replace(/^@/, "") : "";
   return (
     <div className="pt-[90px]" data-testid="contact-page">
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-12 border-b border-[#DFD7CA]">
@@ -48,17 +70,17 @@ export default function Contact() {
                   {CONTACT.email_primary}
                 </a>
               </li>
-              {CONTACT.instagram && (
+              {igHandle && (
                 <li className="flex gap-3 items-center">
                   <Instagram size={18} className="text-[#C05A3A]" />
                   <a
-                    href={`https://instagram.com/${CONTACT.instagram.replace(/^@/, "")}`}
+                    href={`https://instagram.com/${igHandle}`}
                     target="_blank"
                     rel="noreferrer"
                     className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors"
                     data-testid="contact-instagram"
                   >
-                    {CONTACT.instagram}
+                    @{igHandle}
                   </a>
                 </li>
               )}

@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { ArrowRight, Calendar, Clock, MapPin, Users, Mail } from "lucide-react";
+import { ArrowRight, Calendar, Clock, MapPin, Users } from "lucide-react";
 import { CONTACT } from "../content";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -24,6 +24,15 @@ function CorporateInquiryForm({ requestType, onTypeChange }) {
     message: "",
   });
   const [status, setStatus] = useState("idle"); // idle | loading | ok | err
+
+  // Keep the form's selected request type in sync when the parent changes it
+  // (e.g. the hero CTAs "Book a Corporate Tasting" / "Request a Corporate
+  // Proposal" scroll to the form with a specific type preselected).
+  useEffect(() => {
+    if (requestType) {
+      setForm((f) => (f.type === requestType ? f : { ...f, type: requestType }));
+    }
+  }, [requestType]);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 

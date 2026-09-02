@@ -1503,6 +1503,21 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
         if (c.skipExport) return;
         out[c.key] = r[c.key] ?? "";
       });
+      // Inquiries: also export the structured corporate fields so exports are
+      // complete even though those columns are shown only in the detail view.
+      if (active === "inquiries") {
+        [
+          "kind",
+          "company",
+          "preferred_date",
+          "location",
+          "num_guests",
+          "occasion",
+          "special_requirements",
+        ].forEach((k) => {
+          if (!(k in out)) out[k] = r[k] ?? "";
+        });
+      }
       return out;
     });
     const stamp = new Date().toISOString().slice(0, 10);
