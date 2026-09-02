@@ -1,0 +1,55 @@
+{
+  "summary": "Verified commit 6c3c220 (Corporate Experiences page + admin upgrades) end-to-end on preview. Backend: 16 pytest cases (10 corporate/admin + 6 auth playbook) all pass — new optional inquiry fields persist, legacy payload still works, admin lists clean of _id, pages CRUD/duplicate, bcrypt $2b$ hash, brute-force lockout after 5 fails (429). Frontend: corporate page/title/nav/footer links, form submission with success state, admin Inquiries Company+Request columns, live search + match count on Inquiries/Waitlist/Newsletter, Request details block in inquiry dialog, Pages Copy->draft with unique slug, Settings Instagram helper text, footer Instagram conditional (hidden when cleared, reappears with correct href). 2 real defects found: (1) the 'Request a Corporate Proposal' hero CTA does not switch the form's request kind, (2) /contact never renders an Instagram link even when the handle is set. All test records (1 corporate inquiry via UI, 2 via API, 1 legacy inquiry, scratch+copy pages, a stale 'TEST dup' page from an earlier run) were deleted; Instagram handle restored to '@notasalami'.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/admin/pages", "issue": "Duplicate slug is accepted (200) — server auto-suffixes to '<slug>-2' instead of returning 400/409. Acceptable but undocumented; frontend does its own uniqueness scan."},
+      {"endpoint": "Settings / notification recipients", "issue": "No notification recipients configured, so corporate inquiry emails (emailer.py new fields) have nowhere to go — the email path is effectively untested/inactive in preview. Add a recipient before production redeploy if Eva expects inbox alerts."},
+      {"endpoint": "CORS / session", "issue": "allow_origins defaults to '*' with allow_credentials=True (playbook expects explicit origins); admin session is a bearer JWT in sessionStorage, not an httpOnly cookie. Pre-existing, not introduced by this commit."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "CorporateExperiences.jsx / CorporateInquiryForm", "issue": "Hero CTA 'Request a Corporate Proposal' scrolls to the form but does NOT switch the request kind — submit button stays 'Book a Corporate Tasting' and a submit would save kind=corporate_tasting. Root cause: useState(requestType) only reads the prop on mount; onTypeChange/requestType prop changes are never synced (no useEffect / no key reset). Manually clicking the 'Request a Corporate Proposal' tile does work.", "selector": "[data-testid=\"corporate-cta-proposal\"] -> [data-testid=\"corporate-submit-button\"]", "priority": "HIGH"},
+      {"component": "Contact.jsx", "issue": "Instagram link never renders on /contact. It is gated on the static CONTACT.instagram from content.js (which is ''), instead of settings.general.instagram_handle. With the handle set to '@notasalami' the footer shows the link but /contact shows nothing — the 'link reappears everywhere' promise in the Settings helper text is not met.", "selector": "[data-testid=\"contact-instagram\"]", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [
+      {"flow": "Admin Inquiries CSV export", "issue": "CSV contains only the visible column keys: created_at,company,name,email,phone,subject,product_slug,message,notes. The new corporate fields (kind, preferred_date, location, num_guests, occasion, special_requirements) are NOT exported, and the 'Request' column exports the raw subject instead of the corporate label shown in the table.", "affected_selectors": ["[data-testid=\"admin-export-button\"]"]}
+    ],
+    "design_issues": [
+      {"screen": "Corporate Experiences form", "issues": ["'Preferred date' uses the browser-native date input (mm/dd/yyyy) which clashes with the editorial styling of the rest of the form", "Inquiry row detail is only reachable via the small 'Notes' action link; clicking the row itself does nothing (discoverability)"]},
+      {"screen": "Footer legal bar", "issues": ["Bottom legal strip text is dark on the dark #2A1F1D footer — low contrast", "Badge says 'HERE & NOW · 2024' while the copyright line reads 2025/2026"]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_corporate_and_admin_v3.py",
+    "/app/backend/tests/test_auth_playbook.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix CorporateExperiences form: sync form.type with the requestType prop (useEffect on requestType, or remount the form with key={requestType}) so the 'Request a Corporate Proposal' CTA selects the proposal kind.",
+    "Make /contact read settings.general.instagram_handle (same logic as Footer.jsx) instead of the static CONTACT.instagram so the link appears/hides with the setting.",
+    "Include the new corporate fields in the Inquiries CSV export (kind/request label, preferred_date, location, num_guests, occasion, special_requirements).",
+    "Add at least one notification recipient in Settings so inquiry emails actually send (currently 'No recipients configured yet')."
+  ],
+  "critical_code_review_comments": [
+    "CorporateInquiryForm derives state from props with useState only — classic stale-prop bug; either lift the request kind fully to the parent or sync with useEffect.",
+    "Instagram visibility logic is duplicated (Footer.jsx computes it from settings, Contact.jsx from content.js). Extract a useSiteSettings()/instagramUrl() helper to avoid the divergence that caused this bug.",
+    "/app/frontend/src/pages/Admin.jsx is ~1600+ lines and mixes login, table, CSV, dialogs and 6 panels — split into modules (columns config, CSV util, InquiryDetailDialog already separable).",
+    "exportCsv derives headers from visible columns only; corporate payload data silently drops out of exports."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_corporate_and_admin_v3.py",
+    "/app/backend/tests/test_auth_playbook.py",
+    "/app/backend/tests/verify_ui_inquiry.py",
+    "/app/backend/tests/seed_admin_ui_inquiry.py",
+    "/app/backend/tests/check_instagram_setting.py"
+  ],
+  "success_rate": {"backend": "100% (16/16 pytest cases)", "frontend": "~80% (6 of 8 reviewed features fully pass; 2 defects)"},
+  "seed_data_creation": "Created and deleted: 3 corporate/legacy inquiries via API, 1 corporate inquiry via the public UI (test_ui_corp@example.com), 1 admin-UI fixture inquiry (test_admin_corp@example.com), scratch page 'ZQTEST Scratch UI' + its copy, plus a stale 'TEST dup' page left by an earlier failed run. Verified DB has 0 ZQTEST/TEST-dup records afterwards. Instagram handle toggled and restored to '@notasalami' (verified via GET /api/settings).",
+  "should_call_test_agent_after_fix": true,
+  "should_main_agent_self_test": false,
+  "test_credentials": "admin@notasalami.com / zeva-admin-2026 (from /app/memory/test_credentials.md)",
+  "context_for_next_testing_agent": "Per-feature verdicts: (1) /corporate-experiences renders, H1 'Bring your team to the table.', Nav CORPORATE (desktop + mobile menu) and footer 'Corporate Experiences' links both navigate — PASS; hero CTA 'Book a Corporate Tasting' PASS, 'Request a Corporate Proposal' FAIL (kind not switched). (2) Public corporate form submit PASS — persisted with kind=corporate_proposal + all 7 new fields, success state 'Your request is in Eva's inbox.', cleaned up. (3) Backend POST /api/inquiries new fields + legacy {name,email,message} PASS, invalid email -> 422. (4) Admin Inquiries Company/Request columns PASS, search + 'X of Y inquiries match' PASS, 'Request details' block PASS (dialog opens from the row's 'Notes' link, NOT by clicking the row), CSV missing new fields. (5) Waitlist/Newsletter search PASS. (6) Pages 'Copy' PASS (creates '<title> (copy)' draft with '<slug>-copy'). (7) Settings Instagram helper text PASS. (8) Footer Instagram conditional PASS (href https://instagram.com/notasalami); /contact Instagram FAIL. Useful notes: admin dashboard has no [data-testid=\"admin-dashboard\"] until a list tab is opened — wait for text 'Hello, Admin.'; settings save button is [data-testid=\"settings-save-button\"] ('Save settings'); page.fill('') on the Instagram input can be a no-op in React — use click + Control+A + Delete.",
+  "rca_of_the_issue": "CTA bug: CorporateInquiryForm initialises local state via useState({type: requestType||'tasting'}) so later changes to the requestType prop (set by goToForm) never reach the form; only the scroll happens. Contact Instagram bug: Contact.jsx gates the link on CONTACT.instagram from /app/frontend/src/content.js, which is intentionally '' , and never consumes the settings API, so the admin Instagram handle has no effect on /contact (Footer.jsx does consume settings, which is why the two surfaces disagree)."
+}

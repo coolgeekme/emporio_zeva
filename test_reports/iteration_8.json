@@ -1,0 +1,36 @@
+{
+  "summary": "Targeted re-verification of the 3 fixes in commit 98aa6bf on preview. ALL THREE PASS. (1) Corporate hero CTA now syncs form kind: 'Request a Corporate Proposal' scrolls the form into view, selects the proposal tile and flips the submit label to 'Request a Corporate Proposal →'; a UI submission persisted with kind='corporate_proposal' plus company/guests/occasion; clicking 'Book a Corporate Tasting' after the proposal CTA flips back and persisted kind='corporate_tasting'. (2) /contact renders the Instagram row from settings.general.instagram_handle (href https://instagram.com/notasalami, text @notasalami); clearing the handle in admin Settings hides it on BOTH /contact and the footer; restoring '@notasalami' brings both back. Handle restored and verified via GET /api/settings. (3) Inquiries CSV export now contains kind, company, preferred_date, location, num_guests, occasion, special_requirements with correct values for a corporate inquiry. All ZQTEST8 records deleted; DB verified clean.",
+  "backend_issues": {"critical": [], "minor": [
+    {"endpoint": "POST /api/inquiries", "issue": "num_guests is typed as str in the Pydantic model — sending a JSON number (22) returns 422. Public UI sends a string so no user impact, but API consumers/integrations may trip on it. Consider Union[int,str] or coercion."}
+  ]},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Admin Inquiries CSV", "issues": ["'subject' is still exported raw (e.g. 'Corporate proposal') rather than the friendly 'Request' label shown in the table; acceptable since 'kind' is now exported alongside it"]},
+      {"screen": "Corporate Experiences form", "issues": ["'Preferred date' still uses the browser-native date input (mm/dd/yyyy) instead of a styled/shadcn calendar — pre-existing, cosmetic"]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_fixes_98aa6bf.py",
+    "/app/backend/tests/test_corporate_and_admin_v3.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "None blocking — all 3 items from commit 98aa6bf verified on preview; safe to redeploy to notasalami.com.",
+    "Optional (carried over from iteration_7): add at least one notification recipient in Settings so corporate inquiry emails actually send; consider extracting a shared instagramUrl() helper (logic is still duplicated in Footer.jsx and Contact.jsx); Admin.jsx remains ~1600 lines."
+  ],
+  "critical_code_review_comments": [
+    "Contact.jsx now duplicates the Footer's instagram-handle normalisation (settings?.general?.instagram_handle || CONTACT.instagram, strip leading @). Correct but duplicated — extract to a hook/util so the two surfaces cannot diverge again.",
+    "exportCsv special-cases active === 'inquiries' with a hard-coded field list; a per-tab exportExtraKeys config on the columns definition would be cleaner and avoid the same omission for future tabs.",
+    "CorporateInquiryForm's useEffect prop sync is correct and guards against redundant state writes; no stale-prop path left."
+  ],
+  "updated_files": ["/app/backend/tests/test_fixes_98aa6bf.py", "/app/test_reports/iteration_8.json"],
+  "success_rate": {"backend": "100% (12/12 pytest cases incl. regression suite)", "frontend": "100% (3/3 targeted items pass)"},
+  "seed_data_creation": "Created and deleted 3 inquiries: zqtest8_prop@example.com (UI, proposal), zqtest8_tast@example.com (UI, tasting), zqtest8_export@example.com (API, CSV fixture). DB verified free of ZQTEST8 records. Instagram handle toggled empty -> restored to '@notasalami'.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": false,
+  "test_credentials": "admin@notasalami.com / zeva-admin-2026 (from /app/memory/test_credentials.md)",
+  "context_for_next_testing_agent": "Verdicts at 98aa6bf: item1 CTA kind sync PASS, item2 /contact Instagram PASS, item3 CSV corporate fields PASS. Correct admin login testids are [data-testid=admin-email-input] / admin-password-input / admin-login-button (NOT admin-login-email). Sidebar nav is [data-testid=admin-nav-<panel>]. Instagram field is [data-testid=settings-instagram-input] (in /app/frontend/src/admin/panels/Settings.jsx) — clear it with click + Control+A + Delete. CSV export is a real browser download: use page.expect_download around [data-testid=admin-export-button]; narrow rows first with [data-testid=admin-search-input]. POST /api/inquiries requires num_guests as a STRING. Auth-playbook checks (bcrypt $2b$, 5-attempt lockout) were verified in iteration_7 and deliberately NOT re-run here to avoid locking the admin account for 15 minutes ahead of the production redeploy.",
+  "rca_of_the_issue": "Both iteration_7 defects are fixed at root: CorporateInquiryForm adds a useEffect([requestType]) that syncs form.type when the parent CTA changes it (previously state was derived from props via useState only); Contact.jsx now fetches GET /api/settings and gates the Instagram row on settings.general.instagram_handle, matching Footer.jsx. Admin exportCsv appends the 7 corporate keys for the inquiries tab so they appear in both header and row."
+}
