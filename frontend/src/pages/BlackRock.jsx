@@ -351,9 +351,8 @@ export default function BlackRock({ deck = null }) {
               <img
                 src={NOT_A_SALAMI_SEAL}
                 alt="Not A Salami"
-                className="h-16 w-16 mt-6 select-none rounded-full fx fx-up fx-d5"
+                className="h-16 w-16 mt-6 select-none fx fx-up fx-d5"
                 draggable="false"
-                style={{ mixBlendMode: "multiply" }}
               />
             </div>
           </div>

@@ -11,6 +11,7 @@ import {
   RITUAL,
   TAGLINES,
   NOT_A_SALAMI_SEAL,
+  NOT_A_SALAMI_SEAL_LIGHT,
 } from "../content";
 import { useReveal } from "../hooks/useReveal";
 import { useSiteContent } from "../hooks/useSiteContent";
@@ -458,11 +459,11 @@ export default function Home() {
       >
         {/* Brand seal watermark — large, low-opacity, inverted to cream on dark */}
         <img
-          src={NOT_A_SALAMI_SEAL}
+          src={NOT_A_SALAMI_SEAL_LIGHT}
           alt=""
           aria-hidden="true"
           className="pointer-events-none select-none absolute -right-32 -bottom-40 w-[680px] h-[680px] hidden md:block"
-          style={{ filter: "invert(1)", mixBlendMode: "screen", opacity: 0.06 }}
+          style={{ mixBlendMode: "screen", opacity: 0.07 }}
           data-testid="testimonials-watermark"
         />
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 relative">

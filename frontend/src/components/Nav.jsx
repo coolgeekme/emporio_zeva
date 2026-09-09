@@ -59,7 +59,7 @@ export default function Nav() {
           <img
             src={NOT_A_SALAMI_SEAL}
             alt="Not A Salami · Sicilian Cocoa Confection"
-            className="h-[64px] w-[64px] md:h-[76px] md:w-[76px] rounded-full select-none mix-blend-multiply"
+            className="h-[64px] w-[64px] md:h-[76px] md:w-[76px] select-none"
             draggable="false"
           />
         </Link>

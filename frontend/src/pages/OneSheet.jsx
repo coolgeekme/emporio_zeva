@@ -40,9 +40,8 @@ export default function OneSheet() {
             <img
               src={NOT_A_SALAMI_SEAL}
               alt="Not A Salami"
-              className="h-24 w-24 mx-auto rounded-full select-none"
+              className="h-24 w-24 mx-auto select-none"
               draggable="false"
-              style={{ mixBlendMode: "multiply" }}
             />
             <p className="overline text-[#C05A3A] mt-6">A Sicilian Cocoa Confection</p>
             <h1 className="font-serif text-5xl md:text-6xl mt-3 text-[#2A1F1D] leading-tight">

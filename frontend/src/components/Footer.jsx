@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Instagram, Mail, Phone } from "lucide-react";
-import { SF_MADE_BADGE, NOT_A_SALAMI_SEAL, BRAND, CONTACT, TAGLINES } from "../content";
+import { SF_MADE_BADGE, NOT_A_SALAMI_SEAL_LIGHT, BRAND, CONTACT, TAGLINES } from "../content";
 import NewsletterForm from "./NewsletterForm";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -67,11 +67,10 @@ export default function Footer() {
           <div className="md:col-span-5">
             <Link to="/" data-testid="footer-logo" className="inline-flex">
               <img
-                src={NOT_A_SALAMI_SEAL}
+                src={NOT_A_SALAMI_SEAL_LIGHT}
                 alt="Not A Salami · Sicilian Cocoa Confection"
-                className="h-32 w-32 rounded-full select-none"
+                className="h-32 w-32 select-none"
                 draggable="false"
-                style={{ filter: "invert(1) brightness(1.02)", mixBlendMode: "screen" }}
               />
             </Link>
             <p className="mt-6 text-[#DFD7CA] max-w-sm leading-relaxed italic font-serif text-lg">

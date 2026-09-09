@@ -325,7 +325,10 @@ export const LOGO_URL =
   "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/p5bi7qmt_EMPORIO-ZEVA-logo.png";
 
 export const NOT_A_SALAMI_SEAL =
-  "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/qk1gcxrs_image2.jpeg";
+  "/brand/not-a-salami-logo-2026.png";
+
+export const NOT_A_SALAMI_SEAL_LIGHT =
+  "/brand/not-a-salami-logo-2026-light.png";
 
 export const IMAGES = {
   hero: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
