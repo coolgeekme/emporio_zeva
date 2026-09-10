@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Sender / recipient defaults from .env. Read lazily so tests can monkeypatch.
 def _from() -> str:
-    return os.environ.get("RESEND_FROM", "onboarding@resend.dev")
+    return os.environ.get("RESEND_FROM", "Eva <hello@notasalami.com>")
 
 
 def _notify_to() -> str:

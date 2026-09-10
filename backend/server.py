@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, UploadFile, File, Form, Body
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorGridFSBucket
@@ -2444,6 +2444,65 @@ async def admin_revert_revision(
 
 
 
+# ---------- Corporate page photographs (GridFS-backed) ----------
+# The corporate page images ship in backend/static/corporate/. The container
+# filesystem is ephemeral, so a pod restart can wipe them and leave the page with
+# broken images. On boot we mirror them into GridFS and serve the same
+# /api/static/corporate/<name> URLs from there, so content already saved in the
+# dashboard (and the site defaults) keeps working unchanged.
+#
+# NOTE: this route is declared before app.include_router() below so it is matched
+# ahead of the /api/static StaticFiles mount.
+_CORPORATE_ASSET_NAMES = ("hero-woodboard.jpg", "occasions-table.jpg")
+
+
+def _corporate_dir() -> Path:
+    return Path(__file__).parent / "static" / "corporate"
+
+
+async def _stream_gridfs(grid_out):
+    try:
+        while True:
+            chunk = await grid_out.readchunk()
+            if not chunk:
+                break
+            yield chunk
+    finally:
+        grid_out.close()
+
+
+@api_router.get("/static/corporate/{filename}")
+async def public_corporate_asset(filename: str):
+    """Serve a corporate page photograph from GridFS, falling back to the copy
+    that ships with the deploy."""
+    safe = Path(filename).name
+    doc = await db.media.find_one(
+        {"filename": safe, "corporate_asset": True}, {"_id": 0}
+    )
+    if doc and doc.get("gridfs_id"):
+        from bson import ObjectId
+        try:
+            grid_out = await media_bucket.open_download_stream(ObjectId(doc["gridfs_id"]))
+            headers = {"Cache-Control": "public, max-age=2592000, immutable"}
+            if doc.get("size_bytes"):
+                headers["Content-Length"] = str(doc["size_bytes"])
+            return StreamingResponse(
+                _stream_gridfs(grid_out),
+                media_type=doc.get("mime_type") or "image/jpeg",
+                headers=headers,
+            )
+        except Exception:  # noqa: BLE001 — fall through to the on-disk copy
+            logging.getLogger(__name__).warning(
+                "GridFS miss for corporate asset %s; serving bundled copy", safe
+            )
+    path = _corporate_dir() / safe
+    if path.exists():
+        return FileResponse(
+            path, headers={"Cache-Control": "public, max-age=2592000, immutable"}
+        )
+    raise HTTPException(status_code=404, detail="Asset not found")
+
+
 app.include_router(api_router)
 
 # Serve product/journal placeholder images.
@@ -2548,6 +2607,65 @@ async def cleanup_orphaned_media():
         )
 
 
+async def seed_corporate_media():
+    """Mirror the corporate page photographs into GridFS so they survive
+    container redeploys. Idempotent — skips any asset already persisted."""
+    import mimetypes
+
+    for name in _CORPORATE_ASSET_NAMES:
+        path = _corporate_dir() / name
+        if not path.exists():
+            continue
+        existing = await db.media.find_one(
+            {"filename": name, "corporate_asset": True}, {"_id": 0}
+        )
+        if existing and existing.get("gridfs_id"):
+            continue
+        if existing:
+            await db.media.delete_one({"id": existing["id"]})
+
+        payload = path.read_bytes()
+        mime = mimetypes.guess_type(name)[0] or "image/jpeg"
+        grid_in = media_bucket.open_upload_stream(
+            name,
+            metadata={
+                "content_type": mime,
+                "original_filename": name,
+                "corporate_asset": True,
+            },
+        )
+        try:
+            await grid_in.write(payload)
+            await grid_in.close()
+        except Exception as exc:  # noqa: BLE001
+            try:
+                await grid_in.abort()
+            except Exception:
+                pass
+            logging.getLogger(__name__).warning(
+                "Corporate asset upload failed for %s: %s", name, exc
+            )
+            continue
+
+        await db.media.insert_one({
+            "id": str(uuid.uuid4()),
+            "filename": name,
+            "original_filename": name,
+            "mime_type": mime,
+            "size_bytes": len(payload),
+            "url": f"/api/static/corporate/{name}",
+            "alt_text": "",
+            "caption": "",
+            "uploaded_at": datetime.now(timezone.utc).isoformat(),
+            "uploaded_by": None,
+            "gridfs_id": str(grid_in._id),
+            "corporate_asset": True,
+        })
+        logging.getLogger(__name__).info(
+            "Persisted corporate asset to GridFS: %s", name
+        )
+
+
 # One-time data migration: decks that saved a custom 2-tier slide-8 pricing
 # override before the Il Mini tier shipped would keep shadowing the updated
 # 3-tier default. This appends Il Mini and adds the light/dark/ember tone
@@ -2621,6 +2739,7 @@ async def on_startup():
     await ensure_indexes()
     await seed_admin_user()
     await cleanup_orphaned_media()
+    await seed_corporate_media()
     await heal_journal_images()
     await migrate_decks_mini_tier()
 
