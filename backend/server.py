@@ -131,6 +131,11 @@ class InquiryCreate(BaseModel):
     num_guests: Optional[str] = ""
     occasion: Optional[str] = ""
     special_requirements: Optional[str] = ""
+    # Corporate Experiences form (Eva, Sep 2026): role/department, what they are
+    # considering (Team/Clients/Event/Not sure yet), approx. recipients.
+    role_department: Optional[str] = ""
+    considering: Optional[str] = ""
+    num_recipients: Optional[str] = ""
 
 
 class Inquiry(InquiryCreate):
@@ -313,6 +318,11 @@ class GeneralSettings(BaseModel):
     contact_email: str = "hello@emporiozeva.com"
     instagram_handle: str = "@notasalami"
     address: str = "San Francisco, CA"
+    # Brand logo — uploaded from the dashboard (Admin → Settings). Empty means
+    # "use the logo shipped with the site". The light variant is used on dark
+    # surfaces (footer, dark sections); the primary one everywhere else.
+    brand_logo_url: str = ""
+    brand_logo_light_url: str = ""
 
 
 class ReadingSettings(BaseModel):
@@ -2114,6 +2124,112 @@ SITE_CONTENT_MANIFEST = {
         ],
     },
 }
+
+# --- Corporate Experiences + Privacy Policy pages (added Sep 2026) ---
+SITE_CONTENT_MANIFEST_EXTRA = {
+    "corporate": {
+        "label": "Corporate Experiences",
+        "sections": [
+            {"label": "Hero", "fields": [
+                {"key": "hero_eyebrow", "type": "text", "label": "Eyebrow", "default": "Corporate tasting"},
+                {"key": "hero_h1", "type": "textarea", "label": "Headline", "default": "A year-round dessert made to bring, slice and share."},
+                {"key": "hero_body1", "type": "textarea", "label": "Intro paragraph 1", "default": "Not A Salami is a handcrafted chocolate confection with the playful form of a salami and the spirit of an Sicilian sharing ritual. Unwrap it, place it on a board, slice it, share it and enjoy it together."},
+                {"key": "hero_body2", "type": "textarea", "label": "Intro paragraph 2", "default": "Our guided tasting brings that ritual to life before we discuss how Not-A-Salami could work for your team, clients or event."},
+                {"key": "hero_button", "type": "text", "label": "Button label", "default": "Request a tasting"},
+                {"key": "hero_supporting", "type": "textarea", "label": "Supporting line", "default": "A focused 20-minute tasting for corporate decision-makers in the San Francisco Bay Area."},
+                {"key": "hero_image", "type": "image", "label": "Hero image", "default": "/api/static/corporate/hero-woodboard.jpg"},
+            ]},
+            {"label": "Introduction", "fields": [
+                {"key": "intro_title", "type": "textarea", "label": "Title", "default": "The experience begins before the first bite"},
+                {"key": "intro_body1", "type": "textarea", "label": "Paragraph 1", "default": "The unexpected form creates curiosity as soon as Not-A-Salami reaches the table. The experience continues as it is unwrapped, placed on a board and sliced in front of the group. It is simple to serve, naturally shareable and designed to become part of the occasion."},
+                {"key": "intro_body2", "type": "textarea", "label": "Paragraph 2", "default": "The tasting lets you experience the complete ritual while giving us time to understand your occasion and hear your response to the product."},
+            ]},
+            {"label": "The ritual", "fields": [
+                {"key": "ritual_overline", "type": "text", "label": "Overline", "default": "The Not-A-Salami ritual"},
+                {"key": "ritual_title", "type": "textarea", "label": "Title", "default": "Five simple moments, shared around the table"},
+                {"key": "ritual_1_title", "type": "text", "label": "Step 1 title", "default": "Unwrap"},
+                {"key": "ritual_1_body", "type": "textarea", "label": "Step 1 body", "default": "The salami-shaped package creates an immediate moment of surprise and discovery."},
+                {"key": "ritual_2_title", "type": "text", "label": "Step 2 title", "default": "Place on a board"},
+                {"key": "ritual_2_body", "type": "textarea", "label": "Step 2 body", "default": "The presentation becomes part of the table, ready to be served like a familiar Italian ritual."},
+                {"key": "ritual_3_title", "type": "text", "label": "Step 3 title", "default": "Slice"},
+                {"key": "ritual_3_body", "type": "textarea", "label": "Step 3 body", "default": "Cutting the first slice reveals the chocolate confection inside and brings everyone into the moment."},
+                {"key": "ritual_4_title", "type": "text", "label": "Step 4 title", "default": "Share"},
+                {"key": "ritual_4_body", "type": "textarea", "label": "Step 4 body", "default": "Pass the slices around the table. The product becomes a generous gesture rather than an individual dessert."},
+                {"key": "ritual_5_title", "type": "text", "label": "Step 5 title", "default": "Enjoy"},
+                {"key": "ritual_5_body", "type": "textarea", "label": "Step 5 body", "default": "Taste it together and let the unexpected form, flavor and story create conversation."},
+            ]},
+            {"label": "The 20-minute tasting", "fields": [
+                {"key": "tasting_overline", "type": "text", "label": "Overline", "default": "The 20-minute tasting"},
+                {"key": "tasting_1_title", "type": "text", "label": "Block 1 title", "default": "Discover \u2014 5 minutes"},
+                {"key": "tasting_1_body", "type": "textarea", "label": "Block 1 body", "default": "Unwrap, place, slice, share and taste Not A Salami together. Experience the product, presentation and serving ritual firsthand."},
+                {"key": "tasting_2_title", "type": "text", "label": "Block 2 title", "default": "Discuss \u2014 10 minutes"},
+                {"key": "tasting_2_body", "type": "textarea", "label": "Block 2 body", "default": "Talk through the people you want to thank or celebrate, the occasion you are planning and the approximate quantity you may need."},
+                {"key": "tasting_3_title", "type": "text", "label": "Block 3 title", "default": "Decide \u2014 5 minutes"},
+                {"key": "tasting_3_body", "type": "textarea", "label": "Block 3 body", "default": "Share your feedback and decide whether a follow-up conversation would be useful."},
+                {"key": "tasting_closing", "type": "textarea", "label": "Closing line", "default": "Experience the ritual, taste the product and share your response with us."},
+            ]},
+            {"label": "Where it can fit", "fields": [
+                {"key": "fit_overline", "type": "text", "label": "Overline", "default": "Where it can fit"},
+                {"key": "fit_title", "type": "textarea", "label": "Title", "default": "One dessert, many occasions throughout the year"},
+                {"key": "fit_1_title", "type": "text", "label": "Card 1 title", "default": "Teams"},
+                {"key": "fit_1_body", "type": "textarea", "label": "Card 1 body", "default": "Welcome gifts, employee milestones, celebrations and moments of appreciation."},
+                {"key": "fit_2_title", "type": "text", "label": "Card 2 title", "default": "Clients"},
+                {"key": "fit_2_body", "type": "textarea", "label": "Card 2 body", "default": "Thank-you gifts, closing gifts and gestures that support an ongoing relationship."},
+                {"key": "fit_3_title", "type": "text", "label": "Card 3 title", "default": "Events"},
+                {"key": "fit_3_body", "type": "textarea", "label": "Card 3 body", "default": "Host gifts, shared table moments and distinctive takeaways."},
+                {"key": "fit_note", "type": "textarea", "label": "Note under cards", "default": "Not sure which format fits? The tasting is designed to help us answer that together."},
+                {"key": "fit_image", "type": "image", "label": "Section image", "default": "/api/static/corporate/occasions-table.jpg"},
+            ]},
+            {"label": "Who should attend", "fields": [
+                {"key": "attend_overline", "type": "text", "label": "Overline", "default": "Who should attend"},
+                {"key": "attend_title", "type": "textarea", "label": "Title", "default": "Bring the people who will shape the decision"},
+                {"key": "attend_body", "type": "textarea", "label": "Body", "default": "The tasting is most useful for people responsible for employee experience, office culture, client relationships, events or marketing. If more than one person will help choose the occasion, budget or presentation, we recommend inviting them to join."},
+            ]},
+            {"label": "What we will discuss", "fields": [
+                {"key": "discuss_overline", "type": "text", "label": "Overline", "default": "What we will discuss"},
+                {"key": "discuss_intro", "type": "text", "label": "Intro line", "default": "After tasting the product, we will explore:"},
+                {"key": "discuss_1", "type": "text", "label": "Point 1", "default": "The occasion and intended recipients"},
+                {"key": "discuss_2", "type": "text", "label": "Point 2", "default": "The size and serving style that may fit"},
+                {"key": "discuss_3", "type": "text", "label": "Point 3", "default": "Approximate quantity and budget range"},
+                {"key": "discuss_4", "type": "text", "label": "Point 4", "default": "Presentation or brand personalization needs"},
+                {"key": "discuss_5", "type": "text", "label": "Point 5", "default": "Preferred date, lead time and delivery location"},
+                {"key": "discuss_note", "type": "textarea", "label": "Note", "default": "We will only confirm options that are available for your request."},
+            ]},
+            {"label": "Service area", "fields": [
+                {"key": "area_overline", "type": "text", "label": "Overline", "default": "Service area"},
+                {"key": "area_title", "type": "textarea", "label": "Title", "default": "In-person tastings in the San Francisco Bay Area"},
+                {"key": "area_body1", "type": "textarea", "label": "Paragraph 1", "default": "The current experience is available in person for qualified corporate inquiries in the San Francisco Bay Area. Availability depends on location, timing and the nature of the request."},
+                {"key": "area_body2", "type": "textarea", "label": "Paragraph 2", "default": "Outside the Bay Area? Tell us where your team is located. We can let you know whether a delivered sample conversation is available for your request."},
+            ]},
+            {"label": "Final call to action", "fields": [
+                {"key": "cta_title", "type": "text", "label": "Title", "default": "Request a tasting"},
+                {"key": "cta_body", "type": "textarea", "label": "Body", "default": "Tell us about the occasion, approximate quantity and preferred date. We will review your request and contact you to arrange the tasting or recommend the most useful next step."},
+                {"key": "cta_button", "type": "text", "label": "Button label", "default": "Request a tasting"},
+            ]},
+            {"label": "Inquiry form", "fields": [
+                {"key": "form_heading", "type": "text", "label": "Heading", "default": "Tell us about your corporate occasion"},
+                {"key": "form_intro", "type": "textarea", "label": "Intro", "default": "A few details will help us prepare for the conversation. Estimates are welcome."},
+                {"key": "form_consent", "type": "textarea", "label": "Consent text", "default": "By submitting this form, you agree that Not A Salami may contact you about this inquiry. See our Privacy Policy."},
+                {"key": "form_submit", "type": "text", "label": "Submit button", "default": "Request my tasting"},
+                {"key": "form_success", "type": "textarea", "label": "Confirmation message", "default": "Thank you. We received your request and will be in touch to discuss the tasting and next steps."},
+                {"key": "form_error", "type": "text", "label": "Error message", "default": "Something didn't go through. Try again, or email us directly."},
+            ]},
+        ],
+    },
+    "privacy": {
+        "label": "Privacy Policy",
+        "sections": [
+            {"label": "Privacy Policy", "fields": [
+                {"key": "privacy_title", "type": "text", "label": "Page title", "default": "Privacy Policy"},
+                {"key": "privacy_updated", "type": "text", "label": "Last updated line", "default": "Last updated: September 2026"},
+                {"key": "privacy_intro", "type": "textarea", "label": "Intro", "default": "Not A Salami (Emporio Zeva) respects your privacy. This policy explains what information we collect through notasalami.com, why we collect it, and how you can reach us about it."},
+                {"key": "privacy_body", "type": "textarea", "label": "Policy body", "default": "**What we collect.** When you submit an inquiry, join a waitlist, subscribe to our newsletter or place a corporate tasting request, we collect the information you provide \u2014 typically your name, email address, company, role, occasion details and any notes you send us. Orders and payments are processed by third-party providers; we do not store card numbers on our servers. We also collect limited technical information automatically (pages viewed, approximate location, device and browser type) to understand how the site is used.\n\n**How we use it.** We use your information to respond to your inquiry, arrange tastings and orders, deliver what you asked for, send updates you requested, and improve the site. We do not sell your personal information.\n\n**Who we share it with.** We share information only with service providers that help us operate the site and communicate with you \u2014 for example email delivery, hosting and database services, and website analytics. They are permitted to use it only to provide those services to us.\n\n**Cookies and analytics.** We use cookies and similar technologies for essential site functionality and to measure traffic and usage. You can block or delete cookies in your browser settings; essential functionality may be affected.\n\n**How long we keep it.** We keep inquiry and order information for as long as needed to serve you and to meet our legal, accounting and reporting obligations, then delete or anonymise it.\n\n**Your choices and rights.** California residents may request access to, correction of, or deletion of their personal information, and may ask us not to share it. Email us and we will respond within a few business days.\n\n**Children.** This site is not directed to children under 16, and we do not knowingly collect their personal information.\n\n**Changes.** If we update this policy, we will post the new version here with a revised date.\n\n**Contact.** For any question about this policy or your information, email hello@notasalami.com."},
+                {"key": "privacy_contact", "type": "text", "label": "Contact line", "default": "Questions about this policy? Email hello@notasalami.com and we will respond within a few business days."},
+            ]},
+        ],
+    },
+}
+SITE_CONTENT_MANIFEST.update(SITE_CONTENT_MANIFEST_EXTRA)
 
 VALID_CONTENT_PAGES = set(SITE_CONTENT_MANIFEST.keys())
 

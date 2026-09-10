@@ -38,7 +38,7 @@ export default function Collection() {
             <span className="italic text-[#C05A3A]">{c("header_title_line2", "Made slowly.")}</span>
           </h1>
           <p className="md:col-span-4 text-[#5C4E4A] leading-relaxed max-w-md">
-            {c("header_body", "We make one thing for now — and we make it well. Below: the signature Not A Salami. Further down: what's next from Eva's kitchen, reservable today.")}
+            {c("header_body", "We make one thing for now — and we make it well. Below: the signature Not A Salami. Further down: what's next from Eva's kitchen.")}
           </p>
         </div>
       </section>
@@ -118,8 +118,6 @@ export default function Collection() {
                     </p>
                     <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight mt-4 text-[#2A1F1D] leading-[1.05]">
                       {c("future_title_line1", "Coming next.")}
-                      <br />
-                      <span className="italic text-[#C05A3A]">{c("future_title_line2", "Reservable today.")}</span>
                     </h2>
                   </div>
                   <p className="md:col-span-5 text-[#5C4E4A] leading-relaxed max-w-md">

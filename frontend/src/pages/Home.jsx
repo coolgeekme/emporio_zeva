@@ -15,12 +15,15 @@ import {
 } from "../content";
 import { useReveal } from "../hooks/useReveal";
 import { useSiteContent } from "../hooks/useSiteContent";
+import { useBrandLogo } from "../hooks/useBrandLogo";
 import MonogramDivider from "../components/MonogramDivider";
 import WaitlistDialog from "../components/WaitlistDialog";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Home() {
+
+  const { logoLight } = useBrandLogo();
   const [products, setProducts] = useState([]);
   const [journal, setJournal] = useState([]);
   const [waitlistProduct, setWaitlistProduct] = useState(null);
@@ -337,8 +340,6 @@ export default function Home() {
                 </p>
                 <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight mt-4 text-[#2A1F1D] leading-[1.05]">
                   {c("future_title_line1", "Coming next.")}
-                  <br />
-                  <span className="italic text-[#C05A3A]">{c("future_title_line2", "Reservable today.")}</span>
                 </h2>
               </div>
               <p className="md:col-span-5 text-[#5C4E4A] leading-relaxed max-w-md">
@@ -459,7 +460,7 @@ export default function Home() {
       >
         {/* Brand seal watermark — large, low-opacity, inverted to cream on dark */}
         <img
-          src={NOT_A_SALAMI_SEAL_LIGHT}
+          src={logoLight}
           alt=""
           aria-hidden="true"
           className="pointer-events-none select-none absolute -right-32 -bottom-40 w-[680px] h-[680px] hidden md:block"

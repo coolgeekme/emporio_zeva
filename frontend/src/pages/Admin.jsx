@@ -373,9 +373,21 @@ function InquiryDetailDialog({ inquiry, token, canEdit, onClose, onSaved, onDele
                   <p className="overline text-[#5C4E4A] text-[10px]">Occasion</p>
                   <p className="text-[#2A1F1D]">{inquiry.occasion || "—"}</p>
                 </div>
+                <div>
+                  <p className="overline text-[#5C4E4A] text-[10px]">Role / department</p>
+                  <p className="text-[#2A1F1D]">{inquiry.role_department || "—"}</p>
+                </div>
+                <div>
+                  <p className="overline text-[#5C4E4A] text-[10px]">Considering</p>
+                  <p className="text-[#2A1F1D]">{inquiry.considering || "—"}</p>
+                </div>
+                <div>
+                  <p className="overline text-[#5C4E4A] text-[10px]">Approx. recipients</p>
+                  <p className="text-[#2A1F1D]">{inquiry.num_recipients || inquiry.num_guests || "—"}</p>
+                </div>
                 {inquiry.special_requirements && (
                   <div className="sm:col-span-2">
-                    <p className="overline text-[#5C4E4A] text-[10px]">Special requirements</p>
+                    <p className="overline text-[#5C4E4A] text-[10px]">What they'd like us to know</p>
                     <p className="text-[#2A1F1D] whitespace-pre-wrap">{inquiry.special_requirements}</p>
                   </div>
                 )}
@@ -1510,6 +1522,9 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
           "kind",
           "company",
           "preferred_date",
+          "role_department",
+          "considering",
+          "num_recipients",
           "location",
           "num_guests",
           "occasion",

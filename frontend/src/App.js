@@ -13,6 +13,7 @@ import BlackRock from "./pages/BlackRock";
 import Ritual from "./pages/Ritual";
 import CorporateExperiences from "./pages/CorporateExperiences";
 import OneSheet from "./pages/OneSheet";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Admin from "./pages/Admin";
 import DeckView from "./pages/DeckView";
 import JournalArticle from "./pages/JournalArticle";
@@ -64,6 +65,7 @@ function Shell() {
           <Route path="/ritual" element={<Ritual />} />
           <Route path="/corporate-experiences" element={<CorporateExperiences />} />
           <Route path="/one-sheet" element={<OneSheet />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/p/:slug" element={<PagePublic />} />
         </Routes>

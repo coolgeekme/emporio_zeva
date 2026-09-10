@@ -2,12 +2,14 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Instagram, Mail, Phone } from "lucide-react";
-import { SF_MADE_BADGE, NOT_A_SALAMI_SEAL_LIGHT, BRAND, CONTACT, TAGLINES } from "../content";
+import { SF_MADE_BADGE, BRAND, CONTACT, TAGLINES } from "../content";
+import { useBrandLogo } from "../hooks/useBrandLogo";
 import NewsletterForm from "./NewsletterForm";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Footer() {
+  const { logoLight } = useBrandLogo();
   const [cmsLinks, setCmsLinks] = useState([]);
   const [settings, setSettings] = useState(null);
 
@@ -67,7 +69,7 @@ export default function Footer() {
           <div className="md:col-span-5">
             <Link to="/" data-testid="footer-logo" className="inline-flex">
               <img
-                src={NOT_A_SALAMI_SEAL_LIGHT}
+                src={logoLight}
                 alt="Not A Salami · Sicilian Cocoa Confection"
                 className="h-32 w-32 select-none"
                 draggable="false"
@@ -104,6 +106,7 @@ export default function Footer() {
               <li><Link to="/journal" data-testid="footer-link-journal" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Journal</Link></li>
               <li><Link to="/corporate-experiences" data-testid="footer-link-corporate" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Corporate Experiences</Link></li>
               <li><Link to="/contact" data-testid="footer-link-contact" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Contact</Link></li>
+              <li><Link to="/privacy" data-testid="footer-link-privacy" className="text-sm text-[#DFD7CA] hover:text-[#C05A3A] transition-colors">Privacy Policy</Link></li>
               {cmsLinks.map((l) => (
                 <li key={l.to}>
                   <Link

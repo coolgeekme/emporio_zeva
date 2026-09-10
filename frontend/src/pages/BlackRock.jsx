@@ -6,7 +6,6 @@ import remarkGfm from "remark-gfm";
 import { ChevronLeft, ChevronRight, ArrowRight, Mail, Phone, Globe } from "lucide-react";
 import {
   IMAGES,
-  NOT_A_SALAMI_SEAL,
   SF_MADE_BADGE,
   BRAND,
   CONTACT,
@@ -22,6 +21,7 @@ import {
   toneFor,
 } from "../content";
 import MonogramDivider from "../components/MonogramDivider";
+import { useBrandLogo } from "../hooks/useBrandLogo";
 import { getSlideField, TEMPLATE_SLIDES } from "../admin/deckManifest";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -94,6 +94,7 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
 // ============================================================================
 
 export default function BlackRock({ deck = null }) {
+  const { logo } = useBrandLogo();
   // Personalization overrides — when no deck is provided, render a clean general version.
   const isGeneric = !deck;
   const clientName = deck?.client_name || "Your Team";
@@ -349,7 +350,7 @@ export default function BlackRock({ deck = null }) {
                 </div>
               )}
               <img
-                src={NOT_A_SALAMI_SEAL}
+                src={logo}
                 alt="Not A Salami"
                 className="h-16 w-16 mt-6 select-none fx fx-up fx-d5"
                 draggable="false"
@@ -439,10 +440,10 @@ export default function BlackRock({ deck = null }) {
               </div>
               <dl className="mt-8 grid grid-cols-2 sm:grid-cols-2 gap-5 max-w-xl">
                 {[
-                  ["Storage", "Refrigerated"],
-                  ["Shelf life", "8 weeks unopened · 2 weeks opened"],
-                  ["Made in", "San Francisco, California"],
-                  ["Enjoy with", "Coffee, wine, fruit, or cheese"],
+                  ["Storage", ov("slide_4_product", "fact_storage", "Refrigerated")],
+                  ["Shelf life", ov("slide_4_product", "fact_shelf_life", "12 weeks unopened · 2 weeks opened")],
+                  ["Made in", ov("slide_4_product", "fact_made_in", "Made in California")],
+                  ["Enjoy with", ov("slide_4_product", "fact_enjoy_with", "Coffee, wine, fruit, or cheese")],
                 ].map(([k, v]) => (
                   <div key={k}>
                     <dt className="overline text-[#C05A3A]">{k}</dt>
@@ -464,7 +465,7 @@ export default function BlackRock({ deck = null }) {
               <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-[#2A1F1D] max-w-2xl">
                 {ov("slide_5_use_cases", "title_line1", "Corporate gifting,")}
                 <br />
-                <span className="italic text-[#C05A3A]">{ov("slide_5_use_cases", "title_italic", "six considered moments.")}</span>
+                <span className="italic text-[#C05A3A]">{ov("slide_5_use_cases", "title_italic", "a considered moment for every occasion.")}</span>
               </h2>
             </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">

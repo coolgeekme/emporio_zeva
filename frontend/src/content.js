@@ -9,7 +9,7 @@ export const BRAND = {
   parent: "Emporio Zeva",
   founder: "Eva",
   origin: "Modica, Sicily",
-  made_in: "San Francisco, California",
+  made_in: "California",
   domain: "notasalami.com",
 };
 
@@ -83,6 +83,9 @@ export const CORPORATE_USE_CASES = [
   { title: "Deal Closing", body: "Celebrate a signed agreement with something memorable." },
   { title: "Holiday Gifting", body: "A distinctive alternative to traditional gifts." },
   { title: "Event & Conference", body: "A refined leave-behind that stands out." },
+  { title: "Corporate Events", body: "Host gifts and shared table moments for company gatherings." },
+  { title: "Office Parties", body: "A sliceable dessert that turns a team moment into a ritual." },
+  { title: "Holiday Parties", body: "A year-round dessert that fits seasonal celebrations." },
   { title: "Thank You & Referrals", body: "A thoughtful gesture that strengthens relationships." },
 ];
 

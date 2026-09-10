@@ -90,6 +90,10 @@ export const SLIDE_MANIFEST = [
       { key: "title_italic", type: "text", label: "H2 italic line" },
       { key: "body", type: "markdown", label: "Body" },
       { key: "image", type: "image", label: "Image" },
+      { key: "fact_storage", type: "text", label: "Fact — storage" },
+      { key: "fact_shelf_life", type: "text", label: "Fact — shelf life" },
+      { key: "fact_made_in", type: "text", label: "Fact — made in" },
+      { key: "fact_enjoy_with", type: "text", label: "Fact — enjoy with" },
     ],
   },
   {

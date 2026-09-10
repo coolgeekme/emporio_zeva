@@ -1,45 +1,53 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
-import { ArrowRight, Calendar, Clock, MapPin, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { CONTACT } from "../content";
+import { useSiteContent } from "../hooks/useSiteContent";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // ---------------------------------------------------------------------------
-// Corporate inquiry form — structured fields Eva asked for: company, contact,
-// preferred date, location, number of guests, occasion, special requirements.
+// Corporate Experiences — rebuilt Sep 2026 to Eva's replacement copy.
+// One action only: "Request a tasting". Every string lives in site content so
+// Eva can maintain the page from her dashboard (Admin → Site Content →
+// Corporate Experiences).
 // ---------------------------------------------------------------------------
-function CorporateInquiryForm({ requestType, onTypeChange }) {
+
+const CONSIDERING_OPTIONS = ["Team", "Clients", "Event", "Not sure yet"];
+
+// Renders a copy string, turning a trailing "See our Privacy Policy." into a link.
+function WithPrivacyLink({ text, className = "" }) {
+  if (!text) return null;
+  const marker = "Privacy Policy";
+  const idx = text.indexOf(marker);
+  if (idx === -1) return <span className={className}>{text}</span>;
+  return (
+    <span className={className}>
+      {text.slice(0, idx)}
+      <Link to="/privacy" className="link-underline">
+        {marker}
+      </Link>
+      {text.slice(idx + marker.length)}
+    </span>
+  );
+}
+
+function CorporateInquiryForm({ c, formRef }) {
   const [form, setForm] = useState({
-    type: requestType || "tasting",
-    company: "",
     name: "",
     email: "",
-    phone: "",
+    company: "",
+    role_department: "",
+    considering: "",
+    num_recipients: "",
     preferred_date: "",
     location: "",
-    num_guests: "",
-    occasion: "",
     special_requirements: "",
-    message: "",
   });
   const [status, setStatus] = useState("idle"); // idle | loading | ok | err
 
-  // Keep the form's selected request type in sync when the parent changes it
-  // (e.g. the hero CTAs "Book a Corporate Tasting" / "Request a Corporate
-  // Proposal" scroll to the form with a specific type preselected).
-  useEffect(() => {
-    if (requestType) {
-      setForm((f) => (f.type === requestType ? f : { ...f, type: requestType }));
-    }
-  }, [requestType]);
-
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-
-  const typeLabel =
-    form.type === "proposal"
-      ? "Request a Corporate Proposal"
-      : "Book a Corporate Tasting";
 
   const submit = async (e) => {
     e.preventDefault();
@@ -48,19 +56,15 @@ function CorporateInquiryForm({ requestType, onTypeChange }) {
       await axios.post(`${API}/inquiries`, {
         name: form.name,
         email: form.email,
-        phone: form.phone,
-        subject: typeLabel,
-        message:
-          form.message ||
-          (form.type === "proposal"
-            ? "Corporate proposal request"
-            : "Corporate tasting request"),
-        kind: form.type === "proposal" ? "corporate_proposal" : "corporate_tasting",
+        subject: "Request a tasting",
+        message: form.special_requirements || "Corporate tasting request",
+        kind: "corporate_tasting",
         company: form.company,
+        role_department: form.role_department,
+        considering: form.considering,
+        num_recipients: form.num_recipients,
         preferred_date: form.preferred_date,
         location: form.location,
-        num_guests: form.num_guests,
-        occasion: form.occasion,
         special_requirements: form.special_requirements,
       });
       setStatus("ok");
@@ -71,19 +75,15 @@ function CorporateInquiryForm({ requestType, onTypeChange }) {
 
   if (status === "ok") {
     return (
-      <div className="bg-[#FBF7EE] border border-[#DFD7CA] p-8 md:p-12 text-center" data-testid="corporate-form-success">
+      <div
+        className="bg-[#FBF7EE] border border-[#DFD7CA] p-8 md:p-12 text-center"
+        data-testid="corporate-form-success"
+      >
         <p className="overline text-[#C05A3A]">Grazie</p>
         <h3 className="font-serif text-3xl md:text-4xl text-[#2A1F1D] mt-3">
-          Your request is in Eva's inbox.
+          {c("form_success", "Thank you. We received your request and will be in touch to discuss the tasting and next steps.")}
         </h3>
-        <p className="text-[#5C4E4A] max-w-md mx-auto mt-4 leading-relaxed">
-          She reads every note personally and will reply within two business days
-          with dates and options for your {form.type === "proposal" ? "proposal" : "tasting"}.
-        </p>
-        <button
-          onClick={() => setStatus("idle")}
-          className="btn-outline mt-8 text-sm"
-        >
+        <button onClick={() => setStatus("idle")} className="btn-outline mt-8 text-sm">
           Send another request
         </button>
       </div>
@@ -91,61 +91,49 @@ function CorporateInquiryForm({ requestType, onTypeChange }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-7" data-testid="corporate-inquiry-form">
-      {/* Request type toggle */}
-      <div className="grid sm:grid-cols-2 gap-4">
-        {[
-          { key: "tasting", title: "Book a Corporate Tasting", sub: "In-person, Bay Area" },
-          { key: "proposal", title: "Request a Corporate Proposal", sub: "Gifting program or event" },
-        ].map((opt) => (
-          <button
-            type="button"
-            key={opt.key}
-            onClick={() => {
-              setForm({ ...form, type: opt.key });
-              if (onTypeChange) onTypeChange(opt.key);
-            }}
-            className={`text-left border p-5 transition-colors ${
-              form.type === opt.key
-                ? "border-[#2A1F1D] bg-[#FBF7EE]"
-                : "border-[#DFD7CA] bg-white hover:border-[#B9935A]"
-            }`}
-            data-testid={`corporate-type-${opt.key}`}
-          >
-            <p className={`font-serif text-lg ${form.type === opt.key ? "text-[#2A1F1D]" : "text-[#5C4E4A]"}`}>
-              {opt.title}
-            </p>
-            <p className="text-xs text-[#5C4E4A] mt-1 tracking-wide">{opt.sub}</p>
-          </button>
-        ))}
+    <form ref={formRef} onSubmit={submit} className="space-y-7" data-testid="corporate-inquiry-form">
+      <div className="grid sm:grid-cols-2 gap-6">
+        <div className="field">
+          <label htmlFor="co-name">Name</label>
+          <input id="co-name" type="text" required value={form.name} onChange={set("name")} placeholder="Your name" data-testid="corporate-name-input" />
+        </div>
+        <div className="field">
+          <label htmlFor="co-email">Work email</label>
+          <input id="co-email" type="email" required value={form.email} onChange={set("email")} placeholder="you@company.com" data-testid="corporate-email-input" />
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-6">
         <div className="field">
-          <label htmlFor="co-company">Company name</label>
+          <label htmlFor="co-company">Company</label>
           <input id="co-company" type="text" required value={form.company} onChange={set("company")} placeholder="Company, Inc." data-testid="corporate-company-input" />
         </div>
         <div className="field">
-          <label htmlFor="co-name">Contact person</label>
-          <input id="co-name" type="text" required value={form.name} onChange={set("name")} placeholder="Your name" data-testid="corporate-name-input" />
+          <label htmlFor="co-role">Role or department (optional)</label>
+          <input id="co-role" type="text" value={form.role_department} onChange={set("role_department")} placeholder="People Ops, Marketing, Events…" data-testid="corporate-role-input" />
         </div>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-6">
         <div className="field">
-          <label htmlFor="co-email">Email</label>
-          <input id="co-email" type="email" required value={form.email} onChange={set("email")} placeholder="you@company.com" data-testid="corporate-email-input" />
+          <label htmlFor="co-considering">What are you considering?</label>
+          <select id="co-considering" value={form.considering} onChange={set("considering")} data-testid="corporate-considering-input">
+            <option value="">Select one</option>
+            {CONSIDERING_OPTIONS.map((o) => (
+              <option key={o} value={o}>{o}</option>
+            ))}
+          </select>
         </div>
         <div className="field">
-          <label htmlFor="co-phone">Phone (optional)</label>
-          <input id="co-phone" type="tel" value={form.phone} onChange={set("phone")} placeholder="+1 415 …" data-testid="corporate-phone-input" />
+          <label htmlFor="co-recipients">Approximate number of recipients (optional)</label>
+          <input id="co-recipients" type="text" value={form.num_recipients} onChange={set("num_recipients")} placeholder="e.g. 25" data-testid="corporate-recipients-input" />
         </div>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-6">
         <div className="field">
-          <label htmlFor="co-date">Preferred date</label>
-          <input id="co-date" type="date" value={form.preferred_date} onChange={set("preferred_date")} data-testid="corporate-date-input" />
+          <label htmlFor="co-date">Preferred date or timeframe</label>
+          <input id="co-date" type="text" value={form.preferred_date} onChange={set("preferred_date")} placeholder="e.g. early December, or a few weeks out" data-testid="corporate-date-input" />
         </div>
         <div className="field">
           <label htmlFor="co-location">Location</label>
@@ -153,41 +141,30 @@ function CorporateInquiryForm({ requestType, onTypeChange }) {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-6">
-        <div className="field">
-          <label htmlFor="co-guests">Number of guests</label>
-          <input id="co-guests" type="number" min="1" max="200" value={form.num_guests} onChange={set("num_guests")} placeholder="e.g. 12" data-testid="corporate-guests-input" />
-        </div>
-        <div className="field">
-          <label htmlFor="co-occasion">Occasion</label>
-          <input id="co-occasion" type="text" value={form.occasion} onChange={set("occasion")} placeholder="Client appreciation, team offsite, milestone…" data-testid="corporate-occasion-input" />
-        </div>
-      </div>
-
       <div className="field">
-        <label htmlFor="co-special">Special requirements</label>
+        <label htmlFor="co-notes">What would you like us to know? (optional)</label>
         <textarea
-          id="co-special"
-          rows={3}
+          id="co-notes"
+          rows={4}
           value={form.special_requirements}
           onChange={set("special_requirements")}
-          placeholder="Dietary needs, timing constraints, what you'd like the experience to accomplish…"
-          data-testid="corporate-requirements-input"
+          placeholder="The occasion, who it is for, anything we should prepare for…"
+          data-testid="corporate-notes-input"
         />
       </div>
 
-      <div className="field">
-        <label htmlFor="co-message">Anything else? (optional)</label>
-        <textarea id="co-message" rows={2} value={form.message} onChange={set("message")} placeholder="Tell us more about the plan." data-testid="corporate-message-input" />
+      <div className="text-sm text-[#5C4E4A] leading-relaxed" data-testid="corporate-consent">
+        <WithPrivacyLink text={c("form_consent", "By submitting this form, you agree that Not A Salami may contact you about this inquiry. See our Privacy Policy.")} />
       </div>
 
-      <div className="flex items-center gap-6 pt-2">
+      <div className="flex flex-wrap items-center gap-6 pt-2">
         <button type="submit" disabled={status === "loading"} className="btn-primary" data-testid="corporate-submit-button">
-          {status === "loading" ? "Sending…" : `${typeLabel} →`}
+          {status === "loading" ? "Sending…" : `${c("form_submit", "Request my tasting")} →`}
         </button>
         {status === "err" && (
           <p className="text-sm text-[#C05A3A]">
-            Something didn't go through. Try again, or email {CONTACT.email_primary} directly.
+            {c("form_error", "Something didn't go through. Try again, or email us directly.")}{" "}
+            <a className="link-underline" href={`mailto:${CONTACT.email_primary}`}>{CONTACT.email_primary}</a>
           </p>
         )}
       </div>
@@ -195,167 +172,199 @@ function CorporateInquiryForm({ requestType, onTypeChange }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Corporate Experiences page
-// ---------------------------------------------------------------------------
 export default function CorporateExperiences() {
-  const [requestType, setRequestType] = useState("tasting");
+  const c = useSiteContent("corporate");
   const formRef = useRef(null);
 
-  const goToForm = (type) => {
-    setRequestType(type);
+  const goToForm = () => {
     requestAnimationFrame(() => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
 
-  const facts = [
-    {
-      icon: Users,
-      title: "Group size",
-      body: "Designed for teams of 6 to 40 — small groups get the full kitchen-side treatment, larger groups work beautifully as an offsite centerpiece.",
-    },
-    {
-      icon: Clock,
-      title: "Duration",
-      body: "45–60 minutes, paced to fit a lunch hour or an afternoon offsite. Longer sessions can include a hands-on wrapping or pairing component.",
-    },
-    {
-      icon: MapPin,
-      title: "Service area",
-      body: "The San Francisco Bay Area — from the Peninsula to the East Bay. Beyond the Bay by arrangement.",
-    },
-    {
-      icon: Calendar,
-      title: "Booking",
-      body: "We typically confirm tastings 2–3 weeks out. Send the form below and Eva will reply within two business days.",
-    },
-  ];
+  const ritual = [1, 2, 3, 4, 5].map((i) => ({
+    title: c(`ritual_${i}_title`, ""),
+    body: c(`ritual_${i}_body`, ""),
+  }));
+
+  const tasting = [1, 2, 3].map((i) => ({
+    title: c(`tasting_${i}_title`, ""),
+    body: c(`tasting_${i}_body`, ""),
+  }));
+
+  const fit = [1, 2, 3].map((i) => ({
+    title: c(`fit_${i}_title`, ""),
+    body: c(`fit_${i}_body`, ""),
+  }));
+
+  const discuss = [1, 2, 3, 4, 5].map((i) => c(`discuss_${i}`, "")).filter(Boolean);
 
   return (
     <div className="pt-[90px]" data-testid="corporate-experiences-page">
-      {/* Hero */}
-      <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-16 border-b border-[#DFD7CA]">
-        <p className="overline text-[#C05A3A]">For Companies · San Francisco Bay Area</p>
-        <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl leading-[1.02] tracking-tight mt-5 max-w-4xl text-[#2A1F1D]">
-          Bring your team to the{" "}
-          <span className="italic text-[#C05A3A]">table.</span>
-        </h1>
-        <p className="mt-7 text-[#5C4E4A] leading-relaxed max-w-2xl text-lg">
-          An in-person tasting of Not A Salami — led by Eva, made in small
-          batches, and built around the story of a Sicilian confection that
-          travels from Modica to your conference room. Corporate tastings,
-          client appreciation moments, and milestone celebrations across the Bay Area.
-        </p>
-        <div className="mt-10 flex flex-wrap gap-4" data-testid="corporate-hero-ctas">
-          <button onClick={() => goToForm("tasting")} className="btn-primary inline-flex items-center gap-2" data-testid="corporate-cta-tasting">
-            Book a Corporate Tasting <ArrowRight size={14} />
-          </button>
-          <button onClick={() => goToForm("proposal")} className="btn-outline inline-flex items-center gap-2" data-testid="corporate-cta-proposal">
-            Request a Corporate Proposal <ArrowRight size={14} />
-          </button>
+      {/* ---------------- Hero ---------------- */}
+      <section className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-16 md:pb-20 border-b border-[#DFD7CA]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          <div className="lg:col-span-7">
+            <p className="overline text-[#C05A3A]">{c("hero_eyebrow", "Corporate tasting")}</p>
+            <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight mt-5 text-[#2A1F1D] max-w-3xl">
+              {c("hero_h1", "A year-round dessert made to bring, slice and share.")}
+            </h1>
+            <p className="mt-7 text-[#5C4E4A] leading-relaxed max-w-2xl text-lg">
+              {c("hero_body1", "")}
+            </p>
+            <p className="mt-4 text-[#5C4E4A] leading-relaxed max-w-2xl">
+              {c("hero_body2", "")}
+            </p>
+            <div className="mt-10" data-testid="corporate-hero-ctas">
+              <button onClick={goToForm} className="btn-primary inline-flex items-center gap-2" data-testid="corporate-cta-tasting">
+                {c("hero_button", "Request a tasting")} <ArrowRight size={14} />
+              </button>
+              <p className="mt-4 text-sm text-[#5C4E4A] max-w-md italic">
+                {c("hero_supporting", "")}
+              </p>
+            </div>
+          </div>
+          <div className="lg:col-span-5">
+            <div className="img-wash aspect-[4/5] max-h-[70vh]">
+              <img src={c("hero_image", "/api/static/corporate/hero-woodboard.jpg")} alt="Not A Salami on a serving board with the first slices cut" />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Facts */}
+      {/* ---------------- Introduction ---------------- */}
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {facts.map((f) => {
-            const Icon = f.icon;
-            return (
-              <div key={f.title}>
-                <Icon size={22} className="text-[#C05A3A]" />
-                <p className="overline text-[#2A1F1D] mt-5">{f.title}</p>
-                <p className="text-sm text-[#5C4E4A] leading-relaxed mt-2">{f.body}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* What's included */}
-      <section className="bg-[#2A1F1D] text-[#F9F6F0] py-20 md:py-28">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid grid-cols-1 lg:grid-cols-2 gap-14">
-          <div>
-            <p className="overline text-[#B9935A]">The tasting</p>
-            <h2 className="font-serif text-4xl md:text-5xl leading-[1.05] mt-4">
-              What's <span className="italic text-[#C05A3A]">included</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-5">
+            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-[1.08] text-[#2A1F1D]">
+              {c("intro_title", "The experience begins before the first bite")}
             </h2>
           </div>
-          <ul className="space-y-6 text-[#DFD7CA] leading-relaxed">
-            <li>
-              <p className="font-serif text-xl text-[#F9F6F0]">A guided tasting with Eva</p>
-              <p className="text-sm mt-2">
-                The full story — how a cocoa salami from Modica, Sicily became a
-                San Francisco ritual — told over a proper tasting of the Classic.
-              </p>
-            </li>
-            <li>
-              <p className="font-serif text-xl text-[#F9F6F0]">Flights &amp; pairings</p>
-              <p className="text-sm mt-2">
-                Tasting flights with suggested pairings (coffee, dessert wine,
-                after-dinner service), so your team experiences it the way it was
-                meant to be served.
-              </p>
-            </li>
-            <li>
-              <p className="font-serif text-xl text-[#F9F6F0]">Take-home for every guest</p>
-              <p className="text-sm mt-2">
-                A small not-a-salami keepsake or gift box for each attendee — the
-                part that keeps the conversation going after the tasting ends.
-              </p>
-            </li>
-            <li>
-              <p className="font-serif text-xl text-[#F9F6F0]">Made to fit your moment</p>
-              <p className="text-sm mt-2">
-                Client appreciation, team offsites, onboarding rituals, holiday
-                gatherings — tell us the occasion and we'll shape the tasting around it.
-              </p>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-24 border-b border-[#DFD7CA]">
-        <p className="overline text-[#C05A3A]">How it works</p>
-        <h2 className="font-serif text-4xl md:text-5xl text-[#2A1F1D] mt-4 leading-tight">
-          Three steps to a <span className="italic text-[#C05A3A]">memorable</span> hour.
-        </h2>
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-10">
-          {[
-            { n: "01", title: "Send the request", body: "Tell us your company, date, location, and guest count using the form below — two minutes, no call needed." },
-            { n: "02", title: "Eva replies with options", body: "Within two business days you'll hear back with dates, format options, and pricing for your group size." },
-            { n: "03", title: "Confirm and gather", body: "Lock the date. We arrive with everything — you just gather your people around the table." },
-          ].map((s) => (
-            <div key={s.n}>
-              <p className="font-serif text-5xl text-[#B9935A]">{s.n}</p>
-              <p className="font-serif text-xl text-[#2A1F1D] mt-4">{s.title}</p>
-              <p className="text-sm text-[#5C4E4A] leading-relaxed mt-2">{s.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Form */}
-      <section
-        ref={formRef}
-        className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28 scroll-mt-24"
-        data-testid="corporate-form-section"
-      >
-        <div className="max-w-3xl">
-          <p className="overline text-[#C05A3A]">Inquire</p>
-          <h2 className="font-serif text-4xl md:text-5xl text-[#2A1F1D] mt-4 leading-tight">
-            Tell us about your <span className="italic text-[#C05A3A]">event.</span>
-          </h2>
-          <p className="mt-5 text-[#5C4E4A] leading-relaxed">
-            Prefer email? Reach {CONTACT.email_primary} directly — or use the form
-            and it lands straight in Eva's inbox.
-          </p>
-          <div className="mt-10">
-            <CorporateInquiryForm requestType={requestType} onTypeChange={setRequestType} />
+          <div className="lg:col-span-7 space-y-5 text-[#5C4E4A] leading-relaxed text-lg">
+            <p>{c("intro_body1", "")}</p>
+            <p>{c("intro_body2", "")}</p>
           </div>
         </div>
+      </section>
+
+      {/* ---------------- The ritual ---------------- */}
+      <section className="bg-[#EAE4D9]/50 py-20 md:py-28 border-y border-[#DFD7CA]">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+          <p className="overline text-[#C05A3A]">{c("ritual_overline", "The Not-A-Salami ritual")}</p>
+          <h2 className="font-serif text-3xl md:text-5xl leading-[1.08] mt-4 max-w-3xl text-[#2A1F1D]">
+            {c("ritual_title", "Five simple moments, shared around the table")}
+          </h2>
+          <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+            {ritual.map((step, i) => (
+              <div key={step.title || i} data-testid={`corporate-ritual-${i}`} className="border-t border-[#DFD7CA] pt-6">
+                <p className="overline text-[#B9935A]">No 0{i + 1}</p>
+                <h3 className="font-serif text-2xl text-[#2A1F1D] mt-3">{step.title}</h3>
+                <p className="text-sm text-[#5C4E4A] leading-relaxed mt-3">{step.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- The 20-minute tasting ---------------- */}
+      <section className="bg-[#2A1F1D] text-[#F9F6F0] py-20 md:py-28">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+          <p className="overline text-[#B9935A]">{c("tasting_overline", "The 20-minute tasting")}</p>
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-10">
+            {tasting.map((b, i) => (
+              <div key={b.title || i} data-testid={`corporate-tasting-${i}`}>
+                <h3 className="font-serif text-2xl md:text-3xl text-[#F9F6F0]">{b.title}</h3>
+                <p className="text-sm text-[#DFD7CA] leading-relaxed mt-4">{b.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-14 font-serif text-xl md:text-2xl text-[#F9F6F0] italic max-w-2xl">
+            {c("tasting_closing", "")}
+          </p>
+        </div>
+      </section>
+
+      {/* ---------------- Where it can fit ---------------- */}
+      <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28">
+        <p className="overline text-[#C05A3A]">{c("fit_overline", "Where it can fit")}</p>
+        <h2 className="font-serif text-3xl md:text-5xl leading-[1.08] mt-4 max-w-3xl text-[#2A1F1D]">
+          {c("fit_title", "One dessert, many occasions throughout the year")}
+        </h2>
+        <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          <div className="lg:col-span-7">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+              {fit.map((f, i) => (
+                <div key={f.title || i} data-testid={`corporate-fit-${i}`} className="border border-[#DFD7CA] bg-[#F9F6F0] p-6">
+                  <h3 className="font-serif text-2xl text-[#2A1F1D]">{f.title}</h3>
+                  <p className="text-sm text-[#5C4E4A] leading-relaxed mt-3">{f.body}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-[#5C4E4A] leading-relaxed mt-8 italic">{c("fit_note", "")}</p>
+          </div>
+          <div className="lg:col-span-5">
+            <div className="img-wash aspect-[4/5]">
+              <img src={c("fit_image", "/api/static/corporate/occasions-table.jpg")} alt="A table set with Not A Salami for a corporate gathering" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- Who should attend + what we'll discuss ---------------- */}
+      <section className="bg-[#EAE4D9]/50 py-20 md:py-28 border-y border-[#DFD7CA]">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid grid-cols-1 lg:grid-cols-2 gap-14">
+          <div>
+            <p className="overline text-[#C05A3A]">{c("attend_overline", "Who should attend")}</p>
+            <h2 className="font-serif text-3xl md:text-4xl leading-[1.08] mt-4 text-[#2A1F1D]">
+              {c("attend_title", "Bring the people who will shape the decision")}
+            </h2>
+            <p className="text-[#5C4E4A] leading-relaxed mt-6">{c("attend_body", "")}</p>
+          </div>
+          <div>
+            <p className="overline text-[#C05A3A]">{c("discuss_overline", "What we will discuss")}</p>
+            <p className="text-[#5C4E4A] leading-relaxed mt-4">{c("discuss_intro", "After tasting the product, we will explore:")}</p>
+            <ul className="mt-6 space-y-3 text-[#2A1F1D]">
+              {discuss.map((d, i) => (
+                <li key={d || i} className="flex gap-3">
+                  <span className="text-[#B9935A]">—</span>
+                  <span className="leading-relaxed">{d}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-sm text-[#5C4E4A] leading-relaxed mt-6 italic">{c("discuss_note", "")}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- Service area ---------------- */}
+      <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-24">
+        <p className="overline text-[#C05A3A]">{c("area_overline", "Service area")}</p>
+        <h2 className="font-serif text-3xl md:text-4xl leading-[1.08] mt-4 max-w-3xl text-[#2A1F1D]">
+          {c("area_title", "In-person tastings in the San Francisco Bay Area")}
+        </h2>
+        <p className="text-[#5C4E4A] leading-relaxed mt-6 max-w-2xl">{c("area_body1", "")}</p>
+        <p className="text-[#5C4E4A] leading-relaxed mt-4 max-w-2xl">{c("area_body2", "")}</p>
+      </section>
+
+      {/* ---------------- Final call to action (brand colour, no photograph) ---------------- */}
+      <section className="bg-[#C05A3A] text-[#F9F6F0] py-20 md:py-24" data-testid="corporate-final-cta">
+        <div className="max-w-[900px] mx-auto px-6 md:px-10 text-center">
+          <h2 className="font-serif text-4xl md:text-5xl leading-[1.05]">{c("cta_title", "Request a tasting")}</h2>
+          <p className="text-[#FBF7EE] leading-relaxed mt-6 max-w-2xl mx-auto">{c("cta_body", "")}</p>
+          <button onClick={goToForm} className="btn-primary mt-10 !bg-[#2A1F1D] !border-[#2A1F1D] inline-flex items-center gap-2" data-testid="corporate-cta-final">
+            {c("cta_button", "Request a tasting")} <ArrowRight size={14} />
+          </button>
+        </div>
+      </section>
+
+      {/* ---------------- Inquiry form ---------------- */}
+      <section className="max-w-[900px] mx-auto px-6 md:px-10 py-20 md:py-28">
+        <p className="overline text-[#C05A3A]">Corporate inquiry</p>
+        <h2 className="font-serif text-3xl md:text-5xl leading-[1.08] mt-4 text-[#2A1F1D]">
+          {c("form_heading", "Tell us about your corporate occasion")}
+        </h2>
+        <p className="text-[#5C4E4A] leading-relaxed mt-5 mb-12">{c("form_intro", "A few details will help us prepare for the conversation. Estimates are welcome.")}</p>
+        <CorporateInquiryForm c={c} formRef={formRef} />
       </section>
     </div>
   );

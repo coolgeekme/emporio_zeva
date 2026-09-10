@@ -2,7 +2,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Menu, X } from "lucide-react";
-import { NOT_A_SALAMI_SEAL } from "../content";
+import { useBrandLogo } from "../hooks/useBrandLogo";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -17,6 +17,7 @@ const links = [
 ];
 
 export default function Nav() {
+  const { logo } = useBrandLogo();
   const [open, setOpen] = useState(false);
   const [cmsLinks, setCmsLinks] = useState([]);
   const location = useLocation();
@@ -57,7 +58,7 @@ export default function Nav() {
           className="flex items-center"
         >
           <img
-            src={NOT_A_SALAMI_SEAL}
+            src={logo}
             alt="Not A Salami · Sicilian Cocoa Confection"
             className="h-[64px] w-[64px] md:h-[76px] md:w-[76px] select-none"
             draggable="false"

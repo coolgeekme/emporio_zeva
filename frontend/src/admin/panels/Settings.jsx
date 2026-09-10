@@ -1,9 +1,89 @@
 // Settings panel — profile (self-service) + general (brand) + reading (content visibility).
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Upload } from "lucide-react";
+import { refreshBrandLogo } from "../../hooks/useBrandLogo";
 import { API, authHeaders, formatApiErrorDetail } from "../api";
 import ProfileSection from "./ProfileSection";
+
+
+// Brand logo upload field — used for both the light-background logo and the
+// dark-background (cream/gold) variant. Uploads land in the media library so
+// they persist across redeploys; leave empty to use the logo shipped with the site.
+function LogoField({ id, label, hint, value, onChange, token, readOnly, testid }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const inputRef = useRef(null);
+
+  const upload = async (file) => {
+    if (!file) return;
+    setBusy(true);
+    setErr("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const { data } = await axios.post(`${API}/admin/media`, fd, {
+        headers: { ...authHeaders(token) },
+      });
+      onChange(data.url);
+      refreshBrandLogo();
+    } catch (e) {
+      setErr(formatApiErrorDetail(e?.response?.data?.detail, "Couldn't upload the logo."));
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="field md:col-span-2" data-testid={testid}>
+      <label htmlFor={id}>{label}</label>
+      <div className="flex flex-wrap items-center gap-4 mt-1">
+        <div className="h-16 w-16 border border-[#DFD7CA] bg-[#F9F6F0] flex items-center justify-center overflow-hidden shrink-0">
+          {value ? (
+            <img src={value} alt="" className="max-h-14 max-w-14 object-contain" />
+          ) : (
+            <span className="text-[10px] text-[#5C4E4A] text-center px-1">site default</span>
+          )}
+        </div>
+        <input
+          id={id}
+          disabled={readOnly}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Upload an image, or paste an image URL"
+          className="flex-1 min-w-[220px]"
+        />
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => upload(e.target.files?.[0])}
+        />
+        <button
+          type="button"
+          disabled={readOnly || busy}
+          onClick={() => inputRef.current?.click()}
+          className="btn-outline !py-2 !px-4 !text-[10px] inline-flex items-center gap-2"
+        >
+          <Upload size={13} /> {busy ? "Uploading…" : "Upload"}
+        </button>
+        {value && !readOnly && (
+          <button
+            type="button"
+            onClick={() => { onChange(""); refreshBrandLogo(); }}
+            className="text-xs text-[#C05A3A] link-underline"
+          >
+            Use site default
+          </button>
+        )}
+      </div>
+      {hint && <p className="text-xs text-[#5C4E4A] mt-2">{hint}</p>}
+      {err && <p className="text-xs text-[#C05A3A] mt-1">{err}</p>}
+    </div>
+  );
+}
 
 // Who receives the "New inquiry / waitlist / newsletter" notification emails.
 // Admin-only — mirrors the backend's require_admin gate on these endpoints.
@@ -380,6 +460,26 @@ export default function SettingsPanel({ token, readOnly, currentUser, onUserUpda
               link appears everywhere automatically.
             </p>
           </div>
+          <LogoField
+            id="s-logo"
+            label="Brand logo — light backgrounds"
+            hint="Shown in the navigation, the one-sheet and the corporate deck cover. Upload a PNG with a transparent background."
+            value={data.general.brand_logo_url}
+            onChange={(v) => updateGeneral("brand_logo_url", v)}
+            token={token}
+            readOnly={readOnly}
+            testid="settings-logo-field"
+          />
+          <LogoField
+            id="s-logo-light"
+            label="Brand logo — dark backgrounds"
+            hint="Shown in the footer and other dark sections. Use the light (cream) version of the logo so it reads on a dark background."
+            value={data.general.brand_logo_light_url}
+            onChange={(v) => updateGeneral("brand_logo_light_url", v)}
+            token={token}
+            readOnly={readOnly}
+            testid="settings-logo-light-field"
+          />
           <div className="field md:col-span-2">
             <label htmlFor="s-addr">Address</label>
             <input

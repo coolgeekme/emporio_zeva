@@ -1,12 +1,13 @@
 // Decorative divider — the Not A Salami circular seal between hairline ornaments.
 // `variant="dark"` for light/parchment backgrounds, `variant="light"` for dark.
 
-import { NOT_A_SALAMI_SEAL, NOT_A_SALAMI_SEAL_LIGHT } from "../content";
+import { useBrandLogo } from "../hooks/useBrandLogo";
 
 export default function MonogramDivider({ variant = "dark", className = "", testid = "monogram-divider" }) {
   const stroke = variant === "light" ? "#F9F6F0" : "#2A1F1D";
   const gold = "#B9935A";
-  const sealSrc = variant === "light" ? NOT_A_SALAMI_SEAL_LIGHT : NOT_A_SALAMI_SEAL;
+  const { logo, logoLight } = useBrandLogo();
+  const sealSrc = variant === "light" ? logoLight : logo;
   const sealStyle = {};
 
   return (

@@ -6,16 +6,18 @@ import {
   TAGLINES,
   CORPORATE_PACKAGES,
   IMAGES,
-  NOT_A_SALAMI_SEAL,
   TIER_TONES,
   toneFor,
 } from "../content";
 import MonogramDivider from "../components/MonogramDivider";
+import { useBrandLogo } from "../hooks/useBrandLogo";
 
 // Digital one-sheet — print-friendly single page version of the Corporate
 // One-Sheet PDF. Sales team can share /one-sheet as a link.
 
 export default function OneSheet() {
+
+  const { logo } = useBrandLogo();
   return (
     <div className="pt-[90px] bg-[#F9F6F0] min-h-screen" data-testid="one-sheet-page">
       <div className="max-w-[1000px] mx-auto px-6 md:px-12 py-12">
@@ -38,7 +40,7 @@ export default function OneSheet() {
           {/* Header */}
           <header className="text-center pb-10 border-b border-[#DFD7CA]">
             <img
-              src={NOT_A_SALAMI_SEAL}
+              src={logo}
               alt="Not A Salami"
               className="h-24 w-24 mx-auto select-none"
               draggable="false"
