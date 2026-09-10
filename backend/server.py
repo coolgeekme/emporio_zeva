@@ -2609,22 +2609,41 @@ async def cleanup_orphaned_media():
 
 async def seed_corporate_media():
     """Mirror the corporate page photographs into GridFS so they survive
-    container redeploys. Idempotent — skips any asset already persisted."""
+    container redeploys.
+
+    Self-healing: when a shipped image is replaced (different bytes), the stored
+    copy is re-uploaded and the superseded GridFS file removed. Skipping on
+    filename alone left the old bytes serving forever — which is how a
+    watermarked photograph stayed live after the clean replacement was committed.
+    """
+    import hashlib
     import mimetypes
 
     for name in _CORPORATE_ASSET_NAMES:
         path = _corporate_dir() / name
         if not path.exists():
             continue
+        payload = path.read_bytes()
+        digest = hashlib.sha256(payload).hexdigest()
         existing = await db.media.find_one(
             {"filename": name, "corporate_asset": True}, {"_id": 0}
         )
-        if existing and existing.get("gridfs_id"):
+        if (existing and existing.get("gridfs_id")
+                and existing.get("content_sha256") == digest):
             continue
         if existing:
+            old_gridfs = existing.get("gridfs_id")
+            if old_gridfs:
+                try:
+                    from bson import ObjectId
+                    await media_bucket.delete(ObjectId(old_gridfs))
+                except Exception as exc:  # noqa: BLE001
+                    logging.getLogger(__name__).warning(
+                        "Could not delete superseded GridFS file %s: %s",
+                        old_gridfs, exc,
+                    )
             await db.media.delete_one({"id": existing["id"]})
 
-        payload = path.read_bytes()
         mime = mimetypes.guess_type(name)[0] or "image/jpeg"
         grid_in = media_bucket.open_upload_stream(
             name,
@@ -2659,10 +2678,11 @@ async def seed_corporate_media():
             "uploaded_at": datetime.now(timezone.utc).isoformat(),
             "uploaded_by": None,
             "gridfs_id": str(grid_in._id),
+            "content_sha256": digest,
             "corporate_asset": True,
         })
         logging.getLogger(__name__).info(
-            "Persisted corporate asset to GridFS: %s", name
+            "Persisted corporate asset to GridFS: %s (%d bytes)", name, len(payload)
         )
 
 
