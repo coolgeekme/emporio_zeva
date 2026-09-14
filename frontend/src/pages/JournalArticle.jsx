@@ -133,7 +133,7 @@ export default function JournalArticle() {
         <MonogramDivider className="mt-16" />
 
         <p className="text-center mt-12 font-serif italic text-[#5C4E4A] text-lg">
-          — Eva &amp; the Not A Salami team
+          — Eva &amp; the Not-A-Salami team
         </p>
       </section>
 

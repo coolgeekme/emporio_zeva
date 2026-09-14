@@ -122,7 +122,7 @@ export default function Home() {
               <img
                 ref={heroImgRef}
                 src={c("hero_image", IMAGES.hero)}
-                alt="Hands slicing Not A Salami beside hand-wrapped gift boxes"
+                alt="Hands slicing Not-A-Salami beside hand-wrapped gift boxes"
                 data-testid="hero-image"
                 className="will-change-transform"
                 style={{ transform: "scale(1.12)" }}
@@ -236,10 +236,13 @@ export default function Home() {
           <div className="img-wash aspect-[5/6]">
             <img
               src={c("illusion_image", "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg")}
-              alt="Not A Salami chocolate salami sliced on a branded wood board"
+              alt="Not-A-Salami chocolate salami sliced on a branded wood board"
               data-testid="illusion-image"
             />
           </div>
+          <p className="overline text-[#5C4E4A] mt-4" data-testid="illusion-caption">
+            {c("illusion_caption", "cocoa powder")}
+          </p>
         </div>
       </section>
 
@@ -428,7 +431,7 @@ export default function Home() {
               <span className="italic text-[#C05A3A]">Savored.</span>
             </h2>
             <p className="mt-7 text-[#5C4E4A] leading-relaxed max-w-md">
-              {c("ritual_body", "Not A Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way.")}
+              {c("ritual_body", "Not-A-Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way.")}
             </p>
             <Link to="/ritual" className="link-underline mt-8 inline-flex" data-testid="ritual-section-cta">
               Read the full ritual <ArrowRight size={14} />

@@ -81,7 +81,7 @@ export default function DeckView() {
             we'll send you a fresh one.
           </p>
           <Link to="/" className="btn-primary mt-8 inline-flex">
-            Visit Not A Salami
+            Visit Not-A-Salami
           </Link>
         </div>
       </div>

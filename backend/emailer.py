@@ -58,7 +58,7 @@ _BRAND_WRAPPER = """\
     {body}
     <div style="height:1px;background:#E6D8C9;margin:32px 0 18px;"></div>
     <div style="font-size:12px;color:#5C4E4A;line-height:1.6;">
-      Eva &middot; Not A Salami<br/>
+      Eva &middot; Not-A-Salami<br/>
       <a href="https://notasalami.com" style="color:#C05A3A;text-decoration:none;">notasalami.com</a>
     </div>
   </div>
@@ -301,7 +301,7 @@ async def notify_invite(invitee: dict, temp_password: str) -> None:
     notify_to = _notify_to()
     await send(
         email,
-        "Welcome to the Not A Salami admin",
+        "Welcome to the Not-A-Salami admin",
         _wrap(body),
         reply_to=notify_to or None,
     )

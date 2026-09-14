@@ -1,11 +1,11 @@
 // ============================================================================
-// Emporio Zeva · Not A Salami — central brand content
+// Emporio Zeva · Not-A-Salami — central brand content
 // Everything below is approved client copy from the official Pitch Deck,
 // One-Sheet, Ritual Postcard, Product Insert, and Tile Coaster artifacts.
 // ============================================================================
 
 export const BRAND = {
-  name: "Not A Salami",
+  name: "Not-A-Salami",
   parent: "Emporio Zeva",
   founder: "Eva",
   origin: "Modica, Sicily",
@@ -70,9 +70,9 @@ export const RITUAL = [
 
 // Eva's real letter from the Ritual Postcard (slightly broken for layout)
 export const FOUNDER_LETTER = [
-  "Inspired by a childhood memory of a sweet Sicilian confection shaped like a salame, Not A Salami was recreated years later in California as a way to bring back a feeling of warmth, home, and togetherness around the table.",
+  "Inspired by a childhood memory of a sweet Sicilian confection shaped like a salame, Not-A-Salami was recreated years later in California as a way to bring back a feeling of warmth, home, and togetherness around the table.",
   "What began as a personal family tradition evolved into a handcrafted cocoa confection rooted in Sicilian heritage and thoughtfully reinterpreted in California.",
-  "Unexpected in appearance yet deeply nostalgic at heart, Not A Salami is meant to create a moment of surprise, sharing, and conversation.",
+  "Unexpected in appearance yet deeply nostalgic at heart, Not-A-Salami is meant to create a moment of surprise, sharing, and conversation.",
   "Everything is produced in small batches in California with a hands-on approach to craftsmanship, quality, and presentation.",
 ];
 
@@ -91,7 +91,7 @@ export const CORPORATE_USE_CASES = [
 
 // Customization options (slide 07) — 4 real
 export const CUSTOMIZATION = [
-  { title: "Signature Postcard", body: "A warm introduction to the Not A Salami experience from our team." },
+  { title: "Signature Postcard", body: "A warm introduction to the Not-A-Salami experience from our team." },
   { title: "Personalized Sticker", body: "Your company identity discreetly integrated into the exterior presentation." },
   { title: "Sicilian Tile Coaster", body: "Customized with your company message for a more memorable and personal gifting moment." },
   { title: "NS Monogram Tissue Paper", body: "Subtle branded presentation designed to elevate the unboxing experience." },
@@ -160,7 +160,7 @@ export const CORPORATE_PACKAGES = [
     box: "White Box",
     blurb: "Designed for thoughtful corporate gifting.",
     includes: [
-      "1× Not A Salami",
+      "1× Not-A-Salami",
       "Signature Postcard",
       "Custom gift message",
       "NS monogram tissue paper",
@@ -175,7 +175,7 @@ export const CORPORATE_PACKAGES = [
     box: "Black Box",
     blurb: "An elevated gifting experience with enhanced presentation.",
     includes: [
-      "1× Not A Salami",
+      "1× Not-A-Salami",
       "Signature Postcard",
       "Custom gift message",
       "Sicilian Tile Coaster",
@@ -192,9 +192,9 @@ export const CORPORATE_PACKAGES = [
     unit: "per unit",
     box: "Mini Box",
     blurb:
-      "A pocket-sized Not A Salami — half the size, all the ritual. Ideal for tasting flights and smaller gifting moments.",
+      "A pocket-sized Not-A-Salami — half the size, all the ritual. Ideal for tasting flights and smaller gifting moments.",
     includes: [
-      "1× Il Mini (Not A Salami)",
+      "1× Il Mini (Not-A-Salami)",
       "Signature Postcard",
       "Custom gift message",
       "NS monogram tissue paper",
@@ -224,7 +224,7 @@ export const PROCESS = [
 export const TESTIMONIALS = [
   {
     quote:
-      "Every bite of Not A Salami was a delightful journey back to Sicily. It's rare to find a treat that so perfectly captures the essence of traditional flavors with a modern twist.",
+      "Every bite of Not-A-Salami was a delightful journey back to Sicily. It's rare to find a treat that so perfectly captures the essence of traditional flavors with a modern twist.",
     name: "Fabio Ficano",
     role: "Returning Customer",
   },
@@ -251,24 +251,24 @@ export const TESTIMONIALS = [
 export const JOURNAL = [
   {
     slug: "a-sweet-journey-through-sicily",
-    title: "Not A Salami: A Sweet Journey Through Sicily and Beyond",
+    title: "Not-A-Salami: A Sweet Journey Through Sicily and Beyond",
     excerpt:
-      "Not A Salami may seem like a modern culinary trend, but its roots run deep in the traditions of Sicilian holiday tables, where cocoa salami was made from what the pantry offered.",
+      "Not-A-Salami may seem like a modern culinary trend, but its roots run deep in the traditions of Sicilian holiday tables, where cocoa salami was made from what the pantry offered.",
     image: "/api/static/journal/sweet-journey-through-sicily.jpg",
     date: "Summer 2024",
     read: "6 min read",
     body: [
-      "Long before Not A Salami was a brand, it was simply something Eva's grandmother made on the kitchen table in Modica. A wooden board, a long sheet of parchment paper, a length of twine. Cocoa folded into broken biscotti, butter, a measure of sugar, and whatever was in the pantry that week. Rolled by hand, tied at both ends, set in the cold corner of the cellar to firm up.",
+      "Long before Not-A-Salami was a brand, it was simply something Eva's grandmother made on the kitchen table in Modica. A wooden board, a long sheet of parchment paper, a length of twine. Cocoa folded into broken biscotti, butter, a measure of sugar, and whatever was in the pantry that week. Rolled by hand, tied at both ends, set in the cold corner of the cellar to firm up.",
       "It wasn't a recipe written down. It was the recipe — passed from one woman to another, slightly different in every house, never quite the same twice. In Sicilian, it had as many names as it had grandmothers. Salame di cioccolato. Salame turco. Salame del nonno. In our house, it was just la salame inglese — the English salami — for the way it sat on the table looking like one thing and revealing itself as another.",
       "The original use of the salami shape was practical, not theatrical. Cured meats hung from rafters; sweets were rolled to a similar diameter so they could be wrapped in the same paper and tied with the same twine, then placed alongside the prosciutto and the bresaola at the holidays. The wink was a happy accident. The reveal — that the dense, cool, fragrant slice was chocolate, not pork — became the joke that made the meal.",
       "We brought the recipe to San Francisco in our own kitchen, then a small commissary, then a slightly larger one. We tested cocoa from four continents and settled on a Modican blend that holds its temper even at room temperature. We tracked down biscotti with the precise crunch — not too sweet, not too soft. We argued about sugar crystals (yes, in the end). And then we did the only thing that mattered: we slowed down.",
-      "Every Not A Salami is still rolled by hand, tied by hand, rested in our cold room for the same number of days. Each one travels in the same parchment and twine our family has used for three generations. When you cut it open at the table, what you're slicing is not a product — it's a small piece of a Sunday afternoon in Sicily, half a century ago, in a kitchen that smelled like coffee and cocoa and rain on the cobblestones.",
+      "Every Not-A-Salami is still rolled by hand, tied by hand, rested in our cold room for the same number of days. Each one travels in the same parchment and twine our family has used for three generations. When you cut it open at the table, what you're slicing is not a product — it's a small piece of a Sunday afternoon in Sicily, half a century ago, in a kitchen that smelled like coffee and cocoa and rain on the cobblestones.",
       "That's the journey. From Modica to a table in San Francisco — or yours, wherever it sits.",
     ],
   },
   {
     slug: "the-ultimate-gourmet-gift",
-    title: "Elevate Your Dessert Game: Not A Salami as the Ultimate Gourmet Gift",
+    title: "Elevate Your Dessert Game: Not-A-Salami as the Ultimate Gourmet Gift",
     excerpt:
       "Finding the perfect gift can be a challenge, especially when you want something unique and unforgettable. Here is why a sliceable cocoa confection belongs on every host's table.",
     image: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
@@ -276,7 +276,7 @@ export const JOURNAL = [
     read: "4 min read",
     body: [
       "The best gifts hold a secret. A wrapped object that hints at one thing and turns out to be another. A box that opens slowly. A name in a language the recipient doesn't quite speak yet. Generosity is, almost always, a small act of theater.",
-      "Not A Salami was designed for exactly that. From the outside, it looks like a hand-tied cured meat — wrapped in parchment paper and gold foil, dusted in cocoa powder that reads as fresh pepper or fine mold. Most people, even the food-curious ones, miss the wink at first. They lift it, smell it, ask about the curing. Then someone slices it.",
+      "Not-A-Salami was designed for exactly that. From the outside, it looks like a hand-tied cured meat — wrapped in parchment paper and gold foil, dusted in cocoa powder that reads as fresh pepper or fine mold. Most people, even the food-curious ones, miss the wink at first. They lift it, smell it, ask about the curing. Then someone slices it.",
       "What they find inside is the moment we built the whole thing around. A dense, cool interior speckled with crunchy biscotti, dark chocolate chips, and the faintest glitter of sugar crystals. Not too sweet. Not soft. Architectural. The room goes quiet for a second and then everyone laughs.",
       "We've heard this story dozens of times from corporate clients, hosts, restaurants. The cardiologist who unwrapped one at the office and watched colleagues stage an intervention. The wine bar that started slicing it alongside their cheese plate. The mother-in-law who hid hers in the fridge for two months and gave a slice to anyone she liked. (Apparently three people made the list.)",
       "It works as a gift because it does what gifts are supposed to do — it surprises, it photographs well, it travels well, it lasts about a week longer than it should, and it gives the recipient a story they'll tell for months. The unboxing alone tends to live on a phone for a while.",
@@ -294,7 +294,7 @@ export const JOURNAL = [
     read: "5 min read",
     body: [
       "There is a particular way that cocoa smells when it's being worked by hand, and if you grew up in a house where someone made dessert from scratch, you know it. Not the dry powder smell. The hydrated one. The smell of cocoa meeting warm butter, sugar dissolving, biscotti turning slightly soft at the edges. That smell does something to memory.",
-      "When we started serving Not A Salami at small dinners in San Francisco, the most common reaction was not 'wow, what is this?' It was 'wait — this is the thing my grandmother used to make.' Italian-American guests would go silent for a moment and then start naming their nonnas. A guest from Buenos Aires recognized it as the salchichón de chocolate from her childhood. Someone from Lebanon called it lazy cake. The Polish version is similar enough that the recognition was instant.",
+      "When we started serving Not-A-Salami at small dinners in San Francisco, the most common reaction was not 'wow, what is this?' It was 'wait — this is the thing my grandmother used to make.' Italian-American guests would go silent for a moment and then start naming their nonnas. A guest from Buenos Aires recognized it as the salchichón de chocolate from her childhood. Someone from Lebanon called it lazy cake. The Polish version is similar enough that the recognition was instant.",
       "What we kept hearing was a version of the same sentence: 'I haven't had this in twenty years.' Sometimes thirty. Sometimes since their mother passed.",
       "We didn't set out to make something nostalgic. We set out to make something good — to honor the original Sicilian recipe and the technique it deserved. But food, more than almost anything else, is a vehicle for memory. A flavor you ate as a child is wired into the same neural circuits as your bedroom from age six. Bite into the right thing as an adult and you are eight years old again, in a kitchen that doesn't exist anymore.",
       "We think this is the quiet power of a classic treat done carefully. It doesn't compete with new desserts. It is, by design, older than the room you're standing in. It asks nothing of you except to slice it and pass it around.",
@@ -342,7 +342,7 @@ export const IMAGES = {
   founder: "/api/static/our-story/founder.jpg",
   sicily: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1800&q=80",
   italian_moment: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
-  // Branded "NOT A SALAMI" board (image1.jpeg from Emergent assets)
+  // Branded "NOT-A-SALAMI" board (image1.jpeg from Emergent assets)
   gift: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
   // Deck slide imagery shipped from the backend static folder so they survive
   // every deploy and don't depend on third-party hotlinks.

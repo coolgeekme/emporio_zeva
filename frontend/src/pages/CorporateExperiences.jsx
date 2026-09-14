@@ -154,7 +154,7 @@ function CorporateInquiryForm({ c, formRef }) {
       </div>
 
       <div className="text-sm text-[#5C4E4A] leading-relaxed" data-testid="corporate-consent">
-        <WithPrivacyLink text={c("form_consent", "By submitting this form, you agree that Not A Salami may contact you about this inquiry. See our Privacy Policy.")} />
+        <WithPrivacyLink text={c("form_consent", "By submitting this form, you agree that Not-A-Salami may contact you about this inquiry. See our Privacy Policy.")} />
       </div>
 
       <div className="flex flex-wrap items-center gap-6 pt-2">
@@ -226,7 +226,7 @@ export default function CorporateExperiences() {
           </div>
           <div className="lg:col-span-5">
             <div className="img-wash aspect-[4/5] max-h-[70vh]">
-              <img src={c("hero_image", "/api/static/corporate/hero-woodboard.jpg")} alt="Not A Salami on a serving board with the first slices cut" />
+              <img src={c("hero_image", "/api/static/corporate/hero-woodboard.jpg")} alt="Not-A-Salami on a serving board with the first slices cut" />
             </div>
           </div>
         </div>
@@ -304,7 +304,7 @@ export default function CorporateExperiences() {
           </div>
           <div className="lg:col-span-5">
             <div className="img-wash aspect-[4/5]">
-              <img src={c("fit_image", "/api/static/corporate/occasions-table.jpg")} alt="A table set with Not A Salami for a corporate gathering" />
+              <img src={c("fit_image", "/api/static/corporate/occasions-table.jpg")} alt="A table set with Not-A-Salami for a corporate gathering" />
             </div>
           </div>
         </div>

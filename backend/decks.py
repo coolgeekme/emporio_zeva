@@ -28,7 +28,7 @@ DUCKDUCKGO_ICON = "https://icons.duckduckgo.com/ip3/{domain}.ico"
 DEFAULT_INTRO = "A curated Italian gifting experience, prepared with care."
 
 SYSTEM_PROMPT = (
-    "You write for Not A Salami — an artisan Sicilian cocoa confection brand "
+    "You write for Not-A-Salami — an artisan Sicilian cocoa confection brand "
     "based in San Francisco. The voice is editorial, warm, slightly literary, "
     "Italian-restrained — never salesy, never corporate. Think Aesop meets a "
     "small Modican kitchen.\n\n"

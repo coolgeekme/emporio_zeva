@@ -78,7 +78,7 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
         </span>
       </p>
       <span className={`overline ${dark ? "text-[#5C4E4A]" : "text-[#DFD7CA]"} hidden md:inline`}>
-        Not A Salami · Corporate Gifting
+        Not-A-Salami · Corporate Gifting
       </span>
     </div>
     <div className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-16 w-full md:h-full flex md:items-center">
@@ -203,8 +203,8 @@ export default function BlackRock({ deck = null }) {
 
   useEffect(() => {
     document.title = isGeneric
-      ? "Corporate Gifting Presentation · Not A Salami"
-      : `A Corporate Gifting Presentation for ${clientName} · Not A Salami`;
+      ? "Corporate Gifting Presentation · Not-A-Salami"
+      : `A Corporate Gifting Presentation for ${clientName} · Not-A-Salami`;
   }, [isGeneric, clientName]);
 
   const submit = async (e) => {
@@ -327,7 +327,7 @@ export default function BlackRock({ deck = null }) {
             </div>
             <div className="md:col-span-5 hidden md:block">
               <div className="img-wash aspect-[4/5] max-h-[60vh] fx fx-right fx-d2">
-                <img src={ov("slide_1_cover", "hero_image", IMAGES.product)} alt="Not A Salami presentation" />
+                <img src={ov("slide_1_cover", "hero_image", IMAGES.product)} alt="Not-A-Salami presentation" />
               </div>
               {clientLogo && (
                 <div
@@ -351,7 +351,7 @@ export default function BlackRock({ deck = null }) {
               )}
               <img
                 src={logo}
-                alt="Not A Salami"
+                alt="Not-A-Salami"
                 className="h-16 w-16 mt-6 select-none fx fx-up fx-d5"
                 draggable="false"
               />
@@ -394,7 +394,7 @@ export default function BlackRock({ deck = null }) {
         <Slide id="why-it-works" n={3} total={TOTAL} dark testid="deck-slide-why-it-works" isActive={visited.has(2)}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-center">
             <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[60vh]">
-              <img src={ov("slide_3_why", "image", IMAGES.hero)} alt="Sliced Not A Salami" />
+              <img src={ov("slide_3_why", "image", IMAGES.hero)} alt="Sliced Not-A-Salami" />
             </div>
             <div className="md:col-span-7">
               <p className="overline text-[#B9935A]">{ov("slide_3_why", "overline", "A different kind of chocolate")}</p>
@@ -453,7 +453,7 @@ export default function BlackRock({ deck = null }) {
               </dl>
             </div>
             <div className="md:col-span-5 img-wash aspect-[4/5] max-h-[60vh]">
-              <img src={ov("slide_4_product", "image", IMAGES.deck_slide4_product)} alt="Sliced Not A Salami showing cookie texture" />
+              <img src={ov("slide_4_product", "image", IMAGES.deck_slide4_product)} alt="Sliced Not-A-Salami showing cookie texture" />
             </div>
           </div>
         </Slide>
@@ -503,7 +503,7 @@ export default function BlackRock({ deck = null }) {
               <p className="overline text-[#B9935A] mt-8">notasalami.com</p>
             </div>
             <div className="md:col-span-6 img-wash aspect-[4/5] max-h-[60vh]">
-              <img src={ov("slide_6_expression", "image", IMAGES.deck_slide6_expression)} alt="Not A Salami gift presentation" />
+              <img src={ov("slide_6_expression", "image", IMAGES.deck_slide6_expression)} alt="Not-A-Salami gift presentation" />
             </div>
           </div>
         </Slide>

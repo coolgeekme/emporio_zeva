@@ -1,4 +1,4 @@
-// Decorative divider — the Not A Salami circular seal between hairline ornaments.
+// Decorative divider — the Not-A-Salami circular seal between hairline ornaments.
 // `variant="dark"` for light/parchment backgrounds, `variant="light"` for dark.
 
 import { useBrandLogo } from "../hooks/useBrandLogo";

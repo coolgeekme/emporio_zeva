@@ -313,7 +313,7 @@ class MediaUpdate(BaseModel):
 
 # ---------- Settings ----------
 class GeneralSettings(BaseModel):
-    brand_name: str = "Not A Salami"
+    brand_name: str = "Not-A-Salami"
     tagline: str = "A truly Sicilian treat. For the unexpected."
     contact_email: str = "hello@emporiozeva.com"
     instagram_handle: str = "@notasalami"
@@ -494,7 +494,7 @@ require_viewer = require_role("admin", "editor", "viewer")
 SEED_PRODUCTS = [
     {
         "slug": "not-a-salami-classic",
-        "name": "Not A Salami — Sicilian Cocoa Confection",
+        "name": "Not-A-Salami — Sicilian Cocoa Confection",
         "tagline": "A truly Sicilian treat. For the unexpected.",
         "price": "$32",
         "weight": "300g · 16–17 slices",
@@ -565,11 +565,11 @@ SEED_PRODUCTS = [
     {
         "slug": "not-a-salami-mini",
         "name": "Il Mini",
-        "tagline": "A pocket-sized Not A Salami. Perfect for one, two, or a quiet evening.",
+        "tagline": "A pocket-sized Not-A-Salami. Perfect for one, two, or a quiet evening.",
         "price": "TBD",
         "weight": "120g · 6–7 slices",
         "description": "The full Classic Cocoa recipe, scaled down for smaller tables — and smaller gifts.",
-        "long_description": "Eva keeps a few of these on her bench at all times. A scaled-down Not A Salami for the table of two, the office desk, or the corporate tasting flight. Same cocoa, same biscotti, same wrap-and-tie — half the size, twice the charm. We're finalizing batch sizes; reserve a spot to be first.",
+        "long_description": "Eva keeps a few of these on her bench at all times. A scaled-down Not-A-Salami for the table of two, the office desk, or the corporate tasting flight. Same cocoa, same biscotti, same wrap-and-tie — half the size, twice the charm. We're finalizing batch sizes; reserve a spot to be first.",
         "ingredients": [
             "Rich cocoa",
             "Crunchy biscotti",
@@ -602,7 +602,7 @@ SEED_PRODUCTS = [
         "price": "TBD",
         "weight": "Per-slice · sold in sets",
         "description": "Single hand-cut slices, individually wrapped in waxed parchment. Designed for tasting events and corporate gifting drops.",
-        "long_description": "L'Assaggio is the answer to one of our most-asked questions: 'Can I share Not A Salami without slicing it?' Yes — and now we have a format for it. Hand-cut slices, individually wrapped in waxed parchment, sealed with a wax dot. Ideal for hotels, restaurants, in-store sampling, and corporate welcome boxes. We're piloting sets of 12, 24, and 50.",
+        "long_description": "L'Assaggio is the answer to one of our most-asked questions: 'Can I share Not-A-Salami without slicing it?' Yes — and now we have a format for it. Hand-cut slices, individually wrapped in waxed parchment, sealed with a wax dot. Ideal for hotels, restaurants, in-store sampling, and corporate welcome boxes. We're piloting sets of 12, 24, and 50.",
         "ingredients": [
             "Sliced from our Classic Cocoa",
             "Individually wrapped in food-safe waxed parchment",
@@ -636,7 +636,7 @@ SEED_PRODUCTS = [
         "description": "An upcoming complete table ritual — our cocoa salami with a small olive-wood board, a hemmed linen napkin, and a serving card.",
         "long_description": "Designed as a host gift or a quiet indulgence. Currently in development with a small San Francisco workshop. Join the waitlist to reserve a board from the first run.",
         "ingredients": [
-            "Includes: 1× Not A Salami Classic",
+            "Includes: 1× Not-A-Salami Classic",
             "1× Olive-wood serving board, ~10in",
             "1× Italian linen napkin",
             "1× Letterpress serving card",
@@ -682,24 +682,24 @@ async def seed_products():
 SEED_JOURNAL = [
     {
         "slug": "a-sweet-journey-through-sicily",
-        "title": "Not A Salami: A Sweet Journey Through Sicily and Beyond",
-        "excerpt": "Not A Salami may seem like a modern culinary trend, but its roots run deep in the traditions of Sicilian holiday tables, where cocoa salami was made from what the pantry offered.",
+        "title": "Not-A-Salami: A Sweet Journey Through Sicily and Beyond",
+        "excerpt": "Not-A-Salami may seem like a modern culinary trend, but its roots run deep in the traditions of Sicilian holiday tables, where cocoa salami was made from what the pantry offered.",
         "image": "/api/static/journal/sweet-journey-through-sicily.jpg",
         "date": "Summer 2024",
         "read": "6 min read",
         "order": 1,
         "body": [
-            "Long before Not A Salami was a brand, it was simply something Eva's grandmother made on the kitchen table in Modica. A wooden board, a long sheet of parchment paper, a length of twine. Cocoa folded into broken biscotti, butter, a measure of sugar, and whatever was in the pantry that week. Rolled by hand, tied at both ends, set in the cold corner of the cellar to firm up.",
+            "Long before Not-A-Salami was a brand, it was simply something Eva's grandmother made on the kitchen table in Modica. A wooden board, a long sheet of parchment paper, a length of twine. Cocoa folded into broken biscotti, butter, a measure of sugar, and whatever was in the pantry that week. Rolled by hand, tied at both ends, set in the cold corner of the cellar to firm up.",
             "It wasn't a recipe written down. It was the recipe — passed from one woman to another, slightly different in every house, never quite the same twice. In Sicilian, it had as many names as it had grandmothers. Salame di cioccolato. Salame turco. Salame del nonno. In our house, it was just la salame inglese — the English salami — for the way it sat on the table looking like one thing and revealing itself as another.",
             "The original use of the salami shape was practical, not theatrical. Cured meats hung from rafters; sweets were rolled to a similar diameter so they could be wrapped in the same paper and tied with the same twine, then placed alongside the prosciutto and the bresaola at the holidays. The wink was a happy accident. The reveal — that the dense, cool, fragrant slice was chocolate, not pork — became the joke that made the meal.",
             "We brought the recipe to San Francisco in our own kitchen, then a small commissary, then a slightly larger one. We tested cocoa from four continents and settled on Guittard, a San Francisco institution whose cocoa holds its temper even at room temperature. We tracked down biscotti with the precise crunch — not too sweet, not too soft. We argued about sugar crystals (yes, in the end). And then we did the only thing that mattered: we slowed down.",
-            "Every Not A Salami is still rolled by hand, tied by hand, rested in our cold room for the same number of days. Each one travels in the same parchment and twine our family has used for three generations. When you cut it open at the table, what you're slicing is not a product — it's a small piece of a Sunday afternoon in Sicily, half a century ago, in a kitchen that smelled like coffee and cocoa and rain on the cobblestones.",
+            "Every Not-A-Salami is still rolled by hand, tied by hand, rested in our cold room for the same number of days. Each one travels in the same parchment and twine our family has used for three generations. When you cut it open at the table, what you're slicing is not a product — it's a small piece of a Sunday afternoon in Sicily, half a century ago, in a kitchen that smelled like coffee and cocoa and rain on the cobblestones.",
             "That's the journey. From Modica to a table in San Francisco — or yours, wherever it sits.",
         ],
     },
     {
         "slug": "the-ultimate-gourmet-gift",
-        "title": "Elevate Your Dessert Game: Not A Salami as the Ultimate Gourmet Gift",
+        "title": "Elevate Your Dessert Game: Not-A-Salami as the Ultimate Gourmet Gift",
         "excerpt": "Finding the perfect gift can be a challenge, especially when you want something unique and unforgettable. Here is why a sliceable cocoa confection belongs on every host's table.",
         "image": "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
         "date": "Autumn 2024",
@@ -707,7 +707,7 @@ SEED_JOURNAL = [
         "order": 2,
         "body": [
             "The best gifts hold a secret. A wrapped object that hints at one thing and turns out to be another. A box that opens slowly. A name in a language the recipient doesn't quite speak yet. Generosity is, almost always, a small act of theater.",
-            "Not A Salami was designed for exactly that. From the outside, it looks like a hand-tied cured meat — wrapped in parchment paper and gold foil, dusted in cocoa powder that reads as fresh pepper or fine mold. Most people, even the food-curious ones, miss the wink at first. They lift it, smell it, ask about the curing. Then someone slices it.",
+            "Not-A-Salami was designed for exactly that. From the outside, it looks like a hand-tied cured meat — wrapped in parchment paper and gold foil, dusted in cocoa powder that reads as fresh pepper or fine mold. Most people, even the food-curious ones, miss the wink at first. They lift it, smell it, ask about the curing. Then someone slices it.",
             "What they find inside is the moment we built the whole thing around. A dense, cool interior speckled with crunchy biscotti, dark chocolate chips, and the faintest glitter of sugar crystals. Not too sweet. Not soft. Architectural. The room goes quiet for a second and then everyone laughs.",
             "We've heard this story dozens of times from corporate clients, hosts, restaurants. The cardiologist who unwrapped one at the office and watched colleagues stage an intervention. The wine bar that started slicing it alongside their cheese plate. The mother-in-law who hid hers in the fridge for two months and gave a slice to anyone she liked. (Apparently three people made the list.)",
             "It works as a gift because it does what gifts are supposed to do — it surprises, it photographs well, it travels well, it lasts about a week longer than it should, and it gives the recipient a story they'll tell for months. The unboxing alone tends to live on a phone for a while.",
@@ -725,7 +725,7 @@ SEED_JOURNAL = [
         "order": 3,
         "body": [
             "There is a particular way that cocoa smells when it's being worked by hand, and if you grew up in a house where someone made dessert from scratch, you know it. Not the dry powder smell. The hydrated one. The smell of Guittard cocoa meeting warm butter, sugar dissolving, biscotti turning slightly soft at the edges. That smell does something to memory.",
-            "When we started serving Not A Salami at small dinners in San Francisco, the most common reaction was not 'wow, what is this?' It was 'wait — this is the thing my grandmother used to make.' Italian-American guests would go silent for a moment and then start naming their nonnas. A guest from Buenos Aires recognized it as the salchichón de chocolate from her childhood. Someone from Lebanon called it lazy cake. The Polish version is similar enough that the recognition was instant.",
+            "When we started serving Not-A-Salami at small dinners in San Francisco, the most common reaction was not 'wow, what is this?' It was 'wait — this is the thing my grandmother used to make.' Italian-American guests would go silent for a moment and then start naming their nonnas. A guest from Buenos Aires recognized it as the salchichón de chocolate from her childhood. Someone from Lebanon called it lazy cake. The Polish version is similar enough that the recognition was instant.",
             "What we kept hearing was a version of the same sentence: 'I haven't had this in twenty years.' Sometimes thirty. Sometimes since their mother passed.",
             "We didn't set out to make something nostalgic. We set out to make something good — to honor the original Sicilian recipe and the technique it deserved. But food, more than almost anything else, is a vehicle for memory. A flavor you ate as a child is wired into the same neural circuits as your bedroom from age six. Bite into the right thing as an adult and you are eight years old again, in a kitchen that doesn't exist anymore.",
             "We think this is the quiet power of a classic treat done carefully. It doesn't compete with new desserts. It is, by design, older than the room you're standing in. It asks nothing of you except to slice it and pass it around.",
@@ -1983,6 +1983,8 @@ SITE_CONTENT_MANIFEST = {
                  "default": "Wrapped in parchment paper and gold foil. Cut at the table. The reveal — that rich cocoa interior speckled with crunchy biscotti, chocolate chips, and delicate sugar crystals — is part of the dessert."},
                 {"key": "illusion_image", "type": "image", "label": "Image",
                  "default": "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg"},
+                {"key": "illusion_caption", "type": "text", "label": "Caption below image",
+                 "default": "cocoa powder"},
             ]},
             {"label": "Collection teaser", "fields": [
                 {"key": "collection_overline", "type": "text", "label": "Overline", "default": "The Collection"},
@@ -2000,7 +2002,7 @@ SITE_CONTENT_MANIFEST = {
             {"label": "Ritual teaser", "fields": [
                 {"key": "ritual_overline", "type": "text", "label": "Overline", "default": "The serving ritual"},
                 {"key": "ritual_body", "type": "textarea", "label": "Body",
-                 "default": "Not A Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way."},
+                 "default": "Not-A-Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way."},
             ]},
             {"label": "Testimonials", "fields": [
                 {"key": "testimonials_overline", "type": "text", "label": "Overline", "default": "What people say"},
@@ -2022,7 +2024,7 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "header_title_line1", "type": "text", "label": "H1 line 1", "default": "One signature."},
                 {"key": "header_title_line2", "type": "text", "label": "H1 line 2 (italic)", "default": "Made slowly."},
                 {"key": "header_body", "type": "textarea", "label": "Body",
-                 "default": "We make one thing for now — and we make it well. Below: the signature Not A Salami. Further down: what's next from Eva's kitchen."},
+                 "default": "We make one thing for now — and we make it well. Below: the signature Not-A-Salami. Further down: what's next from Eva's kitchen."},
             ]},
             {"label": "Future offerings", "fields": [
                 {"key": "future_overline", "type": "text", "label": "Overline",
@@ -2042,7 +2044,17 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "hero_h1", "type": "textarea", "label": "H1 (newlines as line breaks)",
                  "default": "Sliced. Served. Shared. Savored."},
                 {"key": "hero_body", "type": "textarea", "label": "Body",
-                 "default": "Not A Salami is meant to be sliced, shared, and savored. Four moments — one small ritual, the Italian way."},
+                 "default": "Not-A-Salami is meant to be sliced, shared, and savored. Four moments — one small ritual, the Italian way."},
+            ]},
+            {"label": "Step illustrations (from the insert card)", "fields": [
+                {"key": "step_slice_image", "type": "image", "label": "Step 1 — Slice",
+                 "default": "/api/static/ritual/slice.png"},
+                {"key": "step_serve_image", "type": "image", "label": "Step 2 — Serve",
+                 "default": "/api/static/ritual/serve.png"},
+                {"key": "step_share_image", "type": "image", "label": "Step 3 — Share",
+                 "default": "/api/static/ritual/share.png"},
+                {"key": "step_savor_image", "type": "image", "label": "Step 4 — Savor",
+                 "default": "/api/static/ritual/savor.png"},
             ]},
             {"label": "Pairings", "fields": [
                 {"key": "pairings_overline", "type": "text", "label": "Overline", "default": "Pair it with"},
@@ -2133,7 +2145,7 @@ SITE_CONTENT_MANIFEST_EXTRA = {
             {"label": "Hero", "fields": [
                 {"key": "hero_eyebrow", "type": "text", "label": "Eyebrow", "default": "Corporate tasting"},
                 {"key": "hero_h1", "type": "textarea", "label": "Headline", "default": "A year-round dessert made to bring, slice and share."},
-                {"key": "hero_body1", "type": "textarea", "label": "Intro paragraph 1", "default": "Not A Salami is a handcrafted chocolate confection with the playful form of a salami and the spirit of an Sicilian sharing ritual. Unwrap it, place it on a board, slice it, share it and enjoy it together."},
+                {"key": "hero_body1", "type": "textarea", "label": "Intro paragraph 1", "default": "Not-A-Salami is a handcrafted chocolate confection with the playful form of a salami and the spirit of an Sicilian sharing ritual. Unwrap it, place it on a board, slice it, share it and enjoy it together."},
                 {"key": "hero_body2", "type": "textarea", "label": "Intro paragraph 2", "default": "Our guided tasting brings that ritual to life before we discuss how Not-A-Salami could work for your team, clients or event."},
                 {"key": "hero_button", "type": "text", "label": "Button label", "default": "Request a tasting"},
                 {"key": "hero_supporting", "type": "textarea", "label": "Supporting line", "default": "A focused 20-minute tasting for corporate decision-makers in the San Francisco Bay Area."},
@@ -2161,7 +2173,7 @@ SITE_CONTENT_MANIFEST_EXTRA = {
             {"label": "The 20-minute tasting", "fields": [
                 {"key": "tasting_overline", "type": "text", "label": "Overline", "default": "The 20-minute tasting"},
                 {"key": "tasting_1_title", "type": "text", "label": "Block 1 title", "default": "Discover \u2014 5 minutes"},
-                {"key": "tasting_1_body", "type": "textarea", "label": "Block 1 body", "default": "Unwrap, place, slice, share and taste Not A Salami together. Experience the product, presentation and serving ritual firsthand."},
+                {"key": "tasting_1_body", "type": "textarea", "label": "Block 1 body", "default": "Unwrap, place, slice, share and taste Not-A-Salami together. Experience the product, presentation and serving ritual firsthand."},
                 {"key": "tasting_2_title", "type": "text", "label": "Block 2 title", "default": "Discuss \u2014 10 minutes"},
                 {"key": "tasting_2_body", "type": "textarea", "label": "Block 2 body", "default": "Talk through the people you want to thank or celebrate, the occasion you are planning and the approximate quantity you may need."},
                 {"key": "tasting_3_title", "type": "text", "label": "Block 3 title", "default": "Decide \u2014 5 minutes"},
@@ -2209,7 +2221,7 @@ SITE_CONTENT_MANIFEST_EXTRA = {
             {"label": "Inquiry form", "fields": [
                 {"key": "form_heading", "type": "text", "label": "Heading", "default": "Tell us about your corporate occasion"},
                 {"key": "form_intro", "type": "textarea", "label": "Intro", "default": "A few details will help us prepare for the conversation. Estimates are welcome."},
-                {"key": "form_consent", "type": "textarea", "label": "Consent text", "default": "By submitting this form, you agree that Not A Salami may contact you about this inquiry. See our Privacy Policy."},
+                {"key": "form_consent", "type": "textarea", "label": "Consent text", "default": "By submitting this form, you agree that Not-A-Salami may contact you about this inquiry. See our Privacy Policy."},
                 {"key": "form_submit", "type": "text", "label": "Submit button", "default": "Request my tasting"},
                 {"key": "form_success", "type": "textarea", "label": "Confirmation message", "default": "Thank you. We received your request and will be in touch to discuss the tasting and next steps."},
                 {"key": "form_error", "type": "text", "label": "Error message", "default": "Something didn't go through. Try again, or email us directly."},
@@ -2222,7 +2234,7 @@ SITE_CONTENT_MANIFEST_EXTRA = {
             {"label": "Privacy Policy", "fields": [
                 {"key": "privacy_title", "type": "text", "label": "Page title", "default": "Privacy Policy"},
                 {"key": "privacy_updated", "type": "text", "label": "Last updated line", "default": "Last updated: September 2026"},
-                {"key": "privacy_intro", "type": "textarea", "label": "Intro", "default": "Not A Salami (Emporio Zeva) respects your privacy. This policy explains what information we collect through notasalami.com, why we collect it, and how you can reach us about it."},
+                {"key": "privacy_intro", "type": "textarea", "label": "Intro", "default": "Not-A-Salami (Emporio Zeva) respects your privacy. This policy explains what information we collect through notasalami.com, why we collect it, and how you can reach us about it."},
                 {"key": "privacy_body", "type": "textarea", "label": "Policy body", "default": "**What we collect.** When you submit an inquiry, join a waitlist, subscribe to our newsletter or place a corporate tasting request, we collect the information you provide \u2014 typically your name, email address, company, role, occasion details and any notes you send us. Orders and payments are processed by third-party providers; we do not store card numbers on our servers. We also collect limited technical information automatically (pages viewed, approximate location, device and browser type) to understand how the site is used.\n\n**How we use it.** We use your information to respond to your inquiry, arrange tastings and orders, deliver what you asked for, send updates you requested, and improve the site. We do not sell your personal information.\n\n**Who we share it with.** We share information only with service providers that help us operate the site and communicate with you \u2014 for example email delivery, hosting and database services, and website analytics. They are permitted to use it only to provide those services to us.\n\n**Cookies and analytics.** We use cookies and similar technologies for essential site functionality and to measure traffic and usage. You can block or delete cookies in your browser settings; essential functionality may be affected.\n\n**How long we keep it.** We keep inquiry and order information for as long as needed to serve you and to meet our legal, accounting and reporting obligations, then delete or anonymise it.\n\n**Your choices and rights.** California residents may request access to, correction of, or deletion of their personal information, and may ask us not to share it. Email us and we will respond within a few business days.\n\n**Children.** This site is not directed to children under 16, and we do not knowingly collect their personal information.\n\n**Changes.** If we update this policy, we will post the new version here with a revised date.\n\n**Contact.** For any question about this policy or your information, email hello@notasalami.com."},
                 {"key": "privacy_contact", "type": "text", "label": "Contact line", "default": "Questions about this policy? Email hello@notasalami.com and we will respond within a few business days."},
             ]},
@@ -2444,20 +2456,33 @@ async def admin_revert_revision(
 
 
 
-# ---------- Corporate page photographs (GridFS-backed) ----------
-# The corporate page images ship in backend/static/corporate/. The container
-# filesystem is ephemeral, so a pod restart can wipe them and leave the page with
-# broken images. On boot we mirror them into GridFS and serve the same
-# /api/static/corporate/<name> URLs from there, so content already saved in the
+# ---------- Site photographs & illustrations (GridFS-backed) ----------
+# Assets ship in backend/static/<topic>/ — the corporate page photographs and the
+# Ritual illustrations from Eva's insert card. The container filesystem is
+# ephemeral, so a pod restart can wipe them and leave a page with broken images.
+# On boot we mirror them into GridFS and serve the same
+# /api/static/<topic>/<name> URLs from there, so content already saved in the
 # dashboard (and the site defaults) keeps working unchanged.
 #
 # NOTE: this route is declared before app.include_router() below so it is matched
 # ahead of the /api/static StaticFiles mount.
-_CORPORATE_ASSET_NAMES = ("hero-woodboard.jpg", "occasions-table.jpg")
+_ASSET_TOPICS = ("corporate", "ritual")
+_ASSET_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".svg", ".avif"}
 
 
-def _corporate_dir() -> Path:
-    return Path(__file__).parent / "static" / "corporate"
+def _asset_dir(topic: str) -> Path:
+    return Path(__file__).parent / "static" / topic
+
+
+def _iter_assets():
+    """Yield (topic, path) for every shipped asset we mirror into GridFS."""
+    for topic in _ASSET_TOPICS:
+        folder = _asset_dir(topic)
+        if not folder.is_dir():
+            continue
+        for candidate in sorted(folder.iterdir()):
+            if candidate.is_file() and candidate.suffix.lower() in _ASSET_SUFFIXES:
+                yield topic, candidate
 
 
 async def _stream_gridfs(grid_out):
@@ -2471,14 +2496,25 @@ async def _stream_gridfs(grid_out):
         grid_out.close()
 
 
-@api_router.get("/static/corporate/{filename}")
-async def public_corporate_asset(filename: str):
-    """Serve a corporate page photograph from GridFS, falling back to the copy
-    that ships with the deploy."""
+async def _find_site_asset(topic: str, filename: str) -> Optional[dict]:
+    """GridFS record for a shipped asset; corporate falls back to pre-topic rows."""
+    doc = await db.media.find_one({"filename": filename, "asset_topic": topic}, {"_id": 0})
+    if doc and doc.get("gridfs_id"):
+        return doc
+    if topic == "corporate":  # written before assets carried a topic
+        legacy = await db.media.find_one(
+            {"filename": filename, "corporate_asset": True}, {"_id": 0}
+        )
+        if legacy and legacy.get("gridfs_id"):
+            return legacy
+    return None
+
+
+@api_router.get("/static/{topic}/{filename}")
+async def public_site_asset(topic: str, filename: str):
+    """Serve a shipped site asset from GridFS, falling back to the bundled copy."""
     safe = Path(filename).name
-    doc = await db.media.find_one(
-        {"filename": safe, "corporate_asset": True}, {"_id": 0}
-    )
+    doc = await _find_site_asset(topic, safe)
     if doc and doc.get("gridfs_id"):
         from bson import ObjectId
         try:
@@ -2493,9 +2529,9 @@ async def public_corporate_asset(filename: str):
             )
         except Exception:  # noqa: BLE001 — fall through to the on-disk copy
             logging.getLogger(__name__).warning(
-                "GridFS miss for corporate asset %s; serving bundled copy", safe
+                "GridFS miss for site asset %s/%s; serving bundled copy", topic, safe
             )
-    path = _corporate_dir() / safe
+    path = _asset_dir(topic) / safe
     if path.exists():
         return FileResponse(
             path, headers={"Cache-Control": "public, max-age=2592000, immutable"}
@@ -2607,11 +2643,10 @@ async def cleanup_orphaned_media():
         )
 
 
-async def seed_corporate_media():
-    """Mirror the corporate page photographs into GridFS so they survive
-    container redeploys.
+async def seed_site_assets():
+    """Mirror every shipped site asset (backend/static/<topic>/) into GridFS.
 
-    Self-healing: when a shipped image is replaced (different bytes), the stored
+    Self-healing: when a shipped asset is replaced (different bytes), the stored
     copy is re-uploaded and the superseded GridFS file removed. Skipping on
     filename alone left the old bytes serving forever — which is how a
     watermarked photograph stayed live after the clean replacement was committed.
@@ -2619,14 +2654,14 @@ async def seed_corporate_media():
     import hashlib
     import mimetypes
 
-    for name in _CORPORATE_ASSET_NAMES:
-        path = _corporate_dir() / name
-        if not path.exists():
-            continue
+    for topic, path in _iter_assets():
+        name = path.name
         payload = path.read_bytes()
         digest = hashlib.sha256(payload).hexdigest()
         existing = await db.media.find_one(
-            {"filename": name, "corporate_asset": True}, {"_id": 0}
+            {"filename": name,
+             "$or": [{"asset_topic": topic}, {"corporate_asset": True}]},
+            {"_id": 0},
         )
         if (existing and existing.get("gridfs_id")
                 and existing.get("content_sha256") == digest):
@@ -2644,13 +2679,13 @@ async def seed_corporate_media():
                     )
             await db.media.delete_one({"id": existing["id"]})
 
-        mime = mimetypes.guess_type(name)[0] or "image/jpeg"
+        mime = mimetypes.guess_type(name)[0] or "application/octet-stream"
         grid_in = media_bucket.open_upload_stream(
             name,
             metadata={
                 "content_type": mime,
                 "original_filename": name,
-                "corporate_asset": True,
+                "asset_topic": topic,
             },
         )
         try:
@@ -2662,7 +2697,7 @@ async def seed_corporate_media():
             except Exception:
                 pass
             logging.getLogger(__name__).warning(
-                "Corporate asset upload failed for %s: %s", name, exc
+                "Site asset upload failed for %s/%s: %s", topic, name, exc
             )
             continue
 
@@ -2672,17 +2707,20 @@ async def seed_corporate_media():
             "original_filename": name,
             "mime_type": mime,
             "size_bytes": len(payload),
-            "url": f"/api/static/corporate/{name}",
+            "url": f"/api/static/{topic}/{name}",
             "alt_text": "",
             "caption": "",
             "uploaded_at": datetime.now(timezone.utc).isoformat(),
             "uploaded_by": None,
             "gridfs_id": str(grid_in._id),
             "content_sha256": digest,
-            "corporate_asset": True,
+            "site_asset": True,
+            "asset_topic": topic,
+            "corporate_asset": topic == "corporate",
         })
         logging.getLogger(__name__).info(
-            "Persisted corporate asset to GridFS: %s (%d bytes)", name, len(payload)
+            "Persisted site asset to GridFS: %s/%s (%d bytes)", topic, name,
+            len(payload),
         )
 
 
@@ -2697,13 +2735,13 @@ _MINI_TIER = {
     "price": "TBD",
     "unit": "per unit",
     "blurb": (
-        "A pocket-sized Not A Salami — half the size, all the ritual. "
+        "A pocket-sized Not-A-Salami — half the size, all the ritual. "
         "Ideal for tasting flights and smaller gifting moments."
     ),
     # Newline-joined string to match the in-editor list format (content.js
     # defaults use arrays; decks saved through the editor use strings).
     "includes": (
-        "1× Il Mini (Not A Salami)\nSignature Postcard\n"
+        "1× Il Mini (Not-A-Salami)\nSignature Postcard\n"
         "Custom gift message\nNS monogram tissue paper"
     ),
     "badge": "",
@@ -2759,7 +2797,7 @@ async def on_startup():
     await ensure_indexes()
     await seed_admin_user()
     await cleanup_orphaned_media()
-    await seed_corporate_media()
+    await seed_site_assets()
     await heal_journal_images()
     await migrate_decks_mini_tier()
 

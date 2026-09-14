@@ -41,7 +41,7 @@ export default function OneSheet() {
           <header className="text-center pb-10 border-b border-[#DFD7CA]">
             <img
               src={logo}
-              alt="Not A Salami"
+              alt="Not-A-Salami"
               className="h-24 w-24 mx-auto select-none"
               draggable="false"
             />
@@ -56,7 +56,7 @@ export default function OneSheet() {
 
           {/* Hero image */}
           <div className="img-wash aspect-[16/8] my-10">
-            <img src={IMAGES.hero} alt="Sliced Not A Salami" />
+            <img src={IMAGES.hero} alt="Sliced Not-A-Salami" />
           </div>
 
           {/* Packages — Curated / Executive / Il Mini */}

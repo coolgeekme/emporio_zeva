@@ -98,7 +98,7 @@ export default function PagePublic() {
       <main className="bg-[#F9F6F0]" data-testid={`page-public-${page.slug}`}>
         <section className="max-w-3xl mx-auto px-6 md:px-10 py-20 md:py-28">
           <p className="overline text-[#C05A3A]" data-testid="page-public-overline">
-            Not A Salami
+            Not-A-Salami
           </p>
           <h1
             className="font-serif text-4xl md:text-5xl text-[#2A1F1D] mt-3 leading-tight"

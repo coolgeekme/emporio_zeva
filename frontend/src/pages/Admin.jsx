@@ -572,7 +572,7 @@ function NewDeckDialog({ open, onClose, onCreated, token }) {
             >
               <p className="text-sm text-[#5C4E4A] leading-relaxed">
                 Just enter the client's name. We'll fetch their logo and write a
-                warm intro line in the Not A Salami voice. Everything is editable
+                warm intro line in the Not-A-Salami voice. Everything is editable
                 before you save.
               </p>
               <div className="field">

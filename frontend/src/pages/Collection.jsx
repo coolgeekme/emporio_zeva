@@ -38,7 +38,7 @@ export default function Collection() {
             <span className="italic text-[#C05A3A]">{c("header_title_line2", "Made slowly.")}</span>
           </h1>
           <p className="md:col-span-4 text-[#5C4E4A] leading-relaxed max-w-md">
-            {c("header_body", "We make one thing for now — and we make it well. Below: the signature Not A Salami. Further down: what's next from Eva's kitchen.")}
+            {c("header_body", "We make one thing for now — and we make it well. Below: the signature Not-A-Salami. Further down: what's next from Eva's kitchen.")}
           </p>
         </div>
       </section>

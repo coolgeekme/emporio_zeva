@@ -70,7 +70,7 @@ export default function Footer() {
             <Link to="/" data-testid="footer-logo" className="inline-flex">
               <img
                 src={logoLight}
-                alt="Not A Salami · Sicilian Cocoa Confection"
+                alt="Not-A-Salami · Sicilian Cocoa Confection"
                 className="h-32 w-32 select-none"
                 draggable="false"
               />

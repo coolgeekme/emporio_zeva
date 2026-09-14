@@ -32,7 +32,7 @@ export default function Ritual() {
           })()}
         </h1>
         <p className="mt-7 text-lg text-[#5C4E4A] max-w-xl leading-relaxed">
-          {c("hero_body", "Not A Salami is meant to be sliced, shared, and savored. Four moments — one small ritual, the Italian way.")}
+          {c("hero_body", "Not-A-Salami is meant to be sliced, shared, and savored. Four moments — one small ritual, the Italian way.")}
         </p>
       </section>
 
@@ -45,6 +45,16 @@ export default function Ritual() {
               data-testid={`ritual-step-${step.key}`}
               className={`flex flex-col gap-6 ${i % 2 === 1 ? "md:translate-y-20" : ""}`}
             >
+              <div
+                className="w-24 h-24 md:w-32 md:h-32 rounded-sm border border-[#DFD7CA] bg-[#F9F6F0] flex items-center justify-center p-4"
+                data-testid={`ritual-icon-${step.key}`}
+              >
+                <img
+                  src={c(`step_${step.key}_image`, `/api/static/ritual/${step.key}.png`)}
+                  alt={`${step.title} — illustration from the Not-A-Salami insert card`}
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
               <div className="flex items-baseline gap-6">
                 <span className="font-serif text-[80px] md:text-[120px] text-[#C05A3A] leading-none italic">
                   {String(i + 1).padStart(2, "0")}
@@ -89,7 +99,7 @@ export default function Ritual() {
             </div>
           </div>
           <div className="md:col-span-5 img-wash aspect-[4/5]">
-            <img src={c("pairings_image", IMAGES.product)} alt="Sliced Not A Salami with espresso" />
+            <img src={c("pairings_image", IMAGES.product)} alt="Sliced Not-A-Salami with espresso" />
           </div>
         </div>
       </section>
