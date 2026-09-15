@@ -521,9 +521,9 @@ SEED_PRODUCTS = [
             "8-week shelf life unopened. Best enjoyed within 2 weeks of opening.",
         ],
         "images": [
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG",
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
+            "/api/static/site/salami-board.jpg",
+            "/api/static/site/hero-board.jpg",
+            "/api/static/site/branded-board.jpg",
         ],
         "badge": "The signature",
         "available": True,
@@ -618,7 +618,7 @@ SEED_PRODUCTS = [
             "Best enjoyed within 10 minutes of unwrapping.",
         ],
         "images": [
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
+            "/api/static/site/branded-board.jpg",
             "https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=1600&q=80",
         ],
         "badge": "Coming soon",
@@ -653,8 +653,8 @@ SEED_PRODUCTS = [
             "Keep the board — it gets better with use.",
         ],
         "images": [
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
-            "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
+            "/api/static/site/hero-board.jpg",
+            "/api/static/site/branded-board.jpg",
         ],
         "badge": "Future bundle",
         "available": False,
@@ -701,7 +701,7 @@ SEED_JOURNAL = [
         "slug": "the-ultimate-gourmet-gift",
         "title": "Elevate Your Dessert Game: Not-A-Salami as the Ultimate Gourmet Gift",
         "excerpt": "Finding the perfect gift can be a challenge, especially when you want something unique and unforgettable. Here is why a sliceable cocoa confection belongs on every host's table.",
-        "image": "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
+        "image": "/api/static/site/hero-board.jpg",
         "date": "Autumn 2024",
         "read": "4 min read",
         "order": 2,
@@ -1982,7 +1982,7 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "illusion_body", "type": "textarea", "label": "Body",
                  "default": "Wrapped in parchment paper and gold foil. Cut at the table. The reveal — that rich cocoa interior speckled with crunchy biscotti, chocolate chips, and delicate sugar crystals — is part of the dessert."},
                 {"key": "illusion_image", "type": "image", "label": "Image",
-                 "default": "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg"},
+                 "default": "/api/static/site/branded-board.jpg"},
                 {"key": "illusion_caption", "type": "text", "label": "Caption below image",
                  "default": "cocoa powder"},
             ]},
@@ -2466,7 +2466,9 @@ async def admin_revert_revision(
 #
 # NOTE: this route is declared before app.include_router() below so it is matched
 # ahead of the /api/static StaticFiles mount.
-_ASSET_TOPICS = ("corporate", "ritual")
+_ASSET_TOPICS = (
+    "corporate", "ritual", "site", "products", "our-story", "decks", "journal",
+)
 _ASSET_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".svg", ".avif"}
 
 

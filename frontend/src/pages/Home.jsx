@@ -235,7 +235,7 @@ export default function Home() {
         <div className="md:col-span-6 md:order-1">
           <div className="img-wash aspect-[5/6]">
             <img
-              src={c("illusion_image", "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg")}
+              src={c("illusion_image", "/api/static/site/branded-board.jpg")}
               alt="Not-A-Salami chocolate salami sliced on a branded wood board"
               data-testid="illusion-image"
             />

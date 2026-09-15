@@ -271,7 +271,7 @@ export const JOURNAL = [
     title: "Elevate Your Dessert Game: Not-A-Salami as the Ultimate Gourmet Gift",
     excerpt:
       "Finding the perfect gift can be a challenge, especially when you want something unique and unforgettable. Here is why a sliceable cocoa confection belongs on every host's table.",
-    image: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
+    image: "/api/static/site/hero-board.jpg",
     date: "Autumn 2024",
     read: "4 min read",
     body: [
@@ -324,8 +324,9 @@ export const SF_MADE_BADGE =
      </svg>`
   );
 
-export const LOGO_URL =
-  "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/p5bi7qmt_EMPORIO-ZEVA-logo.png";
+// Unused today; kept pointing at the in-repo brand mark so nothing in the
+// bundle reaches a third-party host.
+export const LOGO_URL = "/brand/not-a-salami-logo-2026.png";
 
 export const NOT_A_SALAMI_SEAL =
   "/brand/not-a-salami-logo-2026.png";
@@ -334,22 +335,23 @@ export const NOT_A_SALAMI_SEAL_LIGHT =
   "/brand/not-a-salami-logo-2026-light.png";
 
 export const IMAGES = {
-  hero: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/1qyii5ao_banner-2.jpg",
-  // Real product hero — Salami_board.JPG from Emergent assets
-  product: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/zg1blozr_Salami_board.JPG",
+  // Shipped from the backend static folder so they survive every deploy and
+  // don't depend on a third-party host.
+  hero: "/api/static/site/hero-board.jpg",
+  product: "/api/static/site/salami-board.jpg",
   // Eva's founder portrait for the Our Story page, shipped from the backend
   // static folder so it survives every deploy.
   founder: "/api/static/our-story/founder.jpg",
   sicily: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1800&q=80",
   italian_moment: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
-  // Branded "NOT-A-SALAMI" board (image1.jpeg from Emergent assets)
-  gift: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
+  // Branded "NOT-A-SALAMI" board
+  gift: "/api/static/site/branded-board.jpg",
   // Deck slide imagery shipped from the backend static folder so they survive
   // every deploy and don't depend on third-party hotlinks.
   deck_slide2_tradition: "/api/static/decks/slide-2-tradition.jpg",
   deck_slide4_product: "/api/static/decks/slide-4-product.jpg",
   deck_slide6_expression: "/api/static/decks/slide-6-expression.jpg",
-  split_blog: "https://customer-assets.emergentagent.com/job_zeva-refresh/artifacts/55ktafkm_image1.jpeg",
+  split_blog: "/api/static/site/branded-board.jpg",
   journal_1: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
   nostalgia: "https://images.unsplash.com/photo-1481833761820-0509d3217039?auto=format&fit=crop&w=1600&q=80",
 };
