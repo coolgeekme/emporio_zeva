@@ -46,7 +46,7 @@ export const RITUAL = [
     key: "slice",
     title: "Slice",
     body:
-      "Using a sharp knife, slice 1¼–1½ inch thick. Each slice reveals its own beautiful pattern.",
+      "Using a sharp knife, slice ½ inch thick. Each slice reveals its own beautiful pattern.",
   },
   {
     key: "serve",

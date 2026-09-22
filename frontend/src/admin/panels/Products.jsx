@@ -318,7 +318,7 @@ function ProductEditor({ product, token, onClose, onSaved }) {
           <div className="grid md:grid-cols-3 gap-6">
             <ListField values={form.ingredients} onChange={(v) => upd("ingredients", v)} label="Ingredients" placeholder="Single line per ingredient" />
             <ListField values={form.pairings} onChange={(v) => upd("pairings", v)} label="Pairings" placeholder="e.g. Espresso" />
-            <ListField values={form.serving} onChange={(v) => upd("serving", v)} label="Serving notes" placeholder="e.g. Slice 1/4 inch thick" />
+            <ListField values={form.serving} onChange={(v) => upd("serving", v)} label="Serving notes" placeholder="e.g. Slice ½ inch thick" />
           </div>
 
           <label className="text-sm text-[#2A1F1D] flex items-center gap-2">
