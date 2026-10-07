@@ -17,7 +17,7 @@ export default function Ritual() {
         <p className="overline text-[#C05A3A]">{c("hero_overline", "The serving ritual")}</p>
         <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl leading-[1.02] tracking-tight mt-5 text-[#2A1F1D] max-w-3xl">
           {(() => {
-            const h1 = c("hero_h1", "Sliced. Served. Shared. Savored.");
+            const h1 = c("hero_h1", "Serve Slice Share Savor");
             const words = h1.split(/\s+/).filter(Boolean);
             return words.map((w, i) => {
               const italic = i === 1 || (i === words.length - 1);
@@ -119,7 +119,7 @@ export default function Ritual() {
             {[
               ["Store", "Refrigerate. Out of direct sunlight."],
               ["Before serving", "Remove from the fridge 15–20 minutes before slicing."],
-              ["Shelf life", "8 weeks unopened. Best enjoyed within 2 weeks of opening."],
+              ["Shelf life", "12 weeks unopened. Best enjoyed within 2 weeks of opening."],
             ].map(([k, v]) => (
               <div key={k} className="grid grid-cols-12 gap-4 pb-4 border-b border-[#DFD7CA]">
                 <p className="overline text-[#C05A3A] col-span-12 sm:col-span-3 pt-1">{k}</p>

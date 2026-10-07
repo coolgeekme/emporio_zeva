@@ -50,7 +50,7 @@ export default function Collection() {
       ) : (
         <>
           {/* ============== THE SIGNATURE ============== */}
-          {active.map((p) => (
+          {active.map((p, i) => (
             <section
               key={p.slug}
               className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28"
@@ -67,7 +67,15 @@ export default function Collection() {
                   </div>
                 </Link>
                 <div className="md:col-span-5">
-                  <p className="overline text-[#5C4E4A]">No 01 · The signature</p>
+                  {/* Eva's Oct 2 note: "The signature" was showing twice — the
+                      badge sat inline next to this overline. The badge is now
+                      cleared on the signature product, and this overline only
+                      renders for the first active piece. Il Mini is a second
+                      active product as of Oct 2, so without the index guard the
+                      same overline printed once per active product. */}
+                  {i === 0 && (
+                    <p className="overline text-[#5C4E4A]">No 01 · The signature</p>
+                  )}
                   {p.badge && (
                     <span className="ml-3 text-[10px] tracking-[0.22em] uppercase font-semibold text-[#C05A3A] border border-[#C05A3A] px-2 py-1">
                       {p.badge}

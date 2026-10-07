@@ -43,16 +43,16 @@ export const PILLARS = [
 // SLICE · SERVE · SAVOR · SHARE — from the Ritual Postcard
 export const RITUAL = [
   {
-    key: "slice",
-    title: "Slice",
-    body:
-      "Using a sharp knife, slice ½ inch thick. Each slice reveals its own beautiful pattern.",
-  },
-  {
     key: "serve",
     title: "Serve",
     body:
       "For the best flavor and texture, enjoy at room temperature. Remove from the fridge 15–20 minutes before serving.",
+  },
+  {
+    key: "slice",
+    title: "Slice",
+    body:
+      "Using a sharp knife, slice ½ inch thick. Each slice reveals its own beautiful pattern.",
   },
   {
     key: "share",
@@ -318,9 +318,9 @@ export const SF_MADE_BADGE =
   encodeURIComponent(
     `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 64'>
        <rect width='220' height='64' rx='4' fill='#2A1F1D'/>
-       <text x='110' y='27' text-anchor='middle' font-family='Bodoni Moda, Georgia, serif' font-style='italic' font-size='22' fill='#F9F6F0'>SF Made</text>
+       <text x='110' y='27' text-anchor='middle' font-family='Newsreader, Georgia, serif' font-style='italic' font-size='22' fill='#F9F6F0'>SF Made</text>
        <line x1='40' y1='36' x2='180' y2='36' stroke='#C05A3A' stroke-width='1'/>
-       <text x='110' y='52' text-anchor='middle' font-family='Manrope, sans-serif' font-size='9' letter-spacing='3' fill='#B9935A'>HERE &amp; NOW · 2024</text>
+       <text x='110' y='52' text-anchor='middle' font-family='Inter, sans-serif' font-size='9' letter-spacing='3' fill='#B9935A'>HERE &amp; NOW · 2024</text>
      </svg>`
   );
 

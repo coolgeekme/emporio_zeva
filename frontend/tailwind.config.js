@@ -30,8 +30,11 @@ module.exports = {
         popover: { DEFAULT: "#F9F6F0", foreground: "#2A1F1D" },
       },
       fontFamily: {
-        serif: ['"Bodoni Moda"', "ui-serif", "Georgia", "serif"],
-        sans: ['Manrope', "ui-sans-serif", "system-ui", "sans-serif"],
+        // Eva's Oct 2 2026 type decision — Newsreader replaces Bodoni Moda
+        // (hairline serif, the original legibility complaint) and Inter
+        // replaces Manrope (whose 9-11px small caps were the second).
+        serif: ['"Newsreader"', "ui-serif", "Georgia", "serif"],
+        sans: ['"Inter"', "ui-sans-serif", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "8px",

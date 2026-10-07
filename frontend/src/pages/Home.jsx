@@ -84,7 +84,7 @@ export default function Home() {
               className="font-serif text-[56px] leading-[0.95] sm:text-7xl md:text-8xl lg:text-[112px] tracking-tight mt-6 text-[#2A1F1D]"
               data-testid="hero-product-name"
             >
-              {c("hero_h1_line1", "Not A")} <span className="italic text-[#C05A3A]">{c("hero_h1_italic", "Salami.")}</span>
+              {c("hero_h1_line1", "Not-A-")} <span className="italic text-[#C05A3A]">{c("hero_h1_italic", "Salami.")}</span>
             </h1>
             <p
               className="font-serif text-2xl sm:text-3xl md:text-4xl leading-[1.1] tracking-tight mt-5 text-[#2A1F1D] italic"
@@ -422,13 +422,13 @@ export default function Home() {
           <div className="md:col-span-5">
             <p className="overline text-[#C05A3A]">{c("ritual_overline", "The serving ritual")}</p>
             <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 text-[#2A1F1D]">
-              Sliced.
+              Serve
               <br />
-              <span className="italic">Served.</span>
+              <span className="italic">Slice</span>
               <br />
-              Shared.
+              Share
               <br />
-              <span className="italic text-[#C05A3A]">Savored.</span>
+              <span className="italic text-[#C05A3A]">Savor</span>
             </h2>
             <p className="mt-7 text-[#5C4E4A] leading-relaxed max-w-md">
               {c("ritual_body", "Not-A-Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way.")}
