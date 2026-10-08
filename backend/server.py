@@ -2104,7 +2104,7 @@ SITE_CONTENT_MANIFEST = {
         ],
     },
     "journal_index": {
-        "label": "Journal (index)",
+        "label": "Journal Page",
         "sections": [
             {"label": "Header", "fields": [
                 {"key": "header_overline", "type": "text", "label": "Overline", "default": "The Journal"},
@@ -2303,13 +2303,23 @@ async def admin_update_site_content(
         for f in section["fields"]
     }
     cleaned = {k: ("" if v is None else str(v)) for k, v in payload.items() if k in valid_keys}
-    # Use dotted-path $set so partial PATCHes merge per-key instead of replacing
-    # the whole "fields" sub-document.
-    set_ops = {f"fields.{k}": v for k, v in cleaned.items()}
-    set_ops["updated_at"] = datetime.now(timezone.utc).isoformat()
+    # An empty string means "no override — fall back to the manifest default",
+    # which is exactly how _merged_content already reads it. Storing "" as a
+    # literal value made the admin render a blank field forever (its loader used
+    # ?? , which does not fall back on "") and made "Reset to default" silently
+    # re-blank the field on every save. So $unset cleared keys instead of
+    # writing "" back, and the stored doc only ever holds real overrides.
+    set_ops = {f"fields.{k}": v for k, v in cleaned.items() if v != ""}
+    unset_ops = {f"fields.{k}": "" for k, v in cleaned.items() if v == ""}
+    update = {}
+    if set_ops:
+        update["$set"] = set_ops
+    if unset_ops:
+        update["$unset"] = unset_ops
+    update.setdefault("$set", {})["updated_at"] = datetime.now(timezone.utc).isoformat()
     await db.site_content.update_one(
         {"_id": page},
-        {"$set": set_ops},
+        update,
         upsert=True,
     )
     # Return the freshly merged content (re-read so partial updates surface correctly)

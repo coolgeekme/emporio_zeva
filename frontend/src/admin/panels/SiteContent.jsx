@@ -199,12 +199,20 @@ export default function SiteContentPanel({ token }) {
     }
   };
 
-  // For each field, working value = override OR default (so the form is fully populated)
+  // For each field, working value = override OR default (so the form is fully populated).
+  //
+  // NOTE the explicit "" test. This previously read `?? f.default`, but ?? only
+  // falls back on null/undefined — never on "". The server stores "" to mean
+  // "no override, use the default" (see _merged_content), so every field that
+  // had an "" override rendered blank here while the live site showed the
+  // correct text. That mismatch was the "content is missing from the admin"
+  // report. Keep this test in sync with the server's own definition.
   const buildInitialValues = (page) => {
     const out = {};
     page.sections.forEach((s) =>
       s.fields.forEach((f) => {
-        out[f.key] = page.overrides?.[f.key] ?? f.default ?? "";
+        const ov = page.overrides?.[f.key];
+        out[f.key] = ov !== undefined && ov !== null && ov !== "" ? ov : f.default ?? "";
       })
     );
     return out;
@@ -293,6 +301,24 @@ export default function SiteContentPanel({ token }) {
           </div>
 
           {error && <p className="text-sm text-[#C05A3A]" data-testid="content-error">{error}</p>}
+
+          {/* Contextual pointer. Clients naturally look for products and
+              articles inside "Site Content", find nothing, and report the
+              admin as broken. Two sentences here save that round trip. */}
+          {active === "collection" && (
+            <p className="text-xs text-[#5C4E4A] bg-[#FBF7EE] border border-[#DFD7CA] px-4 py-3" data-testid="content-hint-collection">
+              This tab controls the <strong className="font-semibold">heading text</strong> on the Collection page only.
+              Product photos and product copy — including each product's images — are edited under{" "}
+              <strong className="font-semibold">Products</strong> in the left sidebar.
+            </p>
+          )}
+          {active === "journal_index" && (
+            <p className="text-xs text-[#5C4E4A] bg-[#FBF7EE] border border-[#DFD7CA] px-4 py-3" data-testid="content-hint-journal">
+              This tab controls the <strong className="font-semibold">heading text</strong> at the top of the Journal page.
+              To edit the articles themselves — titles, excerpts, images and body copy — use{" "}
+              <strong className="font-semibold">Journal</strong> in the left sidebar.
+            </p>
+          )}
 
           {activePage && (
             <div className="space-y-6">
