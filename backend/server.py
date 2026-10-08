@@ -518,7 +518,7 @@ SEED_PRODUCTS = [
             "Store refrigerated. Remove from the fridge 15–20 minutes before serving — best at room temperature.",
             "Slice with a sharp knife, ½ inch thick. Each slice reveals its own pattern.",
             "Arrange in an overlapping fan. Serve slowly, around good conversation.",
-            "8-week shelf life unopened. Best enjoyed within 2 weeks of opening.",
+            "12-week shelf life unopened. Best enjoyed within 2 weeks of opening.",
         ],
         "images": [
             "/api/static/site/salami-board.jpg",
