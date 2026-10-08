@@ -446,8 +446,22 @@ export default function Home() {
                 }`}
                 data-testid={`ritual-step-${step.key}`}
               >
-                <p className="overline">No 0{i + 1}</p>
-                <h3 className="font-serif text-3xl text-[#2A1F1D]">{step.title}</h3>
+                {/* Eva asked for the insert-card illustrations on the home page
+                    too, not just on /ritual. Same four drawings, same source —
+                    keyed so she can swap any of them from the dashboard. */}
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="overline">No 0{i + 1}</p>
+                    <h3 className="font-serif text-3xl text-[#2A1F1D] mt-1">{step.title}</h3>
+                  </div>
+                  <img
+                    src={c(`step_${step.key}_image`, `/api/static/ritual/${step.key}.png`)}
+                    alt={`${step.title} — illustration from the Not-A-Salami insert card`}
+                    className="w-20 h-20 md:w-24 md:h-24 object-contain flex-shrink-0 opacity-90"
+                    data-testid={`ritual-icon-${step.key}`}
+                    loading="lazy"
+                  />
+                </div>
                 <p className="text-sm text-[#5C4E4A] leading-relaxed">{step.body}</p>
               </div>
             ))}

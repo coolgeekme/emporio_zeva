@@ -2004,6 +2004,19 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "ritual_body", "type": "textarea", "label": "Body",
                  "default": "Not-A-Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way."},
             ]},
+            {"label": "Ritual illustrations", "fields": [
+                # The same four insert-card drawings as /ritual, shown on the
+                # home ritual cards. Editable here so they can be swapped
+                # without a deploy.
+                {"key": "step_serve_image", "type": "image", "label": "Serve",
+                 "default": "/api/static/ritual/serve.png"},
+                {"key": "step_slice_image", "type": "image", "label": "Slice",
+                 "default": "/api/static/ritual/slice.png"},
+                {"key": "step_share_image", "type": "image", "label": "Share",
+                 "default": "/api/static/ritual/share.png"},
+                {"key": "step_savor_image", "type": "image", "label": "Savor",
+                 "default": "/api/static/ritual/savor.png"},
+            ]},
             {"label": "Testimonials", "fields": [
                 {"key": "testimonials_overline", "type": "text", "label": "Overline", "default": "What people say"},
                 {"key": "testimonials_title", "type": "textarea", "label": "H2 (italic part starts after em-dash)",
