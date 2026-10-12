@@ -211,7 +211,7 @@ export default function Home() {
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 text-[#2A1F1D]">
             {c("illusion_title_line1", "It looks like salami.")}
             <br />
-            It is <span className="italic text-[#C05A3A]">{c("illusion_title_line2", "entirely")}</span> cocoa.
+            It is <span className="italic text-[#C05A3A]">{c("illusion_title_line2", "entirely cocoa.")}</span>
           </h2>
           <p className="mt-7 text-lg text-[#5C4E4A] leading-relaxed max-w-lg">
             {c("illusion_body", "Wrapped in parchment paper and gold foil. Cut at the table. The reveal — that rich cocoa interior speckled with crunchy biscotti, chocolate chips, and delicate sugar crystals — is part of the dessert.")}
@@ -219,16 +219,16 @@ export default function Home() {
           <div className="mt-8 divider" />
           <dl className="mt-8 grid grid-cols-3 gap-6">
             <div>
-              <dt className="overline">Texture</dt>
-              <dd className="font-serif text-2xl mt-2 text-[#2A1F1D]">Firm. Tender.</dd>
+              <dt className="overline">{c("fact1_label", "Texture")}</dt>
+              <dd className="font-serif text-2xl mt-2 text-[#2A1F1D]">{c("fact1_value", "Firm. Tender.")}</dd>
             </div>
             <div>
-              <dt className="overline">Pairs with</dt>
-              <dd className="font-serif text-2xl mt-2 text-[#2A1F1D]">Coffee. Wine.</dd>
+              <dt className="overline">{c("fact2_label", "Pairs with")}</dt>
+              <dd className="font-serif text-2xl mt-2 text-[#2A1F1D]">{c("fact2_value", "Coffee. Wine.")}</dd>
             </div>
             <div>
-              <dt className="overline">Slices</dt>
-              <dd className="font-serif text-2xl mt-2 text-[#2A1F1D]">16–17.</dd>
+              <dt className="overline">{c("fact3_label", "Slices")}</dt>
+              <dd className="font-serif text-2xl mt-2 text-[#2A1F1D]">{c("fact3_value", "16–17.")}</dd>
             </div>
           </dl>
         </div>
@@ -423,13 +423,13 @@ export default function Home() {
           <div className="md:col-span-5">
             <p className="overline text-[#C05A3A]">{c("ritual_overline", "The serving ritual")}</p>
             <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 text-[#2A1F1D]">
-              Serve
+              {c("ritual_h2_line1", "Serve")}
               <br />
-              <span className="italic">Slice</span>
+              <span className="italic">{c("ritual_h2_line2", "Slice")}</span>
               <br />
-              Share
+              {c("ritual_h2_line3", "Share")}
               <br />
-              <span className="italic text-[#C05A3A]">Savor</span>
+              <span className="italic text-[#C05A3A]">{c("ritual_h2_line4", "Savor")}</span>
             </h2>
             <p className="mt-7 text-[#5C4E4A] leading-relaxed max-w-md">
               {c("ritual_body", "Not-A-Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way.")}

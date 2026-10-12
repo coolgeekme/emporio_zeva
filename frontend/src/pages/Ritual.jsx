@@ -60,7 +60,7 @@ export default function Ritual() {
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div>
-                  <p className="overline">Ritual</p>
+                  <p className="overline">{c("step_overline", "Ritual")}</p>
                   <h2 className="font-serif text-4xl md:text-5xl mt-2 text-[#2A1F1D] leading-tight">
                     {step.title}.
                   </h2>
@@ -108,18 +108,18 @@ export default function Ritual() {
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28 reveal" ref={r2}>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
           <div className="md:col-span-5">
-            <p className="overline text-[#C05A3A]">Keep it perfect</p>
+            <p className="overline text-[#C05A3A]">{c("storage_overline", "Keep it perfect")}</p>
             <h2 className="font-serif text-4xl md:text-5xl leading-[1.05] mt-5 text-[#2A1F1D]">
-              Storage,
+              {c("storage_h2_line1", "Storage,")}
               <br />
-              <span className="italic text-[#C05A3A]">simply.</span>
+              <span className="italic text-[#C05A3A]">{c("storage_h2_line2", "simply.")}</span>
             </h2>
           </div>
           <div className="md:col-span-7 space-y-5">
             {[
-              ["Store", "Refrigerate. Out of direct sunlight."],
-              ["Before serving", "Remove from the fridge 15–20 minutes before slicing."],
-              ["Shelf life", "12 weeks unopened. Best enjoyed within 2 weeks of opening."],
+              [c("storage_row1_label", "Store"), c("storage_row1_value", "Refrigerate. Out of direct sunlight.")],
+              [c("storage_row2_label", "Before serving"), c("storage_row2_value", "Remove from the fridge 15–20 minutes before slicing.")],
+              [c("storage_row3_label", "Shelf life"), c("storage_row3_value", "12 weeks unopened. Best enjoyed within 2 weeks of opening.")],
             ].map(([k, v]) => (
               <div key={k} className="grid grid-cols-12 gap-4 pb-4 border-b border-[#DFD7CA]">
                 <p className="overline text-[#C05A3A] col-span-12 sm:col-span-3 pt-1">{k}</p>

@@ -74,7 +74,7 @@ export default function Collection() {
                       active product as of Oct 2, so without the index guard the
                       same overline printed once per active product. */}
                   {i === 0 && (
-                    <p className="overline text-[#5C4E4A]">No 01 · The signature</p>
+                    <p className="overline text-[#5C4E4A]">{c("signature_overline", "No 01 · The signature")}</p>
                   )}
                   {p.badge && (
                     <span className="ml-3 text-[10px] tracking-[0.22em] uppercase font-semibold text-[#C05A3A] border border-[#C05A3A] px-2 py-1">

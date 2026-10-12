@@ -48,11 +48,11 @@ export default function OurStory() {
         data-testid="story-body"
       >
         <aside className="md:col-span-3">
-          <p className="overline text-[#C05A3A]">A letter from</p>
+          <p className="overline text-[#C05A3A]">{c("letter_overline", "A letter from")}</p>
           <h2 className="font-serif text-3xl md:text-4xl leading-tight mt-3 text-[#2A1F1D]">
-            Eva,
+            {c("letter_h2_line1", "Eva,")}
             <br />
-            <span className="italic text-[#C05A3A]">founder.</span>
+            <span className="italic text-[#C05A3A]">{c("letter_h2_line2", "founder.")}</span>
           </h2>
         </aside>
         <div className="md:col-span-9 space-y-6 text-lg text-[#2A1F1D] leading-relaxed max-w-3xl">

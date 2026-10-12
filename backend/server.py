@@ -1977,8 +1977,8 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "illusion_overline", "type": "text", "label": "Overline", "default": "The wink, on the table"},
                 {"key": "illusion_title_line1", "type": "text", "label": "H2 — first line",
                  "default": "It looks like salami."},
-                {"key": "illusion_title_line2", "type": "text", "label": "H2 — italic word",
-                 "default": "entirely"},
+                {"key": "illusion_title_line2", "type": "text", "label": "H2 — italic phrase",
+                 "default": "entirely cocoa."},
                 {"key": "illusion_body", "type": "textarea", "label": "Body",
                  "default": "Wrapped in parchment paper and gold foil. Cut at the table. The reveal — that rich cocoa interior speckled with crunchy biscotti, chocolate chips, and delicate sugar crystals — is part of the dessert."},
                 {"key": "illusion_image", "type": "image", "label": "Image",
@@ -1987,6 +1987,14 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "illusion_image_position", "type": "position", "label": "Focal point", "default": ""},
                 {"key": "illusion_caption", "type": "text", "label": "Caption below image",
                  "default": "cocoa powder"},
+            ]},
+            {"label": "Illusion facts", "fields": [
+                {"key": "fact1_label", "type": "text", "label": "Fact 1 label", "default": "Texture"},
+                {"key": "fact1_value", "type": "text", "label": "Fact 1 value", "default": "Firm. Tender."},
+                {"key": "fact2_label", "type": "text", "label": "Fact 2 label", "default": "Pairs with"},
+                {"key": "fact2_value", "type": "text", "label": "Fact 2 value", "default": "Coffee. Wine."},
+                {"key": "fact3_label", "type": "text", "label": "Fact 3 label", "default": "Slices"},
+                {"key": "fact3_value", "type": "text", "label": "Fact 3 value", "default": "16–17."},
             ]},
             {"label": "Collection teaser", "fields": [
                 {"key": "collection_overline", "type": "text", "label": "Overline", "default": "The Collection"},
@@ -2005,6 +2013,10 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "ritual_overline", "type": "text", "label": "Overline", "default": "The serving ritual"},
                 {"key": "ritual_body", "type": "textarea", "label": "Body",
                  "default": "Not-A-Salami is meant to be sliced, shared, and savored. Four moments. One small ritual, the Italian way."},
+                {"key": "ritual_h2_line1", "type": "text", "label": "H2 word 1", "default": "Serve"},
+                {"key": "ritual_h2_line2", "type": "text", "label": "H2 word 2 (italic)", "default": "Slice"},
+                {"key": "ritual_h2_line3", "type": "text", "label": "H2 word 3", "default": "Share"},
+                {"key": "ritual_h2_line4", "type": "text", "label": "H2 word 4 (italic, ember)", "default": "Savor"},
             ]},
             {"label": "Ritual illustrations", "fields": [
                 # The same four insert-card drawings as /ritual, shown on the
@@ -2040,6 +2052,8 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "header_title_line2", "type": "text", "label": "H1 line 2 (italic)", "default": "Made slowly."},
                 {"key": "header_body", "type": "textarea", "label": "Body",
                  "default": "We make one thing for now — and we make it well. Below: the signature Not-A-Salami. Further down: what's next from Eva's kitchen."},
+                {"key": "signature_overline", "type": "text", "label": "Signature overline",
+                 "default": "No 01 · The signature"},
             ]},
             {"label": "Future offerings", "fields": [
                 {"key": "future_overline", "type": "text", "label": "Overline",
@@ -2062,6 +2076,7 @@ SITE_CONTENT_MANIFEST = {
                  "default": "Not-A-Salami is meant to be sliced, shared, and savored. Four moments — one small ritual, the Italian way."},
             ]},
             {"label": "Step illustrations (from the insert card)", "fields": [
+                {"key": "step_overline", "type": "text", "label": "Step overline", "default": "Ritual"},
                 {"key": "step_slice_image", "type": "image", "label": "Step 1 — Slice",
                  "default": "/api/static/ritual/slice.png"},
                 {"key": "step_serve_image", "type": "image", "label": "Step 2 — Serve",
@@ -2078,6 +2093,17 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "pairings_body", "type": "textarea", "label": "Body",
                  "default": "Each pairing pulls a different layer forward — espresso heightens the cocoa, a glass of red lengthens the finish, fresh fruit brightens the biscotti crunch, aged cheese surprises everyone."},
                 {"key": "pairings_image", "type": "image", "label": "Image", "default": ""},
+            ]},
+            {"label": "Storage", "fields": [
+                {"key": "storage_overline", "type": "text", "label": "Overline", "default": "Keep it perfect"},
+                {"key": "storage_h2_line1", "type": "text", "label": "H2 line 1", "default": "Storage,"},
+                {"key": "storage_h2_line2", "type": "text", "label": "H2 line 2 (italic)", "default": "simply."},
+                {"key": "storage_row1_label", "type": "text", "label": "Row 1 label", "default": "Store"},
+                {"key": "storage_row1_value", "type": "text", "label": "Row 1 value", "default": "Refrigerate. Out of direct sunlight."},
+                {"key": "storage_row2_label", "type": "text", "label": "Row 2 label", "default": "Before serving"},
+                {"key": "storage_row2_value", "type": "text", "label": "Row 2 value", "default": "Remove from the fridge 15–20 minutes before slicing."},
+                {"key": "storage_row3_label", "type": "text", "label": "Row 3 label", "default": "Shelf life"},
+                {"key": "storage_row3_value", "type": "text", "label": "Row 3 value", "default": "12 weeks unopened. Best enjoyed within 2 weeks of opening."},
             ]},
             {"label": "Closing", "fields": [
                 {"key": "closing_overline", "type": "text", "label": "Overline",
@@ -2102,6 +2128,11 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "founder_image", "type": "image", "label": "Founder portrait", "default": ""},
                 {"key": "founder_caption", "type": "text", "label": "Caption below image",
                  "default": "Eva · Founder · From Sicily, with seriousness"},
+            ]},
+            {"label": "Founder letter heading", "fields": [
+                {"key": "letter_overline", "type": "text", "label": "Overline", "default": "A letter from"},
+                {"key": "letter_h2_line1", "type": "text", "label": "H2 line 1", "default": "Eva,"},
+                {"key": "letter_h2_line2", "type": "text", "label": "H2 line 2 (italic)", "default": "founder."},
             ]},
             {"label": "Sicily / espresso pair", "fields": [
                 {"key": "sicily_image", "type": "image", "label": "Sicily landscape image", "default": ""},
