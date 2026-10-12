@@ -211,7 +211,7 @@ export default function Home() {
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] mt-5 text-[#2A1F1D]">
             {c("illusion_title_line1", "It looks like salami.")}
             <br />
-            It is <span className="italic text-[#C05A3A]">{c("illusion_title_line2", "entirely")}</span> chocolate.
+            It is <span className="italic text-[#C05A3A]">{c("illusion_title_line2", "entirely")}</span> cocoa.
           </h2>
           <p className="mt-7 text-lg text-[#5C4E4A] leading-relaxed max-w-lg">
             {c("illusion_body", "Wrapped in parchment paper and gold foil. Cut at the table. The reveal — that rich cocoa interior speckled with crunchy biscotti, chocolate chips, and delicate sugar crystals — is part of the dessert.")}
@@ -233,10 +233,11 @@ export default function Home() {
           </dl>
         </div>
         <div className="md:col-span-6 md:order-1">
-          <div className="img-wash aspect-[5/6]">
+          <div className={`img-wash ${c("illusion_image_frame", "") === "landscape" ? "aspect-[3/2]" : "aspect-[5/6]"}`}>
             <img
               src={c("illusion_image", "/api/static/site/branded-board.jpg")}
               alt="Not-A-Salami chocolate salami sliced on a branded wood board"
+              style={c("illusion_image_position", "") ? { objectPosition: c("illusion_image_position", "") } : undefined}
               data-testid="illusion-image"
             />
           </div>

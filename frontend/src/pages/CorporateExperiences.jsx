@@ -225,9 +225,18 @@ export default function CorporateExperiences() {
             </div>
           </div>
           <div className="lg:col-span-5">
-            <div className="img-wash aspect-[4/5] max-h-[70vh]">
-              <img src={c("hero_image", "/api/static/corporate/hero-woodboard.jpg")} alt="Not-A-Salami on a serving board with the first slices cut" />
+            <div className={`img-wash max-h-[70vh] ${c("hero_image_frame", "") === "landscape" ? "aspect-[3/2]" : "aspect-[4/5]"}`}>
+              <img
+                src={c("hero_image", "/api/static/corporate/hero-woodboard.jpg")}
+                alt="Not-A-Salami on a serving board with the first slices cut"
+                style={c("hero_image_position", "") ? { objectPosition: c("hero_image_position", "") } : undefined}
+              />
             </div>
+            {c("hero_caption", "") && (
+              <p className="overline text-[#5C4E4A] mt-3" data-testid="corporate-hero-caption">
+                {c("hero_caption", "")}
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -303,8 +312,12 @@ export default function CorporateExperiences() {
             <p className="text-[#5C4E4A] leading-relaxed mt-8 italic">{c("fit_note", "")}</p>
           </div>
           <div className="lg:col-span-5">
-            <div className="img-wash aspect-[4/5]">
-              <img src={c("fit_image", "/api/static/corporate/occasions-table.jpg")} alt="A table set with Not-A-Salami for a corporate gathering" />
+            <div className={`img-wash ${c("fit_image_frame", "") === "landscape" ? "aspect-[3/2]" : "aspect-[4/5]"}`}>
+              <img
+                src={c("fit_image", "/api/static/corporate/occasions-table.jpg")}
+                alt="A table set with Not-A-Salami for a corporate gathering"
+                style={c("fit_image_position", "") ? { objectPosition: c("fit_image_position", "") } : undefined}
+              />
             </div>
           </div>
         </div>

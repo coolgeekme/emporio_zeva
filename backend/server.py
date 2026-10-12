@@ -1983,6 +1983,8 @@ SITE_CONTENT_MANIFEST = {
                  "default": "Wrapped in parchment paper and gold foil. Cut at the table. The reveal — that rich cocoa interior speckled with crunchy biscotti, chocolate chips, and delicate sugar crystals — is part of the dessert."},
                 {"key": "illusion_image", "type": "image", "label": "Image",
                  "default": "/api/static/site/branded-board.jpg"},
+                {"key": "illusion_image_frame", "type": "frame", "label": "Frame shape", "default": ""},
+                {"key": "illusion_image_position", "type": "position", "label": "Focal point", "default": ""},
                 {"key": "illusion_caption", "type": "text", "label": "Caption below image",
                  "default": "cocoa powder"},
             ]},
@@ -2163,6 +2165,9 @@ SITE_CONTENT_MANIFEST_EXTRA = {
                 {"key": "hero_button", "type": "text", "label": "Button label", "default": "Request a tasting"},
                 {"key": "hero_supporting", "type": "textarea", "label": "Supporting line", "default": "A focused 20-minute tasting for corporate decision-makers in the San Francisco Bay Area."},
                 {"key": "hero_image", "type": "image", "label": "Hero image", "default": "/api/static/corporate/hero-woodboard.jpg"},
+                {"key": "hero_image_frame", "type": "frame", "label": "Frame shape", "default": ""},
+                {"key": "hero_image_position", "type": "position", "label": "Focal point", "default": ""},
+                {"key": "hero_caption", "type": "text", "label": "Caption below image", "default": ""},
             ]},
             {"label": "Introduction", "fields": [
                 {"key": "intro_title", "type": "textarea", "label": "Title", "default": "The experience begins before the first bite"},
@@ -2204,6 +2209,8 @@ SITE_CONTENT_MANIFEST_EXTRA = {
                 {"key": "fit_3_body", "type": "textarea", "label": "Card 3 body", "default": "Host gifts, shared table moments and distinctive takeaways."},
                 {"key": "fit_note", "type": "textarea", "label": "Note under cards", "default": "Not sure which format fits? The tasting is designed to help us answer that together."},
                 {"key": "fit_image", "type": "image", "label": "Section image", "default": "/api/static/corporate/occasions-table.jpg"},
+                {"key": "fit_image_frame", "type": "frame", "label": "Frame shape", "default": ""},
+                {"key": "fit_image_position", "type": "position", "label": "Focal point", "default": ""},
             ]},
             {"label": "Who should attend", "fields": [
                 {"key": "attend_overline", "type": "text", "label": "Overline", "default": "Who should attend"},

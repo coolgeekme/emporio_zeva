@@ -124,6 +124,80 @@ function FieldEditor({ field, value, onChange, token }) {
       </div>
     );
   }
+  if (field.type === "frame") {
+    // Portrait (default) vs landscape — controls the container aspect ratio
+    // the image sits in. Empty string == the default portrait frame.
+    const landscape = value === "landscape";
+    return (
+      <div className="field">
+        <label>{field.label}</label>
+        <div className="flex gap-2" data-testid={`content-field-${field.key}`}>
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className={`flex-1 px-3 py-2 text-xs uppercase tracking-wide border ${
+              !landscape
+                ? "border-[#C05A3A] text-[#C05A3A] font-semibold"
+                : "border-[#DFD7CA] text-[#5C4E4A] hover:border-[#C05A3A]"
+            }`}
+          >
+            Portrait
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange("landscape")}
+            className={`flex-1 px-3 py-2 text-xs uppercase tracking-wide border ${
+              landscape
+                ? "border-[#C05A3A] text-[#C05A3A] font-semibold"
+                : "border-[#DFD7CA] text-[#5C4E4A] hover:border-[#C05A3A]"
+            }`}
+          >
+            Landscape
+          </button>
+        </div>
+      </div>
+    );
+  }
+  if (field.type === "position") {
+    // 9-point focal grid — pick where the subject sits when the image is
+    // cropped by its frame. Empty == centre.
+    const grid = [
+      ["top left", "top", "top right"],
+      ["left", "center", "right"],
+      ["bottom left", "bottom", "bottom right"],
+    ];
+    const active = value || "center";
+    return (
+      <div className="field">
+        <label>{field.label}</label>
+        <div
+          className="grid grid-cols-3 gap-1 max-w-[180px]"
+          data-testid={`content-field-${field.key}`}
+        >
+          {grid.flat().map((pos) => (
+            <button
+              key={pos}
+              type="button"
+              title={pos}
+              onClick={() => onChange(pos === "center" ? "" : pos)}
+              aria-label={pos}
+              className={`h-9 w-9 rounded-sm border flex items-center justify-center ${
+                active === pos
+                  ? "border-[#C05A3A] bg-[#C05A3A]"
+                  : "border-[#DFD7CA] bg-white hover:border-[#C05A3A]"
+              }`}
+            >
+              <span
+                className={`block h-1.5 w-1.5 rounded-full ${
+                  active === pos ? "bg-white" : "bg-[#B9935A]"
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
   // default: text
   return (
     <div className="field">
@@ -147,7 +221,7 @@ function FieldEditor({ field, value, onChange, token }) {
   );
 }
 
-export default function SiteContentPanel({ token }) {
+export default function SiteContentPanel({ token, onGoTo }) {
   const [pages, setPages] = useState([]);
   const [active, setActive] = useState(null);
   const [values, setValues] = useState({}); // working buffer for active page
@@ -306,11 +380,23 @@ export default function SiteContentPanel({ token }) {
               articles inside "Site Content", find nothing, and report the
               admin as broken. Two sentences here save that round trip. */}
           {active === "collection" && (
-            <p className="text-xs text-[#5C4E4A] bg-[#FBF7EE] border border-[#DFD7CA] px-4 py-3" data-testid="content-hint-collection">
-              This tab controls the <strong className="font-semibold">heading text</strong> on the Collection page only.
-              Product photos and product copy — including each product's images — are edited under{" "}
-              <strong className="font-semibold">Products</strong> in the left sidebar.
-            </p>
+            <div className="text-xs text-[#5C4E4A] bg-[#FBF7EE] border border-[#DFD7CA] px-4 py-3 flex flex-wrap items-center gap-3" data-testid="content-hint-collection">
+              <span>
+                This tab controls the <strong className="font-semibold">heading text</strong> on the Collection page only.
+                Product photos and product copy — including each product's images — are edited under{" "}
+                <strong className="font-semibold">Products</strong>.
+              </span>
+              {onGoTo && (
+                <button
+                  type="button"
+                  onClick={() => onGoTo("products")}
+                  className="btn-outline text-xs px-3 py-2"
+                  data-testid="content-hint-collection-products"
+                >
+                  Edit product photos →
+                </button>
+              )}
+            </div>
           )}
           {active === "journal_index" && (
             <p className="text-xs text-[#5C4E4A] bg-[#FBF7EE] border border-[#DFD7CA] px-4 py-3" data-testid="content-hint-journal">

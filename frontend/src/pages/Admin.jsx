@@ -1875,7 +1875,7 @@ function AdminShell({ token, user, onLogout, onUserUpdated }) {
 
         <div className="max-w-[1400px] mx-auto px-4 md:px-10 py-6 md:py-10">
           {active === "dashboard" && <DashboardPanel token={token} user={user} />}
-          {active === "content" && <SiteContentPanel token={token} />}
+          {active === "content" && <SiteContentPanel token={token} onGoTo={goTo} />}
           {active === "pages" && <PagesPanel token={token} />}
           {active === "products" && <ProductsPanel token={token} />}
           {active === "media" && <MediaPanel token={token} />}
