@@ -1504,7 +1504,9 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
     ],
     newsletter: [
       { key: "created_at", label: "Subscribed", render: (r) => formatDate(r.created_at) },
+      { key: "name", label: "Name", render: (r) => r.name || "—" },
       { key: "email", label: "Email" },
+      { key: "source", label: "Source", render: (r) => r.source || "footer" },
     ],
   };
 

@@ -18,6 +18,7 @@ import Admin from "./pages/Admin";
 import DeckView from "./pages/DeckView";
 import JournalArticle from "./pages/JournalArticle";
 import PagePublic from "./pages/PagePublic";
+import Join from "./pages/Join";
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -68,6 +69,7 @@ function Shell() {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/p/:slug" element={<PagePublic />} />
+          <Route path="/join" element={<Join />} />
         </Routes>
       </main>
       {isChrome && <Footer />}

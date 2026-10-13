@@ -102,6 +102,9 @@ export default function Home() {
               <Link to="/our-story" className="btn-outline" data-testid="hero-story-cta">
                 Read our story
               </Link>
+              <Link to="/corporate-experiences" className="btn-outline" data-testid="hero-tasting-cta">
+                Request a tasting
+              </Link>
             </div>
             <div className="mt-12 flex items-center gap-5">
               <img

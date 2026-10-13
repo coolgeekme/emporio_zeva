@@ -151,11 +151,15 @@ class InquiryNotesUpdate(BaseModel):
 
 class NewsletterCreate(BaseModel):
     email: EmailStr
+    name: str = ""
+    source: str = ""
 
 
 class NewsletterEntry(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     email: EmailStr
+    name: str = ""
+    source: str = ""
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -554,8 +558,8 @@ SEED_PRODUCTS = [
             "Serve at room temperature with a chilled dessert wine.",
         ],
         "images": [
-            "/api/static/products/pistacchio-di-bronte-hero.png",
-            "/api/static/products/pistacchio-di-bronte-slice.png",
+            "/api/static/products/pistacchio-di-bronte-hero.jpg",
+            "/api/static/products/pistacchio-di-bronte-slice.jpg",
         ],
         "badge": "Future flavor",
         "available": False,
@@ -587,8 +591,8 @@ SEED_PRODUCTS = [
             "Ideal for tasting flights and curated corporate boxes.",
         ],
         "images": [
-            "/api/static/products/il-mini-hero.png",
-            "/api/static/products/il-mini-detail.png",
+            "/api/static/products/il-mini-hero.jpg",
+            "/api/static/products/il-mini-detail.jpg",
         ],
         "badge": "On the workbench",
         "available": False,
@@ -812,7 +816,7 @@ async def subscribe(payload: NewsletterCreate):
     existing = await db.newsletter.find_one({"email": payload.email}, {"_id": 0})
     if existing:
         return existing
-    entry = NewsletterEntry(email=payload.email)
+    entry = NewsletterEntry(email=payload.email, name=payload.name or "", source=payload.source or "")
     await db.newsletter.insert_one(entry.model_dump())
     asyncio.create_task(emailer.notify_newsletter(entry.model_dump(), await _notification_emails()))
     return entry
