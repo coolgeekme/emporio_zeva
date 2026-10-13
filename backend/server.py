@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, UploadFile, File, Form, Body
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.responses import StreamingResponse, FileResponse, HTMLResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorGridFSBucket
@@ -160,7 +160,14 @@ class NewsletterEntry(BaseModel):
     email: EmailStr
     name: str = ""
     source: str = ""
+    unsubscribed: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class NewsletterSend(BaseModel):
+    subject: str
+    body: str
+    source: Optional[str] = None
 
 
 class WaitlistCreate(BaseModel):
@@ -825,6 +832,38 @@ async def subscribe(payload: NewsletterCreate):
     return entry
 
 
+def _unsubscribe_token(email: str) -> str:
+    import hashlib
+    import hmac
+    return hmac.new(_jwt_secret().encode(), email.encode(), hashlib.sha256).hexdigest()
+
+
+@api_router.get("/unsubscribe", include_in_schema=False)
+async def unsubscribe(email: str, token: str):
+    """One-click unsubscribe link from marketing emails. Marks the address as
+    unsubscribed (idempotent) so future blasts skip it. HMAC-signed so an
+    arbitrary address can't be unsubscribed without the link."""
+    import hashlib
+    import hmac
+    from html import escape
+    expected = _unsubscribe_token(email)
+    if not hmac.compare_digest(token or "", expected):
+        raise HTTPException(status_code=400, detail="Invalid unsubscribe link.")
+    await db.newsletter.update_one({"email": email}, {"$set": {"unsubscribed": True}})
+    html = f"""<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unsubscribed · Not-A-Salami</title></head>
+<body style="margin:0;background:#F4EBE2;font-family:Georgia,serif;color:#2A1F1D;">
+<div style="max-width:520px;margin:48px auto;background:#fff;border:1px solid #E6D8C9;padding:48px 40px;text-align:center;">
+<div style="font-family:'Helvetica Neue',Arial,sans-serif;letter-spacing:.18em;font-size:11px;color:#5C4E4A;text-transform:uppercase;">Not-A-Salami &middot; Emporio Zeva</div>
+<div style="height:1px;background:#C05A3A;width:48px;margin:18px auto 28px;"></div>
+<h1 style="font-size:28px;font-weight:normal;margin:0 0 16px;">You're unsubscribed.</h1>
+<p style="font-size:15px;color:#5C4E4A;line-height:1.6;margin:0 0 24px;">You won't receive flash-sale or limited-drop emails at {escape(email)}. If you change your mind, you can rejoin any time from the site.</p>
+<a href="https://notasalami.com" style="display:inline-block;background:#C05A3A;color:#fff;padding:12px 24px;text-decoration:none;font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;">Back to Not-A-Salami</a>
+</div></body></html>"""
+    return HTMLResponse(html)
+
+
 @api_router.post("/waitlist", response_model=WaitlistEntry)
 async def join_waitlist(payload: WaitlistCreate):
     # Idempotent per (email, product_slug)
@@ -967,6 +1006,21 @@ async def admin_list_inquiries(_: dict = Depends(require_editor)):
 async def admin_list_newsletter(_: dict = Depends(require_editor)):
     docs = await db.newsletter.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
     return docs
+
+
+@api_router.post("/admin/newsletter/send")
+async def admin_send_newsletter(payload: NewsletterSend, _: dict = Depends(require_editor)):
+    """Compose and send a marketing email (e.g. a flash sale) to the list via
+    Resend. Skips unsubscribed addresses; optionally filters by source. Returns
+    the sent/failed counts — a real send to the live list, so call deliberately."""
+    query: dict = {"unsubscribed": {"$ne": True}}
+    if payload.source:
+        query["source"] = payload.source
+    docs = await db.newsletter.find(query, {"_id": 0}).to_list(5000)
+    if not docs:
+        raise HTTPException(status_code=404, detail="No recipients match that filter.")
+    result = await emailer.send_blast(docs, payload.subject, payload.body)
+    return {"recipients": len(docs), **result}
 
 
 @api_router.get("/admin/waitlist", response_model=List[WaitlistEntry])

@@ -21,6 +21,7 @@ import {
   MessageSquare,
   Layers,
   Mail,
+  Send,
   Users as UsersIcon,
   Settings as SettingsIcon,
   ShoppingBag,
@@ -1354,6 +1355,35 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
   const [query, setQuery] = useState("");
   const canEditInquiries = role === "admin" || role === "editor";
 
+  // "Send to subscribers" (newsletter tab) — compose + blast via Resend
+  const [sendOpen, setSendOpen] = useState(false);
+  const [sendSubject, setSendSubject] = useState("");
+  const [sendBody, setSendBody] = useState("");
+  const [sendSource, setSendSource] = useState("");
+  const [sendBusy, setSendBusy] = useState(false);
+  const [sendResult, setSendResult] = useState(null);
+
+  const sendNewsletter = async () => {
+    if (!sendSubject.trim() || !sendBody.trim()) return;
+    setSendBusy(true);
+    setSendResult(null);
+    try {
+      const { data } = await axios.post(
+        `${API}/admin/newsletter/send`,
+        { subject: sendSubject.trim(), body: sendBody, source: sendSource.trim() || undefined },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSendResult(data);
+    } catch (err) {
+      setSendResult({
+        error:
+          err?.response?.data?.detail || "Send failed. Check the list and try again.",
+      });
+    } finally {
+      setSendBusy(false);
+    }
+  };
+
   const fetchTab = useCallback(
     async (key) => {
       setLoading(true);
@@ -1506,7 +1536,7 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
       { key: "created_at", label: "Subscribed", render: (r) => formatDate(r.created_at) },
       { key: "name", label: "Name", render: (r) => r.name || "—" },
       { key: "email", label: "Email" },
-      { key: "source", label: "Source", render: (r) => r.source || "footer" },
+      { key: "source", label: "Source", render: (r) => r.unsubscribed ? `${r.source || "footer"} · unsubscribed` : (r.source || "footer") },
     ],
   };
 
@@ -1588,6 +1618,21 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
               <Download size={14} /> Export CSV
             </button>
           )}
+          {active === "newsletter" && (
+            <button
+              onClick={() => {
+                setSendSubject("");
+                setSendBody("");
+                setSendSource("");
+                setSendResult(null);
+                setSendOpen(true);
+              }}
+              className="btn-primary inline-flex items-center gap-2 text-sm"
+              data-testid="newsletter-send-button"
+            >
+              <Send size={14} /> Send to subscribers
+            </button>
+          )}
         </div>
       </div>
 
@@ -1657,6 +1702,82 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
             setViewingInquiry(null);
           }}
         />
+      )}
+
+      {sendOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center p-4 md:p-10 overflow-y-auto">
+          <div className="bg-white border border-[#DFD7CA] w-full max-w-xl shadow-xl" data-testid="newsletter-send-dialog">
+            <header className="flex items-center justify-between px-6 py-4 border-b border-[#DFD7CA]">
+              <h3 className="font-serif text-xl text-[#2A1F1D]">Send to subscribers</h3>
+              <button onClick={() => setSendOpen(false)} aria-label="Close" data-testid="newsletter-send-close">
+                <X size={18} />
+              </button>
+            </header>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-[#5C4E4A] leading-relaxed">
+                Sends a real email to every subscribed address (via Resend). Unsubscribed
+                addresses are skipped automatically, and each email carries a one-click
+                unsubscribe link. Leave the source blank to reach everyone.
+              </p>
+              <div className="field">
+                <label htmlFor="ns-subject">Subject</label>
+                <input
+                  id="ns-subject"
+                  value={sendSubject}
+                  onChange={(e) => setSendSubject(e.target.value)}
+                  placeholder="A flash sale from Not-A-Salami"
+                  data-testid="newsletter-send-subject"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="ns-body">Message</label>
+                <textarea
+                  id="ns-body"
+                  rows={8}
+                  value={sendBody}
+                  onChange={(e) => setSendBody(e.target.value)}
+                  placeholder="Plain text. Separate paragraphs with a blank line."
+                  data-testid="newsletter-send-body"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="ns-source">Only send to (source, optional)</label>
+                <input
+                  id="ns-source"
+                  value={sendSource}
+                  onChange={(e) => setSendSource(e.target.value)}
+                  placeholder="e.g. insert_card — leave blank for all subscribers"
+                  data-testid="newsletter-send-source"
+                />
+              </div>
+              {sendResult?.error && (
+                <p className="text-sm text-[#C05A3A]" data-testid="newsletter-send-error">
+                  {sendResult.error}
+                </p>
+              )}
+              {sendResult && !sendResult.error && (
+                <p className="text-sm text-[#2D5C32] bg-[#E3F0E1] border border-[#BFD9BC] px-4 py-3" data-testid="newsletter-send-success">
+                  Sent to {sendResult.sent} of {sendResult.recipients} recipients
+                  {sendResult.failed ? ` (${sendResult.failed} failed)` : ""}.
+                </p>
+              )}
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setSendOpen(false)} className="btn-outline text-sm">
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={sendNewsletter}
+                  disabled={sendBusy || !sendSubject.trim() || !sendBody.trim()}
+                  className="btn-primary text-sm inline-flex items-center gap-2 disabled:opacity-50"
+                  data-testid="newsletter-send-submit"
+                >
+                  {sendBusy ? "Sending…" : "Send email"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

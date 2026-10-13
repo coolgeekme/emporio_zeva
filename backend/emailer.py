@@ -110,6 +110,52 @@ async def send(
         return None
 
 
+# ---------- Marketing blast (flash sale / limited drop) ----------
+
+def unsubscribe_url(email: str) -> str:
+    """HMAC-signed one-click unsubscribe link for a given subscriber. The token
+    proves the link was generated for that address, so a third party can't
+    unsubscribe arbitrary emails by guessing the URL."""
+    import hashlib
+    import hmac
+    from urllib.parse import quote
+    secret = os.environ.get("JWT_SECRET", "")
+    token = (
+        hmac.new(secret.encode(), email.encode(), hashlib.sha256).hexdigest()
+        if secret
+        else ""
+    )
+    return f"https://notasalami.com/api/unsubscribe?email={quote(email)}&token={token}"
+
+
+async def send_blast(recipients: list[dict], subject: str, body_text: str) -> dict:
+    """Send a marketing email to each recipient individually (so the unsubscribe
+    link can be personalized per address). Plain-text body is escaped and wrapped
+    into paragraphs. Skips blank emails. Returns {sent, failed}."""
+    sent = 0
+    failed = 0
+    for r in recipients:
+        email = (r.get("email") or "").strip()
+        if not email:
+            continue
+        paras = "".join(
+            f"<p>{escape(p)}</p>" for p in body_text.split("\n") if p.strip()
+        ) or f"<p>{escape(body_text)}</p>"
+        link = unsubscribe_url(email)
+        footer = (
+            '<p style="margin:24px 0 0;font-size:12px;color:#5C4E4A;line-height:1.6;">'
+            "You're receiving this because you joined the Not-A-Salami list. "
+            f'<a href="{link}" style="color:#C05A3A;">Unsubscribe</a>.'
+            "</p>"
+        )
+        ok = await send(email, subject, _wrap(paras + footer), text=body_text)
+        if ok:
+            sent += 1
+        else:
+            failed += 1
+    return {"sent": sent, "failed": failed}
+
+
 # ---------- Flow: Corporate Inquiry ----------
 async def notify_inquiry(inquiry: dict, notify_emails: Optional[list[str]] = None) -> None:
     name = escape(inquiry.get("name") or "Friend")
