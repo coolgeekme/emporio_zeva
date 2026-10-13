@@ -535,7 +535,7 @@ SEED_PRODUCTS = [
     },
     # ---------------------------------------------------------------- FUTURE
     {
-        "slug": "not-a-salami-pistachio",
+        "slug": "not-a-salami-pistacchio",
         "name": "Pistacchio di Bronte",
         "tagline": "Coming from Eva's kitchen. Sicilian pistachio folded through dark cocoa.",
         "price": "TBD",
@@ -543,10 +543,13 @@ SEED_PRODUCTS = [
         "description": "A future flavor in development — pistachio di Bronte from Mount Etna's slopes, paired with our signature cocoa base.",
         "long_description": "Still in Eva's kitchen. We're testing batches of pistachio from Bronte, on the volcanic slopes of Etna — the same nuts our family used for celebrations. Join the list to be first when it launches.",
         "ingredients": [
-            "Premium dark cocoa",
-            "Pistachio di Bronte D.O.P.",
-            "Italian cookie crumbs",
-            "Unsalted butter, cane sugar",
+            "Guittard cocoa powder",
+            "Crunchy biscotti",
+            "Guittard chocolate chips",
+            "Delicate sugar crystals",
+            "Powdered sugar",
+            "Unsalted butter",
+            "Pistacchio di Bronte D.O.P.",
         ],
         "pairings": [
             "Marsala secco",
