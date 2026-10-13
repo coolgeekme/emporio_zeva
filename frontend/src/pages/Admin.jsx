@@ -1769,8 +1769,8 @@ function ForcePasswordChange({ token, user, onDone, onLogout }) {
 // ----------------------------------------------------------------------------
 const PANELS = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "editor", "viewer"] },
-  { key: "content", label: "Site Content", icon: TypeIcon, roles: ["admin", "editor"] },
-  { key: "pages", label: "Pages", icon: FileText, roles: ["admin", "editor"] },
+  { key: "content", label: "Page Content", icon: TypeIcon, roles: ["admin", "editor"] },
+  { key: "pages", label: "Custom Pages", icon: FileText, roles: ["admin", "editor"] },
   { key: "products", label: "Products", icon: ShoppingBag, roles: ["admin", "editor"] },
   { key: "media", label: "Media", icon: ImageIcon, roles: ["admin", "editor"] },
   { key: "journal", label: "Journal", icon: BookOpen, roles: ["admin", "editor"] },

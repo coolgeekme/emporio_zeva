@@ -70,11 +70,21 @@ export default function OurStory() {
 
       {/* Interlocking images */}
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 grid grid-cols-1 md:grid-cols-12 gap-8 reveal" ref={r3}>
-        <div className="md:col-span-7 img-wash aspect-[4/3]">
-          <img src={c("sicily_image", IMAGES.sicily)} alt="Modica, Sicily — view of the town" data-testid="story-sicily-image" />
+        <div className="md:col-span-7">
+          <div className="img-wash aspect-[4/3]">
+            <img src={c("sicily_image", IMAGES.sicily)} alt="Modica, Sicily — view of the town" data-testid="story-sicily-image" />
+          </div>
+          {c("sicily_caption", "") && (
+            <p className="overline text-[#5C4E4A] mt-4">{c("sicily_caption", "")}</p>
+          )}
         </div>
-        <div className="md:col-span-5 img-wash aspect-[4/5] md:translate-y-16">
-          <img src={c("italian_moment_image", IMAGES.italian_moment)} alt="Italian moment, espresso ritual" data-testid="story-italian-moment-image" />
+        <div className="md:col-span-5 md:translate-y-16">
+          <div className="img-wash aspect-[4/5]">
+            <img src={c("italian_moment_image", IMAGES.italian_moment)} alt="Italian moment, espresso ritual" data-testid="story-italian-moment-image" />
+          </div>
+          {c("italian_moment_caption", "") && (
+            <p className="overline text-[#5C4E4A] mt-4">{c("italian_moment_caption", "")}</p>
+          )}
         </div>
       </section>
 

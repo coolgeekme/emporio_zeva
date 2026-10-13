@@ -1959,11 +1959,14 @@ SITE_CONTENT_MANIFEST = {
             {"label": "Hero", "fields": [
                 {"key": "hero_overline", "type": "text", "label": "Overline",
                  "default": "Sicilian Cocoa Confection · Est. SF"},
-                {"key": "hero_h1_line1", "type": "text", "label": "H1 — first word(s)", "default": "Not A"},
-                {"key": "hero_h1_italic", "type": "text", "label": "H1 — italic word", "default": "Salami."},
+                {"key": "hero_h1_line1", "type": "text", "label": "H1 — first part (ends with hyphen)", "default": "Not-A-"},
+                {"key": "hero_h1_italic", "type": "text", "label": "H1 — italic word", "default": "Salami"},
                 {"key": "hero_intro_body", "type": "textarea", "label": "Hero intro paragraph",
                  "default": "A handcrafted Italian confection inspired by a traditional Sicilian recipe from Modica. Shaped like a salami, it creates a moment of surprise — then reveals a rich, sliceable chocolate experience."},
                 {"key": "hero_image", "type": "image", "label": "Hero image", "default": ""},
+                {"key": "hero_image_frame", "type": "frame", "label": "Frame shape", "default": ""},
+                {"key": "hero_image_position", "type": "position", "label": "Focal point", "default": ""},
+                {"key": "hero_caption", "type": "text", "label": "Caption below image", "default": ""},
                 {"key": "hero_card_overline", "type": "text", "label": "Floating card overline",
                  "default": "No 01 · Sicilian Cocoa Confection"},
                 {"key": "hero_card_title", "type": "textarea", "label": "Floating card title",
@@ -1986,7 +1989,7 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "illusion_image_frame", "type": "frame", "label": "Frame shape", "default": ""},
                 {"key": "illusion_image_position", "type": "position", "label": "Focal point", "default": ""},
                 {"key": "illusion_caption", "type": "text", "label": "Caption below image",
-                 "default": "cocoa powder"},
+                 "default": ""},
             ]},
             {"label": "Illusion facts", "fields": [
                 {"key": "fact1_label", "type": "text", "label": "Fact 1 label", "default": "Texture"},
@@ -2093,6 +2096,7 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "pairings_body", "type": "textarea", "label": "Body",
                  "default": "Each pairing pulls a different layer forward — espresso heightens the cocoa, a glass of red lengthens the finish, fresh fruit brightens the biscotti crunch, aged cheese surprises everyone."},
                 {"key": "pairings_image", "type": "image", "label": "Image", "default": ""},
+                {"key": "pairings_caption", "type": "text", "label": "Caption below image", "default": ""},
             ]},
             {"label": "Storage", "fields": [
                 {"key": "storage_overline", "type": "text", "label": "Overline", "default": "Keep it perfect"},
@@ -2136,7 +2140,9 @@ SITE_CONTENT_MANIFEST = {
             ]},
             {"label": "Sicily / espresso pair", "fields": [
                 {"key": "sicily_image", "type": "image", "label": "Sicily landscape image", "default": ""},
+                {"key": "sicily_caption", "type": "text", "label": "Caption below Sicily image", "default": ""},
                 {"key": "italian_moment_image", "type": "image", "label": "Italian moment image", "default": ""},
+                {"key": "italian_moment_caption", "type": "text", "label": "Caption below Italian moment image", "default": ""},
             ]},
             {"label": "Closing", "fields": [
                 {"key": "closing_overline", "type": "text", "label": "Overline", "default": "A modern ritual"},
@@ -2177,7 +2183,12 @@ SITE_CONTENT_MANIFEST = {
             {"label": "Shipping & corporate sidebar", "fields": [
                 {"key": "shipping_overline", "type": "text", "label": "Overline", "default": "Shipping & corporate"},
                 {"key": "shipping_body", "type": "textarea", "label": "Body",
-                 "default": "We ship within the continental United States in small batches. Standard lead time is 5–7 days. For corporate programs (24-unit minimum), see the corporate deck or request the one-sheet."},
+                 "default": "We ship within the continental United States in small batches. Standard lead time is 5–7 days, depending on the volume of the order. For corporate programs (24-unit minimum), see the corporate deck or request the one-sheet."},
+            ]},
+            {"label": "Tastings", "fields": [
+                {"key": "tastings_overline", "type": "text", "label": "Overline", "default": "Tastings"},
+                {"key": "tastings_body", "type": "textarea", "label": "Body",
+                 "default": "We bring the tasting to you — at your office, event, or preferred location."},
             ]},
         ],
     },
@@ -2242,6 +2253,7 @@ SITE_CONTENT_MANIFEST_EXTRA = {
                 {"key": "fit_image", "type": "image", "label": "Section image", "default": "/api/static/corporate/occasions-table.jpg"},
                 {"key": "fit_image_frame", "type": "frame", "label": "Frame shape", "default": ""},
                 {"key": "fit_image_position", "type": "position", "label": "Focal point", "default": ""},
+                {"key": "fit_image_caption", "type": "text", "label": "Caption below image", "default": ""},
             ]},
             {"label": "Who should attend", "fields": [
                 {"key": "attend_overline", "type": "text", "label": "Overline", "default": "Who should attend"},

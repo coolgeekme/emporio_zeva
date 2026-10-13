@@ -84,7 +84,7 @@ export default function Home() {
               className="font-serif text-[56px] leading-[0.95] sm:text-7xl md:text-8xl lg:text-[112px] tracking-tight mt-6 text-[#2A1F1D]"
               data-testid="hero-product-name"
             >
-              {c("hero_h1_line1", "Not-A-")} <span className="italic text-[#C05A3A]">{c("hero_h1_italic", "Salami.")}</span>
+              {c("hero_h1_line1", "Not-A-")}<span className="italic text-[#C05A3A]">{c("hero_h1_italic", "Salami")}</span>
             </h1>
             <p
               className="font-serif text-2xl sm:text-3xl md:text-4xl leading-[1.1] tracking-tight mt-5 text-[#2A1F1D] italic"
@@ -118,14 +118,14 @@ export default function Home() {
           </div>
 
           <div className="md:col-span-6 relative">
-            <div className="img-wash aspect-[4/5] md:aspect-[5/6] relative overflow-hidden">
+            <div className={`img-wash relative overflow-hidden ${c("hero_image_frame", "") === "landscape" ? "aspect-[3/2]" : "aspect-[4/5] md:aspect-[5/6]"}`}>
               <img
                 ref={heroImgRef}
                 src={c("hero_image", IMAGES.hero)}
                 alt="Hands slicing Not-A-Salami beside hand-wrapped gift boxes"
                 data-testid="hero-image"
                 className="will-change-transform"
-                style={{ transform: "scale(1.12)" }}
+                style={{ transform: "scale(1.12)", ...(c("hero_image_position", "") ? { objectPosition: c("hero_image_position", "") } : {}) }}
               />
               {/* Warm cocoa-ember tint — pulls image toward brand palette */}
               <div
@@ -146,6 +146,11 @@ export default function Home() {
                 }}
               />
             </div>
+            {c("hero_caption", "") && (
+              <p className="overline text-[#5C4E4A] mt-4" data-testid="hero-caption">
+                {c("hero_caption", "")}
+              </p>
+            )}
             <div className="hidden md:block absolute -bottom-6 -left-6 md:-left-10 bg-[#F9F6F0] border border-[#DFD7CA] py-5 px-6 max-w-[220px]">
               <p className="overline text-[#C05A3A]">{c("hero_card_overline", "No 01 · Sicilian Cocoa Confection")}</p>
               <p className="font-serif text-2xl mt-2 leading-tight text-[#2A1F1D]">
@@ -241,9 +246,11 @@ export default function Home() {
               data-testid="illusion-image"
             />
           </div>
-          <p className="overline text-[#5C4E4A] mt-4" data-testid="illusion-caption">
-            {c("illusion_caption", "cocoa powder")}
-          </p>
+          {c("illusion_caption", "") && (
+            <p className="overline text-[#5C4E4A] mt-4" data-testid="illusion-caption">
+              {c("illusion_caption", "")}
+            </p>
+          )}
         </div>
       </section>
 

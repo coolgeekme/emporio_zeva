@@ -319,6 +319,9 @@ export default function CorporateExperiences() {
                 style={c("fit_image_position", "") ? { objectPosition: c("fit_image_position", "") } : undefined}
               />
             </div>
+            {c("fit_image_caption", "") && (
+              <p className="overline text-[#5C4E4A] mt-3">{c("fit_image_caption", "")}</p>
+            )}
           </div>
         </div>
       </section>

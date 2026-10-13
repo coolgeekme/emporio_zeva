@@ -98,8 +98,13 @@ export default function Ritual() {
               ))}
             </div>
           </div>
-          <div className="md:col-span-5 img-wash aspect-[4/5]">
-            <img src={c("pairings_image", IMAGES.product)} alt="Sliced Not-A-Salami with espresso" />
+          <div className="md:col-span-5">
+            <div className="img-wash aspect-[4/5]">
+              <img src={c("pairings_image", IMAGES.product)} alt="Sliced Not-A-Salami with espresso" />
+            </div>
+            {c("pairings_caption", "") && (
+              <p className="overline text-[#B9935A] mt-4">{c("pairings_caption", "")}</p>
+            )}
           </div>
         </div>
       </section>
