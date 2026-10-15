@@ -2364,6 +2364,21 @@ SITE_CONTENT_MANIFEST_EXTRA = {
             ]},
         ],
     },
+    "join": {
+        "label": "Join",
+        "sections": [
+            {"label": "Hero", "fields": [
+                {"key": "join_overline", "type": "text", "label": "Overline", "default": "Not-A-Salami · Inner circle"},
+                {"key": "join_h1_line1", "type": "text", "label": "H1 line 1", "default": "First to know."},
+                {"key": "join_h1_line2", "type": "text", "label": "H1 line 2 (italic)", "default": "First to the table."},
+                {"key": "join_body", "type": "textarea", "label": "Body",
+                 "default": "Every month, we make a small batch of chocolate salami exclusively for our community of private customers. Join the list and we'll email you when preorders open, so you can reserve yours."},
+                {"key": "join_success", "type": "text", "label": "Success message",
+                 "default": "You're in. Watch your inbox — limited drops and flash sales land there first."},
+                {"key": "join_button", "type": "text", "label": "Button label", "default": "Join the list"},
+            ]},
+        ],
+    },
 }
 SITE_CONTENT_MANIFEST.update(SITE_CONTENT_MANIFEST_EXTRA)
 

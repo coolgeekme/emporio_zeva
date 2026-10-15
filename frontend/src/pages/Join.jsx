@@ -2,17 +2,21 @@ import { useState } from "react";
 import axios from "axios";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSiteContent } from "../hooks/useSiteContent";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // QR landing page — the insert card's QR code points here. Collects name +
 // email (native, stored in the newsletter collection with source "insert_card")
-// so Eva can reach these people for limited drops and flash sales.
+// so Eva can reach these people for preorders, limited drops and flash sales.
+// Every visible string is a site-content field ("join" page) so she can edit
+// the copy herself from Page Content → Join.
 export default function Join() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle | loading | ok | err
   const [msg, setMsg] = useState("");
+  const c = useSiteContent("join");
 
   const submit = async (e) => {
     e.preventDefault();
@@ -21,7 +25,7 @@ export default function Join() {
     try {
       await axios.post(`${API}/newsletter`, { email, name, source: "insert_card" });
       setStatus("ok");
-      setMsg("You're in. Watch your inbox — limited drops and flash sales land there first.");
+      setMsg(c("join_success", "You're in. Watch your inbox — limited drops and flash sales land there first."));
     } catch (err) {
       setStatus("err");
       setMsg("Something went wrong. Try again in a moment.");
@@ -31,15 +35,14 @@ export default function Join() {
   return (
     <div className="pt-[90px]" data-testid="join-page">
       <section className="max-w-[680px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-28 text-center">
-        <p className="overline text-[#C05A3A]">Not-A-Salami · Inner circle</p>
+        <p className="overline text-[#C05A3A]">{c("join_overline", "Not-A-Salami · Inner circle")}</p>
         <h1 className="font-serif text-4xl md:text-6xl leading-[1.05] tracking-tight mt-6 text-[#2A1F1D]">
-          First to know.
+          {c("join_h1_line1", "First to know.")}
           <br />
-          <span className="italic text-[#C05A3A]">First to the table.</span>
+          <span className="italic text-[#C05A3A]">{c("join_h1_line2", "First to the table.")}</span>
         </h1>
         <p className="mt-7 text-lg text-[#5C4E4A] leading-relaxed max-w-md mx-auto">
-          Join the list and we'll write when a limited drop, a new flavor, or a
-          flash sale comes out of the kitchen — before it goes anywhere else.
+          {c("join_body", "Every month, we make a small batch of chocolate salami exclusively for our community of private customers. Join the list and we'll email you when preorders open, so you can reserve yours.")}
         </p>
 
         {status === "ok" ? (
@@ -88,7 +91,7 @@ export default function Join() {
               className="btn-primary w-full justify-center inline-flex items-center gap-2"
               data-testid="join-submit"
             >
-              {status === "loading" ? "Sending…" : "Join the list"} <ArrowRight size={14} />
+              {status === "loading" ? "Sending…" : c("join_button", "Join the list")} <ArrowRight size={14} />
             </button>
             {status === "err" && (
               <p className="text-sm text-[#C05A3A]" data-testid="join-error">
