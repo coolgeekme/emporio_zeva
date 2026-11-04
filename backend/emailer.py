@@ -287,6 +287,31 @@ async def notify_newsletter(entry: dict, notify_emails: Optional[list[str]] = No
         await send(notify_list, "New newsletter subscriber", _wrap(internal_body))
 
     if email:
+        source = (entry.get("source") or "").lower()
+        first_name = escape((entry.get("name") or "").strip())
+        if source in ("qr_private_batch", "insert_card"):
+            # Eva's copy, verbatim from her Nov 3 QR landing page brief.
+            greeting = (
+                '<p style="font-family:Georgia,serif;font-size:15px;line-height:1.7;'
+                f'color:#2A1F1D;margin:0 0 14px;">{first_name},</p>'
+                if first_name else ""
+            )
+            customer_body = f"""
+          <div style="font-family:Georgia,serif;font-size:24px;color:#2A1F1D;margin-bottom:12px;">You're on the list!</div>
+          {greeting}
+          <p style="font-family:Georgia,serif;font-size:15px;line-height:1.7;color:#2A1F1D;margin:0 0 14px;">
+            We'll let you know when our next limited batch becomes available for personal orders.
+          </p>
+          <p style="font-family:Georgia,serif;font-size:15px;line-height:1.7;color:#2A1F1D;margin:0;">
+            A presto,<br/><span style="font-style:italic;">Eva</span>
+          </p>"""
+            await send(
+                email,
+                "You're on the list",
+                _wrap(customer_body),
+                reply_to=(notify_list[0] if notify_list else None),
+            )
+            return
         customer_body = """
           <div style="font-family:Georgia,serif;font-size:24px;color:#2A1F1D;margin-bottom:12px;">Welcome to the table.</div>
           <p style="font-family:Georgia,serif;font-size:15px;line-height:1.7;color:#2A1F1D;margin:0 0 14px;">

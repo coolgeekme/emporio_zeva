@@ -153,6 +153,10 @@ class NewsletterCreate(BaseModel):
     email: EmailStr
     name: str = ""
     source: str = ""
+    # QR landing page (Private Batch List) fields — optional so the existing
+    # signup forms keep working unchanged.
+    pickup_area: str = ""          # "san_francisco" | "napa_valley" | "either"
+    consent: bool = False          # explicit marketing opt-in, never preselected
 
 
 class NewsletterEntry(BaseModel):
@@ -160,6 +164,9 @@ class NewsletterEntry(BaseModel):
     email: EmailStr
     name: str = ""
     source: str = ""
+    pickup_area: str = ""
+    consent: bool = False
+    consent_at: Optional[str] = None
     unsubscribed: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -825,8 +832,28 @@ async def create_inquiry(payload: InquiryCreate):
 async def subscribe(payload: NewsletterCreate):
     existing = await db.newsletter.find_one({"email": payload.email}, {"_id": 0})
     if existing:
+        # Backfill QR landing page fields for someone who signed up before we
+        # asked for them, without ever duplicating the row.
+        updates = {}
+        if payload.pickup_area and not existing.get("pickup_area"):
+            updates["pickup_area"] = payload.pickup_area
+        if payload.consent and not existing.get("consent"):
+            updates["consent"] = True
+            updates["consent_at"] = datetime.now(timezone.utc).isoformat()
+        if payload.source and not existing.get("source"):
+            updates["source"] = payload.source
+        if updates:
+            await db.newsletter.update_one({"email": payload.email}, {"$set": updates})
+            existing.update(updates)
         return existing
-    entry = NewsletterEntry(email=payload.email, name=payload.name or "", source=payload.source or "")
+    entry = NewsletterEntry(
+        email=payload.email,
+        name=payload.name or "",
+        source=payload.source or "",
+        pickup_area=payload.pickup_area or "",
+        consent=bool(payload.consent),
+        consent_at=datetime.now(timezone.utc).isoformat() if payload.consent else None,
+    )
     await db.newsletter.insert_one(entry.model_dump())
     asyncio.create_task(emailer.notify_newsletter(entry.model_dump(), await _notification_emails()))
     return entry
@@ -2368,14 +2395,36 @@ SITE_CONTENT_MANIFEST_EXTRA = {
         "label": "Join",
         "sections": [
             {"label": "Hero", "fields": [
-                {"key": "join_overline", "type": "text", "label": "Overline", "default": "Not-A-Salami · Inner circle"},
-                {"key": "join_h1_line1", "type": "text", "label": "H1 line 1", "default": "First to know."},
-                {"key": "join_h1_line2", "type": "text", "label": "H1 line 2 (italic)", "default": "First to the table."},
-                {"key": "join_body", "type": "textarea", "label": "Body",
-                 "default": "Every month, we make a small batch of chocolate salami exclusively for our community of private customers. Join the list and we'll email you when preorders open, so you can reserve yours."},
-                {"key": "join_success", "type": "text", "label": "Success message",
-                 "default": "You're in. Watch your inbox — limited drops and flash sales land there first."},
-                {"key": "join_button", "type": "text", "label": "Button label", "default": "Join the list"},
+                {"key": "join_s1_image", "type": "image", "label": "Hero image", "default": ""},
+                {"key": "join_s1_headline", "type": "text", "label": "Headline", "default": "Enjoyed the Unexpected?"},
+                {"key": "join_s1_body", "type": "textarea", "label": "Body",
+                 "default": "Not-A-Salami is a Sicilian cocoa confection, handcrafted in California. Inspired by tradition, made to be shared."},
+            ]},
+            {"label": "Section 2 — Private Batch List (primary CTA)", "fields": [
+                {"key": "join_s2_headline", "type": "text", "label": "Headline", "default": "Would You Like More?"},
+                {"key": "join_s2_body", "type": "textarea", "label": "Body",
+                 "default": "While we specialize in corporate gifting, we occasionally make limited batches available for personal orders.\n\nJoin our Private Batch List to be the first to know when the next batch becomes available."},
+                {"key": "join_s2_button", "type": "text", "label": "Button label", "default": "Join the Private Batch List"},
+                {"key": "join_s2_note", "type": "textarea", "label": "Small note under the form",
+                 "default": "Limited availability. Ordering and pickup details will be shared when each batch is announced."},
+                {"key": "join_s2_success_title", "type": "text", "label": "Signup confirmation — title", "default": "You're on the list!"},
+                {"key": "join_s2_success_body", "type": "textarea", "label": "Signup confirmation — body",
+                 "default": "We'll let you know when our next limited batch becomes available for personal orders."},
+                {"key": "join_s2_consent", "type": "textarea", "label": "Consent checkbox label",
+                 "default": "Yes, email me when a new batch is announced. I can unsubscribe at any time."},
+            ]},
+            {"label": "Section 3 — Corporate Gifting", "fields": [
+                {"key": "join_s3_headline", "type": "text", "label": "Headline", "default": "Something Special for Your Business?"},
+                {"key": "join_s3_body", "type": "textarea", "label": "Body",
+                 "default": "From client appreciation to corporate celebrations, Not-A-Salami makes gifting memorable."},
+                {"key": "join_s3_button", "type": "text", "label": "Button label", "default": "Explore Corporate Gifting"},
+            ]},
+            {"label": "Section 4 — Social", "fields": [
+                {"key": "join_s4_headline", "type": "text", "label": "Headline", "default": "Share Your Unexpected Moment"},
+                {"key": "join_s4_body", "type": "textarea", "label": "Body",
+                 "default": "Unwrapped it? Sliced it? Shared it? We'd love to see your Not-A-Salami moment.\n\nShare it on Instagram and tag us."},
+                {"key": "join_s4_instagram_url", "type": "text", "label": "Instagram URL (leave blank to hide the icon)",
+                 "default": ""},
             ]},
         ],
     },

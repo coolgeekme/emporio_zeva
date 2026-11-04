@@ -1476,6 +1476,12 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
     }
   };
 
+  const pickupLabels = {
+    san_francisco: "San Francisco",
+    napa_valley: "Napa Valley",
+    either: "Either",
+  };
+
   const columns = {
     waitlist: [
       { key: "created_at", label: "Date", render: (r) => formatDate(r.created_at) },
@@ -1536,6 +1542,17 @@ function AdminDashboard({ token, onLogout, initialTab, role }) {
       { key: "created_at", label: "Subscribed", render: (r) => formatDate(r.created_at) },
       { key: "name", label: "Name", render: (r) => r.name || "—" },
       { key: "email", label: "Email" },
+      {
+        key: "pickup_area",
+        label: "Pickup",
+        render: (r) => pickupLabels[r.pickup_area] || "—",
+      },
+      {
+        key: "consent",
+        label: "Consent",
+        render: (r) =>
+          r.consent ? `Yes · ${formatDate(r.consent_at)}` : "No",
+      },
       { key: "source", label: "Source", render: (r) => r.unsubscribed ? `${r.source || "footer"} · unsubscribed` : (r.source || "footer") },
     ],
   };
