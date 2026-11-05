@@ -26,6 +26,14 @@ const PICKUP_AREAS = [
   { value: "either", label: "Either" },
 ];
 
+// The site loads a Google Tag Manager container (GTM-PL8QC3J8), not gtag.js, so
+// analytics events go into the dataLayer. GTM tags map these onto GA4.
+const track = (event, data = {}) => {
+  if (typeof window === "undefined") return;
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event, ...data });
+};
+
 export default function Join() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -49,6 +57,10 @@ export default function Join() {
         source: "qr_private_batch",
         pickup_area: pickup,
         consent: true,
+      });
+      track("join_signup", {
+        pickup_area: pickup || "no_preference",
+        source: "qr_private_batch",
       });
       setStatus("ok");
     } catch (err) {
@@ -233,6 +245,7 @@ export default function Join() {
           to="/corporate-experiences"
           className="link-underline mt-6 inline-flex items-center gap-2"
           data-testid="join-corporate-link"
+          onClick={() => track("corporate_gifting_click", { from: "qr_landing_page" })}
         >
           {c("join_s3_button", "Explore Corporate Gifting")} <ArrowRight size={14} />
         </Link>
@@ -260,6 +273,7 @@ export default function Join() {
             className="mt-6 inline-flex items-center gap-2 text-[#C05A3A]"
             data-testid="join-instagram-link"
             aria-label="Not-A-Salami on Instagram"
+            onClick={() => track("instagram_click", { from: "qr_landing_page" })}
           >
             <Instagram size={20} />
           </a>
