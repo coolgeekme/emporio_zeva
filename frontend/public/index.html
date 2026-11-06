@@ -19,6 +19,23 @@
             })(window, document, "script", "dataLayer", "GTM-PL8QC3J8");
         </script>
         <!-- End Google Tag Manager -->
+        <!--
+          GA4 events only.
+          GTM (above) already sends page_view for G-CJ1BE32W1P, so this config
+          explicitly disables its own pageview — otherwise every page load would
+          be counted twice. This block exists purely so the QR landing page's
+          custom events (join_signup, corporate_gifting_click, instagram_click)
+          reach GA4 without requiring event tags to be built inside GTM.
+        -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-CJ1BE32W1P"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                window.dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+            gtag("config", "G-CJ1BE32W1P", { send_page_view: false });
+        </script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />

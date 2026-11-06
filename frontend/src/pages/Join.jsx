@@ -26,10 +26,19 @@ const PICKUP_AREAS = [
   { value: "either", label: "Either" },
 ];
 
-// The site loads a Google Tag Manager container (GTM-PL8QC3J8), not gtag.js, so
-// analytics events go into the dataLayer. GTM tags map these onto GA4.
+// Analytics. The site configures GA4 directly (G-CJ1BE32W1P, send_page_view:false)
+// alongside GTM, so events go through gtag() and land in GA4 without needing GTM
+// Custom Event tags built for them.
+//
+// Do NOT also add GTM triggers for these three names: gtag() pushes into
+// dataLayer, so GTM would fire as well and every event would be counted twice.
 const track = (event, data = {}) => {
   if (typeof window === "undefined") return;
+  if (typeof window.gtag === "function") {
+    window.gtag("event", event, data);
+    return;
+  }
+  // Fallback if gtag is blocked/unavailable — still visible to GTM.
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ event, ...data });
 };
