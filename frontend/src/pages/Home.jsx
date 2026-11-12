@@ -29,6 +29,7 @@ export default function Home() {
   const [waitlistProduct, setWaitlistProduct] = useState(null);
   const heroImgRef = useRef(null);
   const c = useSiteContent("home");
+  const g = useSiteContent("global");
   const r1 = useReveal();
   const r2 = useReveal();
   const r3 = useReveal();
@@ -168,7 +169,19 @@ export default function Home() {
         {/* marquee strip */}
         <div className="border-y border-[#DFD7CA] bg-[#EAE4D9]/40 py-5 overflow-hidden">
           <div className="marquee-track">
-            {[...PRESS, ...PRESS].map((p, i) => (
+            {[
+              g("press_line_1", PRESS[0]),
+              g("press_line_2", PRESS[1]),
+              g("press_line_3", PRESS[2]),
+              g("press_line_4", PRESS[3]),
+            ]
+              .concat([
+                g("press_line_1", PRESS[0]),
+                g("press_line_2", PRESS[1]),
+                g("press_line_3", PRESS[2]),
+                g("press_line_4", PRESS[3]),
+              ])
+              .map((p, i) => (
               <span
                 key={i}
                 className="overline text-[#5C4E4A] flex items-center gap-12"

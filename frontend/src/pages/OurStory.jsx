@@ -56,9 +56,9 @@ export default function OurStory() {
           </h2>
         </aside>
         <div className="md:col-span-9 space-y-6 text-lg text-[#2A1F1D] leading-relaxed max-w-3xl">
-          {FOUNDER_LETTER.map((para, i) => (
-            <p key={i} className={i === 1 ? "font-serif text-2xl md:text-3xl leading-[1.25] py-4 italic" : ""}>
-              {para}
+          {[1, 2, 3, 4].map((n, i) => (
+            <p key={n} className={i === 1 ? "font-serif text-2xl md:text-3xl leading-[1.25] py-4 italic" : ""}>
+              {c(`letter_para_${n}`, FOUNDER_LETTER[i])}
             </p>
           ))}
           <p className="font-serif text-2xl italic text-[#C05A3A] pt-2">

@@ -22,6 +22,7 @@ import {
 } from "../content";
 import MonogramDivider from "../components/MonogramDivider";
 import { useBrandLogo } from "../hooks/useBrandLogo";
+import { useSiteContent } from "../hooks/useSiteContent";
 import { getSlideField, TEMPLATE_SLIDES } from "../admin/deckManifest";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -95,13 +96,14 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
 
 export default function BlackRock({ deck = null }) {
   const { logo } = useBrandLogo();
+  const g = useSiteContent("global");
   // Personalization overrides — when no deck is provided, render a clean general version.
   const isGeneric = !deck;
   const clientName = deck?.client_name || "Your Team";
   const clientFull = deck ? deck.client_name : null;
   const introText =
     deck?.intro_text ||
-    "A curated Italian gifting experience, prepared by hand in San Francisco.";
+    g("deck_intro", "A curated Italian gifting experience, prepared by hand in Napa, CA.");
   const clientLogo = deck?.logo_url || null;
   const clientDomain = (deck?.domain || "company").replace(/^www\./, "").split(".")[0];
   const emailPlaceholder = `you@${(deck?.domain) || "company.com"}`;

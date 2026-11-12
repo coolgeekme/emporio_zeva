@@ -2226,6 +2226,16 @@ SITE_CONTENT_MANIFEST = {
                 {"key": "letter_h2_line1", "type": "text", "label": "H2 line 1", "default": "Eva,"},
                 {"key": "letter_h2_line2", "type": "text", "label": "H2 line 2 (italic)", "default": "founder."},
             ]},
+            {"label": "Founder letter body", "fields": [
+                {"key": "letter_para_1", "type": "textarea", "label": "Paragraph 1",
+                 "default": "Inspired by a childhood memory of a sweet Sicilian confection shaped like a salame, Not-A-Salami was recreated years later in California as a way to bring back a feeling of warmth, home, and togetherness around the table."},
+                {"key": "letter_para_2", "type": "textarea", "label": "Paragraph 2",
+                 "default": "What began as a personal family tradition evolved into a handcrafted cocoa confection rooted in Sicilian heritage and thoughtfully reinterpreted in California."},
+                {"key": "letter_para_3", "type": "textarea", "label": "Paragraph 3",
+                 "default": "Unexpected in appearance yet deeply nostalgic at heart, Not-A-Salami is meant to create a moment of surprise, sharing, and conversation."},
+                {"key": "letter_para_4", "type": "textarea", "label": "Paragraph 4",
+                 "default": "Everything is produced in small batches in California with a hands-on approach to craftsmanship, quality, and presentation."},
+            ]},
             {"label": "Sicily / espresso pair", "fields": [
                 {"key": "sicily_image", "type": "image", "label": "Sicily landscape image", "default": ""},
                 {"key": "sicily_caption", "type": "text", "label": "Caption below Sicily image", "default": ""},
@@ -2425,6 +2435,27 @@ SITE_CONTENT_MANIFEST_EXTRA = {
                  "default": "Unwrapped it? Sliced it? Shared it? We'd love to see your Not-A-Salami moment.\n\nShare it on Instagram and tag us."},
                 {"key": "join_s4_instagram_url", "type": "text", "label": "Instagram URL (leave blank to hide the icon)",
                  "default": ""},
+            ]},
+        ],
+    },
+    "global": {
+        "label": "Site-wide text",
+        "sections": [
+            {"label": "Footer", "fields": [
+                {"key": "footer_handcrafted_line", "type": "textarea", "label": "Handcrafted line (under the tagline)",
+                 "default": "Italian Tradition. Crafted in California. Handcrafted in small batches in Napa, CA."},
+                {"key": "footer_copyright_line", "type": "text", "label": "Copyright line",
+                 "default": "Handcrafted with reverence in Napa, CA."},
+            ]},
+            {"label": "Wholesale deck", "fields": [
+                {"key": "deck_intro", "type": "textarea", "label": "Deck intro line (default)",
+                 "default": "A curated Italian gifting experience, prepared by hand in Napa, CA."},
+            ]},
+            {"label": "Home marquee", "fields": [
+                {"key": "press_line_1", "type": "text", "label": "Line 1", "default": "Selected by SF Made — Here & Now 2024"},
+                {"key": "press_line_2", "type": "text", "label": "Line 2", "default": "Italian Tradition · Crafted in California"},
+                {"key": "press_line_3", "type": "text", "label": "Line 3", "default": "Featured on local pastry chef tables"},
+                {"key": "press_line_4", "type": "text", "label": "Line 4", "default": "Small batch · Hand rolled · Napa, CA"},
             ]},
         ],
     },

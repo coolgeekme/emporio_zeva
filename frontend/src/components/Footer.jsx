@@ -4,11 +4,13 @@ import axios from "axios";
 import { Instagram, Mail, Phone } from "lucide-react";
 import { SF_MADE_BADGE, BRAND, CONTACT, TAGLINES } from "../content";
 import { useBrandLogo } from "../hooks/useBrandLogo";
+import { useSiteContent } from "../hooks/useSiteContent";
 import NewsletterForm from "./NewsletterForm";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Footer() {
+  const c = useSiteContent("global");
   const { logoLight } = useBrandLogo();
   const [cmsLinks, setCmsLinks] = useState([]);
   const [settings, setSettings] = useState(null);
@@ -79,7 +81,10 @@ export default function Footer() {
               {TAGLINES.primary}
             </p>
             <p className="mt-3 text-[#DFD7CA] max-w-sm leading-relaxed text-sm">
-              {TAGLINES.italian_tradition} Handcrafted in small batches in San Francisco.
+              {c(
+                "footer_handcrafted_line",
+                "Italian Tradition. Crafted in California. Handcrafted in small batches in Napa, CA."
+              )}
             </p>
             <img
               src={SF_MADE_BADGE}
@@ -150,7 +155,8 @@ export default function Footer() {
         {/* Bottom */}
         <div className="pt-8 border-t border-[#5C4E4A] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <p className="text-xs text-[#5C4E4A] tracking-wide">
-            © {new Date().getFullYear()} {BRAND.parent}. Handcrafted with reverence in San Francisco.
+            © {new Date().getFullYear()} {BRAND.parent}.{" "}
+            {c("footer_copyright_line", "Handcrafted with reverence in Napa, CA.")}
           </p>
           <p className="text-[10px] tracking-[0.22em] uppercase text-[#5C4E4A]">
             notasalami.com · From Sicily, with seriousness
