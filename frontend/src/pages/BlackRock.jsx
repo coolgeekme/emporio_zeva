@@ -745,7 +745,7 @@ export default function BlackRock({ deck = null }) {
                 </li>
                 <li className="flex gap-3 items-center" data-testid="pitch-contact-phone">
                   <Phone size={16} className="text-[#C05A3A]" />
-                  <a href={`tel:${contact.phone.replace(/\s|·/g, "")}`} className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors">
+                  <a href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`} className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors">
                     {contact.phoneDisplay}
                   </a>
                 </li>
