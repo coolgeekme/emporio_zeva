@@ -9,6 +9,12 @@ export default function Ritual() {
   const r1 = useReveal();
   const r2 = useReveal();
   const c = useSiteContent("ritual");
+  // Ritual step copy is editable per step (step_<key>_title / _body).
+  const steps = RITUAL.map((s) => ({
+    ...s,
+    title: c(`step_${s.key}_title`, s.title),
+    body: c(`step_${s.key}_body`, s.body),
+  }));
 
   return (
     <div className="pt-[90px]" data-testid="ritual-page">
@@ -39,7 +45,7 @@ export default function Ritual() {
       {/* THE FOUR STEPS */}
       <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28 reveal" ref={r1}>
         <div className="grid md:grid-cols-2 gap-10 md:gap-16">
-          {RITUAL.map((step, i) => (
+          {steps.map((step, i) => (
             <article
               key={step.key}
               data-testid={`ritual-step-${step.key}`}

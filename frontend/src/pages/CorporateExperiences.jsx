@@ -4,6 +4,7 @@ import axios from "axios";
 import { ArrowRight } from "lucide-react";
 import { CONTACT } from "../content";
 import { useSiteContent } from "../hooks/useSiteContent";
+import { useContact } from "../hooks/useContact";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -164,7 +165,7 @@ function CorporateInquiryForm({ c, formRef }) {
         {status === "err" && (
           <p className="text-sm text-[#C05A3A]">
             {c("form_error", "Something didn't go through. Try again, or email us directly.")}{" "}
-            <a className="link-underline" href={`mailto:${CONTACT.email_primary}`}>{CONTACT.email_primary}</a>
+            <a className="link-underline" href={`mailto:${contact.email}`}>{contact.email}</a>
           </p>
         )}
       </div>
@@ -174,6 +175,7 @@ function CorporateInquiryForm({ c, formRef }) {
 
 export default function CorporateExperiences() {
   const c = useSiteContent("corporate");
+  const contact = useContact();
   const formRef = useRef(null);
 
   const goToForm = () => {

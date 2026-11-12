@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import InquiryForm from "../components/InquiryForm";
 import { CONTACT } from "../content";
 import { useSiteContent } from "../hooks/useSiteContent";
+import { useContact } from "../hooks/useContact";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -12,6 +13,7 @@ export default function Contact() {
   const [searchParams] = useSearchParams();
   const productSlug = searchParams.get("product");
   const c = useSiteContent("contact");
+  const contact = useContact();
   const [settings, setSettings] = useState(null);
 
   useEffect(() => {
@@ -61,11 +63,11 @@ export default function Contact() {
               <li className="flex gap-3 items-center">
                 <Mail size={18} className="text-[#C05A3A]" />
                 <a
-                  href={`mailto:${CONTACT.email_primary}`}
+                  href={`mailto:${contact.email}`}
                   className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors"
                   data-testid="contact-email"
                 >
-                  {CONTACT.email_primary}
+                  {contact.email}
                 </a>
               </li>
               {igHandle && (

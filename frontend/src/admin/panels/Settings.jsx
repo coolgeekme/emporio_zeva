@@ -445,6 +445,28 @@ export default function SettingsPanel({ token, readOnly, currentUser, onUserUpda
             />
           </div>
           <div className="field">
+            <label htmlFor="s-phone">Phone (dial link)</label>
+            <input
+              id="s-phone"
+              disabled={readOnly}
+              value={data.general.phone}
+              onChange={(e) => updateGeneral("phone", e.target.value)}
+              data-testid="settings-phone-input"
+              placeholder="+1 415-640-3005"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="s-phone-display">Phone (as shown)</label>
+            <input
+              id="s-phone-display"
+              disabled={readOnly}
+              value={data.general.phone_display}
+              onChange={(e) => updateGeneral("phone_display", e.target.value)}
+              data-testid="settings-phone-display-input"
+              placeholder="415 · 640 · 3005"
+            />
+          </div>
+          <div className="field">
             <label htmlFor="s-ig">Instagram handle</label>
             <input
               id="s-ig"

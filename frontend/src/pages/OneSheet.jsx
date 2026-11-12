@@ -11,6 +11,9 @@ import {
 } from "../content";
 import MonogramDivider from "../components/MonogramDivider";
 import { useBrandLogo } from "../hooks/useBrandLogo";
+import { useSiteContent } from "../hooks/useSiteContent";
+import { useContact } from "../hooks/useContact";
+import { useContentList } from "../hooks/useContentList";
 
 // Digital one-sheet — print-friendly single page version of the Corporate
 // One-Sheet PDF. Sales team can share /one-sheet as a link.
@@ -18,6 +21,11 @@ import { useBrandLogo } from "../hooks/useBrandLogo";
 export default function OneSheet() {
 
   const { logo } = useBrandLogo();
+  const contact = useContact();
+  const g = useSiteContent("global");
+  const packages = useContentList("corporate", "package", CORPORATE_PACKAGES, [
+    "name", "price", "unit", "box", "blurb", "min",
+  ], "includes");
   return (
     <div className="pt-[90px] bg-[#F9F6F0] min-h-screen" data-testid="one-sheet-page">
       <div className="max-w-[1000px] mx-auto px-6 md:px-12 py-12">
@@ -56,21 +64,21 @@ export default function OneSheet() {
 
           {/* Hero image */}
           <div className="img-wash aspect-[16/8] my-10">
-            <img src={IMAGES.hero} alt="Sliced Not-A-Salami" />
+            <img src={g("one_sheet_hero_image", IMAGES.hero)} alt="Sliced Not-A-Salami" />
           </div>
 
           {/* Packages — Curated / Executive / Il Mini */}
           <section
             className={`grid gap-6 md:gap-8 ${
-              CORPORATE_PACKAGES.length === 1
+              packages.length === 1
                 ? "md:grid-cols-1"
-                : CORPORATE_PACKAGES.length === 2
+                : packages.length === 2
                 ? "md:grid-cols-2"
                 : "md:grid-cols-3"
             }`}
             data-testid="one-sheet-packages"
           >
-            {CORPORATE_PACKAGES.map((pkg, i) => {
+            {packages.map((pkg, i) => {
               const t = TIER_TONES[toneFor(pkg)] || TIER_TONES.light;
               return (
                 <div key={pkg.name} className={`p-7 border flex flex-col ${t.card}`}>
@@ -125,8 +133,8 @@ export default function OneSheet() {
               </li>
               <li className="flex gap-3 items-center">
                 <Mail size={14} className="text-[#C05A3A]" />
-                <a href={`mailto:${CONTACT.email_primary}`} className="hover:text-[#C05A3A] transition-colors">
-                  {CONTACT.email_primary}
+                <a href={`mailto:${contact.email}`} className="hover:text-[#C05A3A] transition-colors">
+                  {contact.email}
                 </a>
               </li>
             </ul>

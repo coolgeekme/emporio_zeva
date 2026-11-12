@@ -334,6 +334,8 @@ class GeneralSettings(BaseModel):
     brand_name: str = "Not-A-Salami"
     tagline: str = "A truly Sicilian treat. For the unexpected."
     contact_email: str = "hello@emporiozeva.com"
+    phone: str = "+1 415-640-3005"
+    phone_display: str = "415 · 640 · 3005"
     instagram_handle: str = "@notasalami"
     address: str = "San Francisco, CA"
     # Brand logo — uploaded from the dashboard (Admin → Settings). Empty means
@@ -2461,6 +2463,152 @@ SITE_CONTENT_MANIFEST_EXTRA = {
     },
 }
 SITE_CONTENT_MANIFEST.update(SITE_CONTENT_MANIFEST_EXTRA)
+
+
+# --- Editable content lists (ritual steps, testimonials, corporate sales material) ---
+# The manifest has no repeater type, so lists are flattened into numbered
+# fields per the existing convention. Defaults are the shipped copy, so the
+# admin editor opens showing real text rather than blanks.
+def _f(key, label, default, kind='text'):
+    return {'key': key, 'type': kind, 'label': label, 'default': default}
+
+
+def _add_section(page: str, label: str, fields: list) -> None:
+    SITE_CONTENT_MANIFEST[page]['sections'].append({'label': label, 'fields': fields})
+
+
+_add_section("ritual", "Step copy", [
+        _f('step_serve_title', 'Serve — title', 'Serve'),
+        _f('step_serve_body', 'Serve — body', 'For the best flavor and texture, enjoy at room temperature. Remove from the fridge 15–20 minutes before serving.', 'textarea'),
+        _f('step_slice_title', 'Slice — title', 'Slice'),
+        _f('step_slice_body', 'Slice — body', 'Using a sharp knife, slice ½ inch thick. Each slice reveals its own beautiful pattern.', 'textarea'),
+        _f('step_share_title', 'Share — title', 'Share'),
+        _f('step_share_body', 'Share — body', 'Made to be shared slowly, around good conversation and meaningful company.', 'textarea'),
+        _f('step_savor_title', 'Savor — title', 'Savor'),
+        _f('step_savor_body', 'Savor — body', 'Layers of rich cocoa, crunchy biscotti, chocolate chips, and delicate sugar crystals unfold with every bite.', 'textarea'),
+])
+
+_add_section("home", "Testimonials", [
+        _f('testimonial_1_quote', 'Testimonial 1 — quote', "Every bite of Not-A-Salami was a delightful journey back to Sicily. It's rare to find a treat that so perfectly captures the essence of traditional flavors with a modern twist.", 'textarea'),
+        _f('testimonial_1_name', 'Testimonial 1 — name', 'Fabio Ficano'),
+        _f('testimonial_1_role', 'Testimonial 1 — role', 'Returning Customer'),
+        _f('testimonial_2_quote', 'Testimonial 2 — quote', 'The wrap, the paper, the look of it when open. The smell, like a cookie my mom used to make. The way it slices. The taste is SO good — I could NOT stop eating it.', 'textarea'),
+        _f('testimonial_2_name', 'Testimonial 2 — name', 'Lucinda Buxton Marin'),
+        _f('testimonial_2_role', 'Testimonial 2 — role', 'Pastry Chef'),
+        _f('testimonial_3_quote', 'Testimonial 3 — quote', 'The most amazing, decadent, delicious chocolate salami I have ever tasted. Of course it helps that Eva is from Sicily and uses the finest chocolate. The highest rating of all.', 'textarea'),
+        _f('testimonial_3_name', 'Testimonial 3 — name', 'Maria C. Spurlock'),
+        _f('testimonial_3_role', 'Testimonial 3 — role', 'San Francisco'),
+        _f('testimonial_4_quote', 'Testimonial 4 — quote', "A revelation — rich, indulgent, and absolutely delicious. It's become a fast favorite in our home, perfect for sharing or enjoying solo. A standout treat.", 'textarea'),
+        _f('testimonial_4_name', 'Testimonial 4 — name', 'Melanie L.'),
+        _f('testimonial_4_role', 'Testimonial 4 — role', 'Local press'),
+])
+
+_add_section("home", "Pillars", [
+        _f('pillar_1', 'Pillar 1', 'Memorable'),
+        _f('pillar_2', 'Pillar 2', 'Shareable'),
+        _f('pillar_3', 'Pillar 3', 'Distinctive'),
+        _f('pillar_4', 'Pillar 4', 'Refined'),
+        _f('pillar_5', 'Pillar 5', 'Authentic'),
+])
+
+_add_section("corporate", "Gift packages", [
+        _f('package_1_name', 'Package 1 — name', 'Curated'),
+        _f('package_1_price', 'Package 1 — price', '$58'),
+        _f('package_1_unit', 'Package 1 — price unit', 'per unit'),
+        _f('package_1_box', 'Package 1 — box', 'White Box'),
+        _f('package_1_blurb', 'Package 1 — blurb', 'Designed for thoughtful corporate gifting.', 'textarea'),
+        _f('package_1_min', 'Package 1 — minimum order line', 'Program begins at one case (24 units)'),
+        _f('package_1_includes_1', 'Package 1 — includes line 1', '1× Not-A-Salami'),
+        _f('package_1_includes_2', 'Package 1 — includes line 2', 'Signature Postcard'),
+        _f('package_1_includes_3', 'Package 1 — includes line 3', 'Custom gift message'),
+        _f('package_1_includes_4', 'Package 1 — includes line 4', 'NS monogram tissue paper'),
+        _f('package_1_includes_5', 'Package 1 — includes line 5', ''),
+        _f('package_1_includes_6', 'Package 1 — includes line 6', ''),
+        _f('package_2_name', 'Package 2 — name', 'Executive'),
+        _f('package_2_price', 'Package 2 — price', '$78'),
+        _f('package_2_unit', 'Package 2 — price unit', 'per unit'),
+        _f('package_2_box', 'Package 2 — box', 'Black Box'),
+        _f('package_2_blurb', 'Package 2 — blurb', 'An elevated gifting experience with enhanced presentation.', 'textarea'),
+        _f('package_2_min', 'Package 2 — minimum order line', 'Program begins at one case (24 units)'),
+        _f('package_2_includes_1', 'Package 2 — includes line 1', '1× Not-A-Salami'),
+        _f('package_2_includes_2', 'Package 2 — includes line 2', 'Signature Postcard'),
+        _f('package_2_includes_3', 'Package 2 — includes line 3', 'Custom gift message'),
+        _f('package_2_includes_4', 'Package 2 — includes line 4', 'Sicilian Tile Coaster'),
+        _f('package_2_includes_5', 'Package 2 — includes line 5', 'Personalized logo sticker'),
+        _f('package_2_includes_6', 'Package 2 — includes line 6', 'NS monogram tissue paper'),
+        _f('package_3_name', 'Package 3 — name', 'Il Mini'),
+        _f('package_3_price', 'Package 3 — price', 'TBD'),
+        _f('package_3_unit', 'Package 3 — price unit', 'per unit'),
+        _f('package_3_box', 'Package 3 — box', 'Mini Box'),
+        _f('package_3_blurb', 'Package 3 — blurb', 'A pocket-sized Not-A-Salami — half the size, all the ritual. Ideal for tasting flights and smaller gifting moments.', 'textarea'),
+        _f('package_3_min', 'Package 3 — minimum order line', 'Program begins at one case (24 units)'),
+        _f('package_3_includes_1', 'Package 3 — includes line 1', '1× Il Mini (Not-A-Salami)'),
+        _f('package_3_includes_2', 'Package 3 — includes line 2', 'Signature Postcard'),
+        _f('package_3_includes_3', 'Package 3 — includes line 3', 'Custom gift message'),
+        _f('package_3_includes_4', 'Package 3 — includes line 4', 'NS monogram tissue paper'),
+        _f('package_3_includes_5', 'Package 3 — includes line 5', ''),
+        _f('package_3_includes_6', 'Package 3 — includes line 6', ''),
+])
+
+_add_section("corporate", "Use cases", [
+        _f('use_case_1_title', 'Use case 1 — title', 'Client Appreciation'),
+        _f('use_case_1_body', 'Use case 1 — text', "Show key clients they're valued — beyond the holidays."),
+        _f('use_case_2_title', 'Use case 2 — title', 'Employee Recognition'),
+        _f('use_case_2_body', 'Use case 2 — text', 'Mark milestones, onboarding, and team achievements.'),
+        _f('use_case_3_title', 'Use case 3 — title', 'Deal Closing'),
+        _f('use_case_3_body', 'Use case 3 — text', 'Celebrate a signed agreement with something memorable.'),
+        _f('use_case_4_title', 'Use case 4 — title', 'Holiday Gifting'),
+        _f('use_case_4_body', 'Use case 4 — text', 'A distinctive alternative to traditional gifts.'),
+        _f('use_case_5_title', 'Use case 5 — title', 'Event & Conference'),
+        _f('use_case_5_body', 'Use case 5 — text', 'A refined leave-behind that stands out.'),
+        _f('use_case_6_title', 'Use case 6 — title', 'Corporate Events'),
+        _f('use_case_6_body', 'Use case 6 — text', 'Host gifts and shared table moments for company gatherings.'),
+        _f('use_case_7_title', 'Use case 7 — title', 'Office Parties'),
+        _f('use_case_7_body', 'Use case 7 — text', 'A sliceable dessert that turns a team moment into a ritual.'),
+        _f('use_case_8_title', 'Use case 8 — title', 'Holiday Parties'),
+        _f('use_case_8_body', 'Use case 8 — text', 'A year-round dessert that fits seasonal celebrations.'),
+        _f('use_case_9_title', 'Use case 9 — title', 'Thank You & Referrals'),
+        _f('use_case_9_body', 'Use case 9 — text', 'A thoughtful gesture that strengthens relationships.'),
+])
+
+_add_section("corporate", "Customization options", [
+        _f('customization_1_title', 'Customization options 1 — title', 'Signature Postcard'),
+        _f('customization_1_body', 'Customization options 1 — text', 'A warm introduction to the Not-A-Salami experience from our team.'),
+        _f('customization_2_title', 'Customization options 2 — title', 'Personalized Sticker'),
+        _f('customization_2_body', 'Customization options 2 — text', 'Your company identity discreetly integrated into the exterior presentation.'),
+        _f('customization_3_title', 'Customization options 3 — title', 'Sicilian Tile Coaster'),
+        _f('customization_3_body', 'Customization options 3 — text', 'Customized with your company message for a more memorable and personal gifting moment.'),
+        _f('customization_4_title', 'Customization options 4 — title', 'NS Monogram Tissue Paper'),
+        _f('customization_4_body', 'Customization options 4 — text', 'Subtle branded presentation designed to elevate the unboxing experience.'),
+])
+
+_add_section("corporate", "Process steps", [
+        _f('process_1_title', 'Process steps 1 — title', 'Define Your Needs'),
+        _f('process_1_body', 'Process steps 1 — text', 'We align on your timeline, recipients, and gifting objectives.'),
+        _f('process_2_title', 'Process steps 2 — title', 'Select Your Gift Program'),
+        _f('process_2_body', 'Process steps 2 — text', 'Choose the format and volume that best fits your needs.'),
+        _f('process_3_title', 'Process steps 3 — title', 'We Execute'),
+        _f('process_3_body', 'Process steps 3 — text', 'From production to packaging to delivery, we manage the entire process.'),
+        _f('process_4_title', 'Process steps 4 — title', 'A Lasting Impression'),
+        _f('process_4_body', 'Process steps 4 — text', 'Your recipients receive a thoughtful, elevated gift that reflects your brand.'),
+])
+
+_add_section("corporate", "Fulfillment options", [
+        _f('fulfillment_1_title', 'Fulfillment options 1 — title', 'Single Address Delivery'),
+        _f('fulfillment_1_body', 'Fulfillment options 1 — text', 'Bulk delivery to one address — most cost-efficient per unit. Ideal for internal team distribution.'),
+        _f('fulfillment_2_title', 'Fulfillment options 2 — title', 'Multi-Recipient Delivery'),
+        _f('fulfillment_2_body', 'Fulfillment options 2 — text', 'We ship direct to every recipient on your list. Perfect for remote teams or client appreciation.'),
+        _f('fulfillment_3_title', 'Fulfillment options 3 — title', 'Local Pickup'),
+        _f('fulfillment_3_body', 'Fulfillment options 3 — text', 'Available for Bay Area clients. No shipping cost — coordinate directly with our team.'),
+        _f('fulfillment_4_title', 'Fulfillment options 4 — title', 'Rush Orders'),
+        _f('fulfillment_4_body', 'Fulfillment options 4 — text', 'Expedited production and delivery available upon request. Surcharge applies.'),
+])
+
+# The /one-sheet leave-behind is a live route with its own hardcoded hero.
+_add_section("global", "One-sheet", [
+    _f("one_sheet_hero_image", "One-sheet hero image", "/api/static/site/hero-board.jpg", "image"),
+])
+
 
 VALID_CONTENT_PAGES = set(SITE_CONTENT_MANIFEST.keys())
 

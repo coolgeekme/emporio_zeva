@@ -15,6 +15,7 @@ import {
 } from "../content";
 import { useReveal } from "../hooks/useReveal";
 import { useSiteContent } from "../hooks/useSiteContent";
+import { useContentList, useContentStrings } from "../hooks/useContentList";
 import { useBrandLogo } from "../hooks/useBrandLogo";
 import MonogramDivider from "../components/MonogramDivider";
 import WaitlistDialog from "../components/WaitlistDialog";
@@ -30,6 +31,8 @@ export default function Home() {
   const heroImgRef = useRef(null);
   const c = useSiteContent("home");
   const g = useSiteContent("global");
+  const testimonials = useContentList("home", "testimonial", TESTIMONIALS, ["quote", "name", "role"]);
+  const pillars = useContentStrings("home", "pillar", PILLARS);
   const r1 = useReveal();
   const r2 = useReveal();
   const r3 = useReveal();
@@ -207,7 +210,7 @@ export default function Home() {
           </h2>
         </div>
         <div className="mt-12 grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-10">
-          {PILLARS.map((p, i) => (
+          {pillars.map((p, i) => (
             <div
               key={p}
               className="text-center"
@@ -524,7 +527,7 @@ export default function Home() {
           </h2>
 
           <div className="mt-16 grid md:grid-cols-2 gap-y-14 gap-x-16">
-            {TESTIMONIALS.map((t, i) => (
+            {testimonials.map((t, i) => (
               <figure key={i} data-testid={`testimonial-${i}`} className="border-l border-[#5C4E4A] pl-7">
                 <blockquote className="font-serif text-xl md:text-2xl leading-snug text-[#F9F6F0]">
                   "{t.quote}"

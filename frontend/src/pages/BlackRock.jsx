@@ -23,6 +23,8 @@ import {
 import MonogramDivider from "../components/MonogramDivider";
 import { useBrandLogo } from "../hooks/useBrandLogo";
 import { useSiteContent } from "../hooks/useSiteContent";
+import { useContact } from "../hooks/useContact";
+import { useContentList, useContentStrings } from "../hooks/useContentList";
 import { getSlideField, TEMPLATE_SLIDES } from "../admin/deckManifest";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -97,6 +99,16 @@ const Slide = ({ id, n, total, dark = false, children, testid, isActive = false 
 export default function BlackRock({ deck = null }) {
   const { logo } = useBrandLogo();
   const g = useSiteContent("global");
+  const contact = useContact();
+  const pillars = useContentStrings("home", "pillar", PILLARS);
+  const useCases = useContentList("corporate", "use_case", CORPORATE_USE_CASES, ["title", "body"]);
+  const customizations = useContentList("corporate", "customization", CUSTOMIZATION, ["title", "body"]);
+  const processSteps = useContentList("corporate", "process", PROCESS, ["title", "body"]);
+  const fulfillmentList = useContentList("corporate", "fulfillment", FULFILLMENT, ["title", "body"]);
+  const packages = useContentList(
+    "corporate", "package", CORPORATE_PACKAGES,
+    ["name", "price", "unit", "box", "blurb", "min"], "includes"
+  );
   // Personalization overrides — when no deck is provided, render a clean general version.
   const isGeneric = !deck;
   const clientName = deck?.client_name || "Your Team";
@@ -413,7 +425,7 @@ export default function BlackRock({ deck = null }) {
               </div>
               <p className="overline text-[#B9935A] mt-8">{ov("slide_3_why", "pillars_label", "Why it works")}</p>
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-5 gap-y-6">
-                {PILLARS.map((p, i) => (
+                {pillars.map((p, i) => (
                   <div key={p} data-testid={`pitch-pillar-${i}`} className="min-w-0">
                     <p className="overline text-[#5C4E4A]">No 0{i + 1}</p>
                     <p className="font-serif text-xl md:text-2xl text-[#F9F6F0] mt-2 whitespace-nowrap">{p}.</p>
@@ -471,7 +483,7 @@ export default function BlackRock({ deck = null }) {
               </h2>
             </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {(ov("slide_5_use_cases", "items", null) || CORPORATE_USE_CASES).map((u, i) => (
+              {(ov("slide_5_use_cases", "items", null) || useCases).map((u, i) => (
                 <div
                   key={`${u.title}-${i}`}
                   data-testid={`pitch-usecase-${i}`}
@@ -528,7 +540,7 @@ export default function BlackRock({ deck = null }) {
               </div>
             </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5">
-              {(ov("slide_7_customization", "items", null) || CUSTOMIZATION).map((c, i) => (
+              {(ov("slide_7_customization", "items", null) || customizations).map((c, i) => (
                 <div
                   key={`${c.title}-${i}`}
                   data-testid={`pitch-customization-${i}`}
@@ -564,7 +576,7 @@ export default function BlackRock({ deck = null }) {
             </div>
 
             {(() => {
-              const tiers = ov("slide_8_pricing", "items", null) || CORPORATE_PACKAGES;
+              const tiers = ov("slide_8_pricing", "items", null) || packages;
               const cols =
                 tiers.length === 1
                   ? "md:grid-cols-1 max-w-2xl mx-auto"
@@ -660,7 +672,7 @@ export default function BlackRock({ deck = null }) {
             </div>
 
             <div className="mt-10 grid sm:grid-cols-2 md:grid-cols-4 gap-5">
-              {FULFILLMENT.map((f, i) => (
+              {fulfillmentList.map((f, i) => (
                 <div
                   key={f.title}
                   data-testid={`pitch-fulfillment-${i}`}
@@ -691,7 +703,7 @@ export default function BlackRock({ deck = null }) {
             </div>
 
             <div className="mt-10 grid sm:grid-cols-2 md:grid-cols-4 gap-5">
-              {PROCESS.map((step, i) => (
+              {processSteps.map((step, i) => (
                 <div
                   key={step.n}
                   data-testid={`pitch-process-${i}`}
@@ -727,14 +739,14 @@ export default function BlackRock({ deck = null }) {
               <ul className="mt-10 space-y-4 max-w-md fx fx-up fx-d4">
                 <li className="flex gap-3 items-center" data-testid="pitch-contact-email">
                   <Mail size={16} className="text-[#C05A3A]" />
-                  <a href={`mailto:${CONTACT.email_primary}`} className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors">
-                    {CONTACT.email_primary}
+                  <a href={`mailto:${contact.email}`} className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors">
+                    {contact.email}
                   </a>
                 </li>
                 <li className="flex gap-3 items-center" data-testid="pitch-contact-phone">
                   <Phone size={16} className="text-[#C05A3A]" />
-                  <a href={`tel:${CONTACT.phone.replace(/\s|·/g, "")}`} className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors">
-                    {CONTACT.phone_display}
+                  <a href={`tel:${contact.phone.replace(/\s|·/g, "")}`} className="text-[#2A1F1D] hover:text-[#C05A3A] transition-colors">
+                    {contact.phoneDisplay}
                   </a>
                 </li>
                 <li className="flex gap-3 items-center" data-testid="pitch-contact-web">
