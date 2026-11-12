@@ -2604,9 +2604,20 @@ _add_section("corporate", "Fulfillment options", [
         _f('fulfillment_4_body', 'Fulfillment options 4 — text', 'Expedited production and delivery available upon request. Surcharge applies.'),
 ])
 
-# The /one-sheet leave-behind is a live route with its own hardcoded hero.
+# The /one-sheet leave-behind is a live route with its own hardcoded copy.
 _add_section("global", "One-sheet", [
     _f("one_sheet_hero_image", "One-sheet hero image", "/api/static/site/hero-board.jpg", "image"),
+    _f("one_sheet_eyebrow", "One-sheet eyebrow", "A Sicilian Cocoa Confection"),
+    _f(
+        "one_sheet_intro",
+        "One-sheet intro paragraph",
+        "Not-A-Salami is a handcrafted Italian confection inspired by a traditional "
+        "Sicilian recipe. Shaped like a salami, it creates a moment of surprise — then "
+        "reveals a rich, sliceable chocolate experience.",
+        "textarea",
+    ),
+    _f("one_sheet_tagline_primary", "One-sheet tagline", "A truly Sicilian treat. For the unexpected."),
+    _f("one_sheet_tagline_tradition", "One-sheet tradition line", "Italian Tradition. Crafted in California."),
 ])
 
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CONTACT } from "../content";
+import { CONTACT, BRAND } from "../content";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -32,6 +32,7 @@ export function useContact() {
 
   const g = settings?.general || {};
   return {
+    brandName: g.brand_name || BRAND.name,
     email: g.contact_email || CONTACT.email_primary,
     phone: g.phone || CONTACT.phone,
     phoneDisplay: g.phone_display || CONTACT.phone_display,

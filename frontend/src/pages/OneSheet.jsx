@@ -53,12 +53,12 @@ export default function OneSheet() {
               className="h-24 w-24 mx-auto select-none"
               draggable="false"
             />
-            <p className="overline text-[#C05A3A] mt-6">A Sicilian Cocoa Confection</p>
+            <p className="overline text-[#C05A3A] mt-6">{g("one_sheet_eyebrow", "A Sicilian Cocoa Confection")}</p>
             <h1 className="font-serif text-5xl md:text-6xl mt-3 text-[#2A1F1D] leading-tight">
-              {BRAND.name}.
+              {contact.brandName}.
             </h1>
             <p className="mt-5 text-base text-[#5C4E4A] max-w-xl mx-auto leading-relaxed italic">
-              {BRAND.name} is a handcrafted Italian confection inspired by a traditional Sicilian recipe. Shaped like a salami, it creates a moment of surprise — then reveals a rich, sliceable chocolate experience.
+              {g("one_sheet_intro", `${contact.brandName} is a handcrafted Italian confection inspired by a traditional Sicilian recipe. Shaped like a salami, it creates a moment of surprise — then reveals a rich, sliceable chocolate experience.`)}
             </p>
           </header>
 
@@ -118,10 +118,10 @@ export default function OneSheet() {
           <section className="grid sm:grid-cols-2 gap-8 items-end">
             <div>
               <p className="font-serif text-3xl md:text-4xl italic text-[#C05A3A] leading-tight">
-                {TAGLINES.primary}
+                {g("one_sheet_tagline_primary", TAGLINES.primary)}
               </p>
               <p className="overline text-[#5C4E4A] mt-3">
-                {TAGLINES.italian_tradition}
+                {g("one_sheet_tagline_tradition", TAGLINES.italian_tradition)}
               </p>
             </div>
             <ul className="space-y-3 text-sm text-[#2A1F1D]" data-testid="one-sheet-contact">
