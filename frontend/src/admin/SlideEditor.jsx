@@ -330,7 +330,12 @@ function FieldInput({ field, value, onChange, token }) {
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           data-testid={`slide-field-${field.key}`}
-          placeholder={field.type === "markdown" ? "Markdown supported: **bold**, *italic*, - bullets, [links](url), paragraphs separated by blank lines." : ""}
+          placeholder={
+            field.default ||
+            (field.type === "markdown"
+              ? "Markdown supported: **bold**, *italic*, - bullets, [links](url), paragraphs separated by blank lines."
+              : "")
+          }
         />
         {field.type === "markdown" && value && (
           <div className="mt-2 p-3 bg-[#FBF7EE] border border-[#DFD7CA] text-xs text-[#5C4E4A]">
@@ -344,7 +349,12 @@ function FieldInput({ field, value, onChange, token }) {
   return (
     <div className="field">
       <label>{field.label}</label>
-      <input value={value || ""} onChange={(e) => onChange(e.target.value)} data-testid={`slide-field-${field.key}`} />
+      <input
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={field.default || ""}
+        data-testid={`slide-field-${field.key}`}
+      />
     </div>
   );
 }

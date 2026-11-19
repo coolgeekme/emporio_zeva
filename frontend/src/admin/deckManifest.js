@@ -16,7 +16,7 @@
 //              the deck render falls back to `defaults` from content.js when
 //              no override is present.
 
-import { CORPORATE_USE_CASES, CUSTOMIZATION, CORPORATE_PACKAGES } from "../content";
+import { CORPORATE_USE_CASES, CUSTOMIZATION, CORPORATE_PACKAGES, TAGLINES } from "../content";
 
 // Pricing tiers ship with `includes` as string arrays for the render layer,
 // but the in-editor list field uses a multi-line string (one bullet per line)
@@ -193,10 +193,18 @@ export const SLIDE_MANIFEST = [
   {
     key: "slide_9_fulfillment",
     label: "Slide 9 · Fulfillment",
+    // `default` renders as the placeholder so the editor shows the live copy
+    // instead of an empty box when no override exists yet.
     fields: [
-      { key: "overline", type: "text", label: "Overline" },
-      { key: "title", type: "textarea", label: "H2" },
-      { key: "subtitle", type: "markdown", label: "Subtitle" },
+      { key: "overline", type: "text", label: "Overline", default: "Fulfillment" },
+      { key: "title", type: "textarea", label: "H2", default: TAGLINES.logistics },
+      {
+        key: "subtitle",
+        type: "markdown",
+        label: "Subtitle",
+        default:
+          "All orders ship on the same day — every recipient receives their gift within the same delivery window regardless of address.",
+      },
     ],
   },
   {
