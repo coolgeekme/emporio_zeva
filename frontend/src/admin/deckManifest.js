@@ -35,8 +35,13 @@ const PRICING_LIST_DEFAULTS = CORPORATE_PACKAGES.map((p) => ({
 }));
 //
 // The TEMPLATE_SLIDES set marks which slides are editable in Template mode.
-
-export const TEMPLATE_SLIDES = new Set(["slide_1_cover", "slide_8_pricing"]);
+// Slide 9 (Fulfillment) was added Nov 19, 2026 — Eva needed to retitle it for a
+// UCSF client deck and it was the only line she could not change on a deadline.
+export const TEMPLATE_SLIDES = new Set([
+  "slide_1_cover",
+  "slide_8_pricing",
+  "slide_9_fulfillment",
+]);
 
 export const SLIDE_MANIFEST = [
   {
