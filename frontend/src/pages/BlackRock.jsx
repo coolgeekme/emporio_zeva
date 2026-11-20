@@ -671,10 +671,16 @@ export default function BlackRock({ deck = null }) {
               </SlideMarkdown>
             </div>
 
-            <div className="mt-10 grid sm:grid-cols-2 md:grid-cols-4 gap-5">
-              {fulfillmentList.map((f, i) => (
+            <div
+              className={`mt-10 grid gap-5 ${
+                (ov("slide_9_fulfillment", "items", null) || fulfillmentList).length <= 2
+                  ? "sm:grid-cols-2"
+                  : "sm:grid-cols-2 md:grid-cols-4"
+              }`}
+            >
+              {(ov("slide_9_fulfillment", "items", null) || fulfillmentList).map((f, i) => (
                 <div
-                  key={f.title}
+                  key={i}
                   data-testid={`pitch-fulfillment-${i}`}
                   className="border border-[#DFD7CA] bg-[#F9F6F0] p-6 flex flex-col"
                 >

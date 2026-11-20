@@ -16,7 +16,7 @@
 //              the deck render falls back to `defaults` from content.js when
 //              no override is present.
 
-import { CORPORATE_USE_CASES, CUSTOMIZATION, CORPORATE_PACKAGES, TAGLINES } from "../content";
+import { CORPORATE_USE_CASES, CUSTOMIZATION, CORPORATE_PACKAGES, TAGLINES, FULFILLMENT } from "../content";
 
 // Pricing tiers ship with `includes` as string arrays for the render layer,
 // but the in-editor list field uses a multi-line string (one bullet per line)
@@ -204,6 +204,17 @@ export const SLIDE_MANIFEST = [
         label: "Subtitle",
         default:
           "All orders ship on the same day — every recipient receives their gift within the same delivery window regardless of address.",
+      },
+      {
+        key: "items",
+        type: "list",
+        label: "Delivery options",
+        addLabel: "Add delivery option",
+        defaults: FULFILLMENT,
+        itemFields: [
+          { key: "title", type: "text", label: "Title (e.g. 'Single Address Delivery')" },
+          { key: "body", type: "textarea", label: "Body" },
+        ],
       },
     ],
   },
